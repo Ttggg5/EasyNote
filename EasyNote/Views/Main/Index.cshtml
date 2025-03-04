@@ -5,20 +5,25 @@
     Layout = null;
 }
 
-<link rel="stylesheet" href="~/css/login-register-form.css"/>
+<link rel="stylesheet" href="~/css/login-register-form.css" />
+<link rel="stylesheet" href="~/css/start-page.css" />
 
 <div>
-    <h2>Login</h2>
-    <form action="@Url.Action("Login")" method="post">
-        <div class="input-group">
-            <label for="account">Account</label>
-            <input type="text" id="account" name="account" required>
-        </div>
-        <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="error-text">@TempData["error"]</div>
-        <button type="submit" class="login-btn">Login</button>
-    </form>
+    <img class="background-img" src="~/assets/background.jpg" />
+
+    <div class="wrapper">
+        <h1 class="form-title">Login</h1>
+        <form action="@Url.Action("Login")" method="post">
+            <div class="input-group">
+                <input placeholder="Account" type="text" id="account" name="account" required>
+            </div>
+            <div class="input-group">
+                <input placeholder="Password" type="password" id="password" name="password" required>
+            </div>
+
+            <div class="error-text">@TempData["error"]</div>
+
+            <button type="submit" class="login-btn">Confirm</button>
+        </form>
+    </div>
 </div>
