@@ -1,10 +1,7 @@
-﻿.wrapper {
-    position: absolute;
+﻿.login-form-wrapper {
+    justify-self: flex-end;
     display: block;
-    top: 20%;
-    right: 20%;
-    z-index: 10;
-    width: 20%;
+    width: 32%;
 }
 
 .form-title {
@@ -21,7 +18,7 @@
 
     .input-group input {
         width: 100%;
-        padding: 8px;
+        padding: 5px 8px;
         margin-top: 5px;
         border: 1px solid #ccc;
         border-radius: 5px;
@@ -36,7 +33,7 @@
 .login-btn {
     margin-top: 20%;
     width: 100%;
-    height: 50px;
+    height: 45px;
     padding: 10px;
     background: #4F4F4F;
     color: white;
@@ -51,3 +48,10 @@
     .login-btn:hover {
         background: #434343;
     }
+
+.register-text {
+    margin-top: 5px;
+    text-align: center;
+    color: white;
+    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+}

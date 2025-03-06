@@ -8,10 +8,17 @@
 <link rel="stylesheet" href="~/css/login-register-form.css" />
 <link rel="stylesheet" href="~/css/start-page.css" />
 
-<div>
-    <img class="background-img" src="~/assets/background.jpg" />
 
-    <div class="wrapper">
+<img class="background-img" src="~/assets/background.jpg" />
+
+<div class="background-block">
+    <div class="icon-block">
+        <img src="~/assets/easy-note-icon.jpg"/>
+
+        <h1>EasyNote</h1>
+    </div>
+
+    <div class="login-form-wrapper">
         <h1 class="form-title">Login</h1>
         <form action="@Url.Action("Login")" method="post">
             <div class="input-group">
@@ -25,5 +32,27 @@
 
             <button type="submit" class="login-btn">Confirm</button>
         </form>
+
+        <!--google login button-->
+        <script src="https://accounts.google.com/gsi/client?hl=en-us" async defer></script>
+        <div id="g_id_onload"
+                data-client_id="870772531163-m2r4o3gf7744q19f053oevvc83rnusjj.apps.googleusercontent.com"
+                data-login_uri="http://localhost:7047/GoogleLogin"
+                data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+                data-type="standard"
+                data-size="large"
+                data-theme="outline"
+                data-text="sign_in_with"
+                data-shape="rectangular"
+                data-logo_alignment="left"
+                data-locale="en-us">
+        </div>
+
+        <div class="register-text">
+            <a>Don't have an account?</a>
+            <a href="/Register">Register</a>
+        </div>
     </div>
 </div>
