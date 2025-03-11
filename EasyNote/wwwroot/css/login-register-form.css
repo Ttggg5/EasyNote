@@ -1,6 +1,8 @@
 ﻿.login-form-wrapper {
     justify-self: flex-end;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     width: 32%;
 }
 
@@ -28,6 +30,7 @@
 
 .error-text {
     color: indianred;
+    text-align: center;
 }
 
 .login-btn {
