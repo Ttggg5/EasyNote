@@ -1,9 +1,17 @@
-﻿.login-form-wrapper {
-    justify-self: flex-end;
+﻿.form-block {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: 64%;
+    left: 32%;
+}
+
+.login-form-wrapper {
+    justify-self: center;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 32%;
+    width: 50%;
 }
 
 .form-title {
@@ -14,24 +22,44 @@
 }
 
 .input-group {
+    margin-top: 15px;
     margin-bottom: 15px;
     text-align: left;
 }
 
     .input-group input {
-        width: 100%;
-        padding: 5px 8px;
-        margin-top: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
         filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
-        font-weight: bold;
     }
 
-.error-text {
-    color: indianred;
-    text-align: center;
+.input-group-password {
+    display: flex;
+    align-items: center;
 }
+
+    .input-group-password input {
+        margin-right: 28px;
+    }
+
+    .input-group-password button {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        background: #4F4F4F;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        z-index: 10;
+        filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+        color: white;
+    }
+        .input-group-password button:hover {
+            background: #434343;
+        }
+
+    .error-text {
+        color: #b40d0d;
+        text-align: center;
+    }
 
 .login-btn {
     margin-top: 20%;
@@ -44,7 +72,7 @@
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 19px;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
 }
 
@@ -57,4 +85,78 @@
     text-align: center;
     color: white;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+}
+
+.register-form-wrapper {
+    justify-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 50%;
+    margin-left: -50%;
+}
+
+.register-btn {
+    margin-top: 20%;
+    width: 100%;
+    height: 45px;
+    padding: 10px;
+    background: #4F4F4F;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 19px;
+    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+}
+
+    .register-btn:hover {
+        background: #434343;
+    }
+
+.back-btn {
+    width: 35px;
+    height: 35px;
+    padding: 5px;
+    background: #4F4F4F;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+}
+    .back-btn:hover {
+        background: #434343;
+    }
+
+@keyframes slide-in {
+    0% {
+        -webkit-transform: translateX(100%);
+        opacity: 0%;
+        visibility: collapse;
+    }
+
+    100% {
+        -webkit-transform: translateX(0%);
+        opacity: 100%;
+        visibility: visible;
+    }
+}
+
+@keyframes slide-out {
+    0% {
+        -webkit-transform: translateX(0%);
+        opacity: 100%;
+        visibility: visible;
+    }
+
+    100% {
+        -webkit-transform: translateX(-100%);
+        opacity: 0%;
+        visibility: collapse;
+    }
 }

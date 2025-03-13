@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
 using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore;
 
 namespace EasyNote.Controllers
 {
@@ -28,15 +29,15 @@ namespace EasyNote.Controllers
         [HttpPost]
         public IActionResult Login(LoginDTO loginDTO)
         {
-            var user = (from a in _easyNoteContext.Users
-                        where a.Account == loginDTO.Account
-                        && a.Password == loginDTO.Password
-                        select a).SingleOrDefault();
+            User? user = (from a in _easyNoteContext.Users
+                          where a.Account == loginDTO.account
+                          && a.Password == loginDTO.password
+                          select a).SingleOrDefault();
 
             if (user == null)
             {
                 TempData["error"] = "Wrong account or password!";
-                return Redirect("/Index");
+                return Redirect("/");
             }
 
             var claims = new List<Claim>
@@ -149,17 +150,62 @@ namespace EasyNote.Controllers
             return payload;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterDTO registerDTO)
+        {
+            if (!registerDTO.password.Equals(registerDTO.confirmPassword))
+            {
+                TempData["error"] = "Confirm password not correct!";
+                return Redirect("/?reg=true");
+            }
+
+            User? user = (from a in _easyNoteContext.Users
+                          where a.Account == registerDTO.account
+                          select a).SingleOrDefault();
+
+            if (user != null)
+            {
+                TempData["error"] = "Account already exist!";
+                return Redirect("/?reg=true");
+            }
+
+            string? id = (from a in _easyNoteContext.Users orderby a.Id select a.Id).LastOrDefault();
+            if (id == null)
+                id = "U000000001";
+            else
+            {
+                int num = Convert.ToInt32(id.Substring(1, id.Length - 1)) + 1;
+                id = "U" + num.ToString("000000000");
+            }
+
+            User newUser = new User()
+            {
+                Id = id,
+                Account = registerDTO.account,
+                Password = registerDTO.password,
+                Name = registerDTO.name,
+                CreateDate = DateTime.Now,
+                ProfileImage = null,
+            };
+
+            _easyNoteContext.Users.Add(newUser);
+            await _easyNoteContext.SaveChangesAsync();
+
+            TempData["register_state"] = "complete";
+            return Redirect("/");
+        }
+
         public IActionResult Workspace()
         {
             if (!User.Identity.IsAuthenticated)
-                return Redirect("/Index");
+                return Redirect("/");
             return View();
         }
 
         public IActionResult Logout()
         {
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Redirect("/Index");
+            return Redirect("/");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

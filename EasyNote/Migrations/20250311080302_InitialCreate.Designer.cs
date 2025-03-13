@@ -33,7 +33,7 @@ namespace EasyNote.Migrations
                         .HasColumnType("char(10)")
                         .IsFixedLength();
 
-                    b.Property<string>("Account")
+                    b.Property<string>("account")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
@@ -42,7 +42,7 @@ namespace EasyNote.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("password")
                         .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false)
@@ -61,7 +61,7 @@ namespace EasyNote.Migrations
                         .HasColumnType("char(10)")
                         .IsFixedLength();
 
-                    b.Property<string>("Account")
+                    b.Property<string>("account")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
@@ -75,7 +75,7 @@ namespace EasyNote.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("password")
                         .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false)
