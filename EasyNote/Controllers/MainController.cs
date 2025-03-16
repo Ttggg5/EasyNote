@@ -30,13 +30,13 @@ namespace EasyNote.Controllers
         public IActionResult Login(LoginDTO loginDTO)
         {
             User? user = (from a in _easyNoteContext.Users
-                          where a.Account == loginDTO.account
-                          && a.Password == loginDTO.password
+                          where a.Account == loginDTO.Account
+                          && a.Password == loginDTO.Password
                           select a).SingleOrDefault();
 
             if (user == null)
             {
-                TempData["error"] = "Wrong account or password!";
+                TempData["error"] = "Wrong Account or Password!";
                 return Redirect("/");
             }
 
@@ -96,9 +96,9 @@ namespace EasyNote.Controllers
         /// <summary>
         /// 驗證 Google Token
         /// </summary>
-        /// <param name="formCredential"></param>
-        /// <param name="formToken"></param>
-        /// <param name="cookiesToken"></param>
+        /// <param Name="formCredential"></param>
+        /// <param Name="formToken"></param>
+        /// <param Name="cookiesToken"></param>
         /// <returns></returns>
         public async Task<GoogleJsonWebSignature.Payload?> VerifyGoogleToken(string? formCredential, string? formToken, string? cookiesToken)
         {
@@ -153,14 +153,14 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDTO registerDTO)
         {
-            if (!registerDTO.password.Equals(registerDTO.confirmPassword))
+            if (!registerDTO.Password.Equals(registerDTO.ConfirmPassword))
             {
-                TempData["error"] = "Confirm password not correct!";
+                TempData["error"] = "Confirm Password not correct!";
                 return Redirect("/?reg=true");
             }
 
             User? user = (from a in _easyNoteContext.Users
-                          where a.Account == registerDTO.account
+                          where a.Account == registerDTO.Account
                           select a).SingleOrDefault();
 
             if (user != null)
@@ -181,9 +181,9 @@ namespace EasyNote.Controllers
             User newUser = new User()
             {
                 Id = id,
-                Account = registerDTO.account,
-                Password = registerDTO.password,
-                Name = registerDTO.name,
+                Account = registerDTO.Account,
+                Password = registerDTO.Password,
+                Name = registerDTO.Name,
                 CreateDate = DateTime.Now,
                 ProfileImage = null,
             };

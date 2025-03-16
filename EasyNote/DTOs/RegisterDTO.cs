@@ -2,12 +2,12 @@
 {
     public class RegisterDTO
     {
-        public string account { get; set; }
+        public string Account { get; set; }
 
-        public string password { get; set; }
+        public string Password { get; set; }
 
-        public string confirmPassword { get; set; }
+        public string ConfirmPassword { get; set; }
 
-        public string name { get; set; }
+        public string Name { get; set; }
     }
 }

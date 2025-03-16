@@ -1,9 +1,8 @@
 ﻿.form-block {
     position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     width: 64%;
-    left: 32%;
 }
 
 .login-form-wrapper {
@@ -93,7 +92,7 @@
     flex-direction: column;
     align-items: stretch;
     width: 50%;
-    margin-left: -50%;
+    margin-right: -50%;
 }
 
 .register-btn {
