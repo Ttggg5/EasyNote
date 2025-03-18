@@ -13,21 +13,21 @@ else {
     register_form.style.animation = "slide-out 0s forwards";
 }
 
-function show_register_form() {
+function showRegisterForm() {
     login_form.style.animation = "slide-out 0.5s forwards";
-    register_form.style.animation = "slide-in 0.5s forwards";
-    clear_all_error_text();
+    register_form.style.animation = "slide-in 1s forwards";
+    setAllErrorText("");
 }
 
-function show_login_form() {
-    login_form.style.animation = "slide-in 0.5s forwards";
+function showLoginForm() {
+    login_form.style.animation = "slide-in 1s forwards";
     register_form.style.animation = "slide-out 0.5s forwards";
-    clear_all_error_text();
+    setAllErrorText("");
 }
 
-function clear_all_error_text() {
+function setAllErrorText(text) {
     Array.from(error_texts).forEach((element) => {
-        element.innerHTML = "";
+        element.innerHTML = text;
     });
 }
 
@@ -41,3 +41,19 @@ function togglePassword(btn, input_id) {
         btn.innerHTML = "<i class='bi bi-eye-fill'></i>";
     }
 }
+
+function validateRegisterForm(form) {
+    if (validateEmail(form.account.value))
+        return true;
+    else
+        setAllErrorText("Email format not correct!");
+    return false;
+}
+
+const validateEmail = (email) => {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+};

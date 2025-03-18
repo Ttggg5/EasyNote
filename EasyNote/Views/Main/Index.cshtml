@@ -67,41 +67,46 @@
 
             <div class="register-text">
                 <a>Don't have an account?</a>
-                <a href="#" onclick="show_register_form()">Register</a>
+                <a href="#" onclick="showRegisterForm()">Register</a>
             </div>
         </div>
 
         <!--Register form-->
-        <div id="register-form" class="register-form-wrapper">
-            <button type="button" class="back-btn" onclick="show_login_form()">
-                <i class="bi bi-chevron-left"></i>
-            </button>
+        <div id="register-form" class="register-form-wrapper-outer">
+            <div class="back-btn">
+                <button type="button" onclick="showLoginForm()"></button>
+                <svg width="15" viewBox="0 0 256 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <path d="M192 448c-8.188 0-16.38-3.125-22.62-9.375l-160-160c-12.5-12.5-12.5-32.75 0-45.25l160-160c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l137.4 137.4c12.5 12.5 12.5 32.75 0 45.25C208.4 444.9 200.2 448 192 448z"/>
+                </svg>
+            </div>
 
-            <h1 class="form-title">Register</h1>
-            <form asp-controller="Main" asp-action="Register" method="post">
-                <div class="input-group">
-                    <input class="form-control" placeholder="Account" type="text" name="account" required>
-                </div>
-                <div class="input-group input-group-password">
-                    <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>
-                    <button type="button" onclick="togglePassword(this, 'password-register')">
-                        <i class="bi bi-eye-fill"></i>
-                    </button>
-                </div>
-                <div class="input-group input-group-password">
-                    <input id="confirm-password-register" class="form-control" placeholder="Confirm Password" type="password" name="confirmPassword" required>
-                    <button type="button" onclick="togglePassword(this, 'confirm-password-register')">
-                        <i class="bi bi-eye-fill"></i>
-                    </button>
-                </div>
-                <div class="input-group">
-                    <input class="form-control" placeholder="Name" type="text" name="name" required>
-                </div>
+            <div class="register-form-wrapper-inner">
+                <h1 class="form-title">Register</h1>
+                <form asp-controller="Main" asp-action="Register" method="post" onsubmit="return validateRegisterForm(this);">
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Email (this will be account)" type="text" name="account" required>
+                    </div>
+                    <div class="input-group input-group-password">
+                        <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>
+                        <button type="button" onclick="togglePassword(this, 'password-register')">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                    <div class="input-group input-group-password">
+                        <input id="confirm-password-register" class="form-control" placeholder="Confirm Password" type="password" name="confirmPassword" required>
+                        <button type="button" onclick="togglePassword(this, 'confirm-password-register')">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Name" type="text" name="name" required>
+                    </div>
 
-                <div class="error-text">@TempData["error"]</div>
+                    <div class="error-text">@TempData["error"]</div>
 
-                <button type="submit" class="register-btn">Confirm</button>
-            </form>
+                    <button type="submit" class="register-btn">Confirm</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

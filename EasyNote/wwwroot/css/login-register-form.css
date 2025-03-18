@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: row-reverse;
     width: 64%;
+    align-items: center;
 }
 
 .login-form-wrapper {
@@ -86,13 +87,18 @@
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
 }
 
-.register-form-wrapper {
+.register-form-wrapper-outer {
+    display: flex;
+    flex-direction: row;
+    width: 50%;
+    margin-right: -50%;
+}
+
+.register-form-wrapper-inner {
     justify-self: center;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 50%;
-    margin-right: -50%;
 }
 
 .register-btn {
@@ -115,22 +121,52 @@
     }
 
 .back-btn {
-    width: 35px;
-    height: 35px;
-    padding: 5px;
-    background: #4F4F4F;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    font-size: 14px;
-    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    margin: 50px 10px 50px 0px;
 }
-    .back-btn:hover {
-        background: #434343;
+
+    .back-btn button {
+        grid-column-start: 1;
+        grid-column-end: 2;
+        grid-row-start: 1;
+        width: 35px;
+        height: 100%;
+        padding: 2px;
+        background: #fff;
+        opacity: 0;
+        border: none;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+        color: #fff;
+        filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
     }
+
+        .back-btn button:hover {
+            animation: btn-hover 0.5s forwards;
+        }
+
+    .back-btn svg {
+        color: #fff;
+        grid-column-start: 1;
+        grid-column-end: 2;
+        grid-row-start: 1;
+        margin: auto;
+        filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    }
+
+@keyframes btn-hover {
+    0% {
+        opacity: 0%;
+    }
+
+    100% {
+        opacity: 20%;
+    }
+}
 
 @keyframes slide-in {
     0% {
