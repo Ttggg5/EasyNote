@@ -51,10 +51,12 @@ public partial class EasyNoteContext : DbContext
                 .IsRequired()
                 .HasMaxLength(30);
             entity.Property(e => e.Password)
-                .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.ProfileImage).HasColumnType("image");
+            entity.Property(e => e.RegistType)
+                .HasMaxLength(10)
+                .IsUnicode(false);
         });
 
         OnModelCreatingPartial(modelBuilder);

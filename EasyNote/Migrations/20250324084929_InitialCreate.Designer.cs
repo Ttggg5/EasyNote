@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyNote.Migrations
 {
     [DbContext(typeof(EasyNoteContext))]
-    [Migration("20250311080302_InitialCreate")]
+    [Migration("20250324084929_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -76,13 +76,17 @@ namespace EasyNote.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasMaxLength(30)
                         .IsUnicode(false)
                         .HasColumnType("varchar(30)");
 
                     b.Property<byte[]>("ProfileImage")
                         .HasColumnType("image");
+
+                    b.Property<string>("RegistType")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
 
                     b.HasKey("Id");
 

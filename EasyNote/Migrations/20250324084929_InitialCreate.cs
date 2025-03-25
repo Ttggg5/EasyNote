@@ -31,10 +31,11 @@ namespace EasyNote.Migrations
                 {
                     Id = table.Column<string>(type: "char(10)", unicode: false, fixedLength: true, maxLength: 10, nullable: false),
                     Account = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
+                    Password = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
                     Name = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    ProfileImage = table.Column<byte[]>(type: "image", nullable: true)
+                    ProfileImage = table.Column<byte[]>(type: "image", nullable: true),
+                    RegistType = table.Column<string>(type: "varchar(10)", unicode: false, maxLength: 10, nullable: true)
                 },
                 constraints: table =>
                 {

@@ -7,9 +7,17 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EasyNote.Controllers
 {
+    public enum RegistType
+    {
+        EasyNote,
+        Google,
+    }
+
     public class MainController : Controller
     {
         private readonly EasyNoteContext _easyNoteContext;
@@ -42,6 +50,7 @@ namespace EasyNote.Controllers
 
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.Sid, user.Id),
                 new Claim(ClaimTypes.Email, user.Account),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Role, "User")
@@ -56,7 +65,7 @@ namespace EasyNote.Controllers
         /// 驗證 Google 登入授權
         /// </summary>
         /// <returns></returns>
-        public IActionResult GoogleLogin()
+        public async Task<IActionResult> GoogleLoginAsync()
         {
             try
             {
@@ -75,10 +84,38 @@ namespace EasyNote.Controllers
                 else
                 {
                     //驗證成功，取使用者資訊內容
+                    User? user = (from a in _easyNoteContext.Users
+                                  where a.Account == payload.Email
+                                  && a.RegistType == Enum.GetName(RegistType.Google)
+                                  select a).SingleOrDefault();
+
+                    if (user == null)
+                    {
+                        User newUser = new User()
+                        {
+                            Id = GetNewUserId(),
+                            Account = payload.Email,
+                            Password = null,
+                            Name = payload.Name,
+                            CreateDate = DateTime.Now,
+                            ProfileImage = await new HttpClient().GetByteArrayAsync(payload.Picture),
+                            RegistType = Enum.GetName(RegistType.Google),
+                        };
+
+                        _easyNoteContext.Users.Add(newUser);
+                        await _easyNoteContext.SaveChangesAsync();
+                    }
+
+                    user = (from a in _easyNoteContext.Users
+                            where a.Account == payload.Email
+                            && a.RegistType == Enum.GetName(RegistType.Google)
+                            select a).SingleOrDefault();
+
                     var claims = new List<Claim>
                     {
-                        new Claim(ClaimTypes.Email, payload.Email),
-                        new Claim(ClaimTypes.Name, payload.Name),
+                        new Claim(ClaimTypes.Sid, user.Id),
+                        new Claim(ClaimTypes.Email, user.Account),
+                        new Claim(ClaimTypes.Name, user.Name),
                         new Claim(ClaimTypes.Role, "User")
                     };
 
@@ -161,6 +198,7 @@ namespace EasyNote.Controllers
 
             User? user = (from a in _easyNoteContext.Users
                           where a.Account == registerDTO.Account
+                          && a.RegistType == Enum.GetName(RegistType.EasyNote)
                           select a).SingleOrDefault();
 
             if (user != null)
@@ -169,23 +207,15 @@ namespace EasyNote.Controllers
                 return Redirect("/?reg=true");
             }
 
-            string? id = (from a in _easyNoteContext.Users orderby a.Id select a.Id).LastOrDefault();
-            if (id == null)
-                id = "U000000001";
-            else
-            {
-                int num = Convert.ToInt32(id.Substring(1, id.Length - 1)) + 1;
-                id = "U" + num.ToString("000000000");
-            }
-
             User newUser = new User()
             {
-                Id = id,
+                Id = GetNewUserId(),
                 Account = registerDTO.Account,
                 Password = registerDTO.Password,
                 Name = registerDTO.Name,
                 CreateDate = DateTime.Now,
                 ProfileImage = null,
+                RegistType = Enum.GetName(RegistType.EasyNote),
             };
 
             _easyNoteContext.Users.Add(newUser);
@@ -195,11 +225,35 @@ namespace EasyNote.Controllers
             return Redirect("/");
         }
 
+        public string GetNewUserId()
+        {
+            string? id = (from a in _easyNoteContext.Users orderby a.Id select a.Id).LastOrDefault();
+            if (id == null)
+                id = "U000000001";
+            else
+            {
+                int num = Convert.ToInt32(id.Substring(1, id.Length - 1)) + 1;
+                id = "U" + num.ToString("000000000");
+            }
+            return id;
+        }
+
         public IActionResult Workspace()
         {
             if (!User.Identity.IsAuthenticated)
                 return Redirect("/");
             return View();
+        }
+
+        public IActionResult ShowProfileImage(string id)
+        {
+            byte[]? img = (from a in _easyNoteContext.Users
+                          where a.Id == id
+                          select a.ProfileImage).SingleOrDefault();
+
+            if (img != null)
+                return File(img, "image/jpeg");
+            return File("~/assets/user-solid.svg", "image/svg+xml");
         }
 
         public IActionResult Logout()

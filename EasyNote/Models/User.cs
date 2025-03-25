@@ -18,4 +18,6 @@ public partial class User
     public DateTime CreateDate { get; set; }
 
     public byte[] ProfileImage { get; set; }
+
+    public string RegistType { get; set; }
 }
