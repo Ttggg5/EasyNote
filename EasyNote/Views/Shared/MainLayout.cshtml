@@ -29,7 +29,7 @@
                 <li id="profile-block-dropdown-items-logout" onclick="logout()">Logout</li>
             </ul>
 
-            <input id="dropdown_cb" type="checkbox" onclick="dropdownClicked()" />
+            <input id="dropdown_cb" type="checkbox" onclick="dropdownClicked()"/>
             <label class="profile-block" for="dropdown_cb">
                 <div class="profile-info">
                     <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { id = id })" />
@@ -43,9 +43,23 @@
         </div>
     </header>
 
-    <main>
-        @RenderBody()
-    </main>
+    <div class="main">
+        <nav class="note-nav">
+            <div>
+                <button class="new-note-btn" onclick="newNote">+ New</button>
+                <!--all user's note-->
+                <ul>
+                    <!--example: "<li><a href="#">note 1</a></li>"-->
+                </ul>
+            </div>
+
+            <a class="clander"><img src="~/assets/calendar-days-solid.svg"/>Clander</a>
+        </nav>
+
+        <main>
+            @RenderBody()
+        </main>
+    </div>
 </body>
 
 <script src="~/js/main-layout.js"></script>

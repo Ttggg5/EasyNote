@@ -3,6 +3,7 @@ const dropdownIcon = document.getElementById("profile-block-dropdowns-img");
 const dropdownItems = document.getElementById("profile-block-dropdown-items");
 
 dropdownItems.style.animation = "dropdown-items-hide 0s forwards";
+dropdownItems.style.display = "unset";
 
 function dropdownClicked() {
     if (dropdownCb.checked) {
@@ -17,4 +18,8 @@ function dropdownClicked() {
 
 function logout() {
     window.location.href = window.location.href.replace("Workspace", "logout");
+}
+
+function newNote() {
+
 }

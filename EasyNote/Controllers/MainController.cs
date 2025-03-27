@@ -253,7 +253,7 @@ namespace EasyNote.Controllers
 
             if (img != null)
                 return File(img, "image/jpeg");
-            return File("~/assets/user-solid.svg", "image/svg+xml");
+            return File("~/assets/profile_icon.png", "image/png");
         }
 
         public IActionResult Logout()
