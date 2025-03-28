@@ -1,0 +1,11 @@
+﻿input {
+    border: none;
+}
+
+    textarea:focus, input:focus {
+        outline: none;
+    }
+
+#title {
+    font-size: 35px;
+}

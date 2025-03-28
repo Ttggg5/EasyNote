@@ -1,6 +1,8 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@using EasyNote.DTOs;
+@model AllNotesDTO
 @{
     string id = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
     string name = User.Claims.First(claim => claim.Type == ClaimTypes.Name).Value;
@@ -32,7 +34,7 @@
             <input id="dropdown_cb" type="checkbox" onclick="dropdownClicked()"/>
             <label class="profile-block" for="dropdown_cb">
                 <div class="profile-info">
-                    <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { id = id })" />
+                    <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id })" />
                     <div class="profile-info-name">@name</div>
                 </div>
 
@@ -46,10 +48,18 @@
     <div class="main">
         <nav class="note-nav">
             <div>
-                <button class="new-note-btn" onclick="newNote">+ New</button>
+                <button class="new-note-btn" onclick="newNote('@(Url.Action("NewNote", "Main"))', '@(id)')">+ New</button>
                 <!--all user's note-->
-                <ul>
+                <ul id="note_list">
                     <!--example: "<li><a href="#">note 1</a></li>"-->
+                    @{
+                        foreach (Note note in Model.Notes)
+                        {
+                            if (note == null)
+                                continue;
+                            <li><a href="/Workspace?noteId=@note.NoteId">@note.NoteName</a></li>
+                        }
+                    }
                 </ul>
             </div>
 

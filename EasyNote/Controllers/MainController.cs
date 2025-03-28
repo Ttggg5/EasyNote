@@ -37,6 +37,9 @@ namespace EasyNote.Controllers
         [HttpPost]
         public IActionResult Login(LoginDTO loginDTO)
         {
+            if (User.Identity.IsAuthenticated)
+                return Redirect("/");
+
             User? user = (from a in _easyNoteContext.Users
                           where a.Account == loginDTO.Account
                           && a.Password == loginDTO.Password
@@ -61,12 +64,11 @@ namespace EasyNote.Controllers
             return Redirect("/Workspace");
         }
 
-        /// <summary>
-        /// 驗證 Google 登入授權
-        /// </summary>
-        /// <returns></returns>
         public async Task<IActionResult> GoogleLoginAsync()
         {
+            if (User.Identity.IsAuthenticated)
+                return Redirect("/");
+
             try
             {
                 string? formCredential = Request.Form["credential"]; //回傳憑證
@@ -130,13 +132,6 @@ namespace EasyNote.Controllers
             }
         }
 
-        /// <summary>
-        /// 驗證 Google Token
-        /// </summary>
-        /// <param Name="formCredential"></param>
-        /// <param Name="formToken"></param>
-        /// <param Name="cookiesToken"></param>
-        /// <returns></returns>
         public async Task<GoogleJsonWebSignature.Payload?> VerifyGoogleToken(string? formCredential, string? formToken, string? cookiesToken)
         {
             // 檢查空值
@@ -225,7 +220,7 @@ namespace EasyNote.Controllers
             return Redirect("/");
         }
 
-        public string GetNewUserId()
+        private string GetNewUserId()
         {
             string? id = (from a in _easyNoteContext.Users orderby a.Id select a.Id).LastOrDefault();
             if (id == null)
@@ -238,22 +233,116 @@ namespace EasyNote.Controllers
             return id;
         }
 
-        public IActionResult Workspace()
+        [HttpHead]
+        [HttpGet]
+        public IActionResult Workspace(string noteId)
         {
             if (!User.Identity.IsAuthenticated)
                 return Redirect("/");
-            return View();
+
+
+            return View("Workspace", new AllNotesDTO()
+            {
+                SelectedNoteId = noteId,
+                Notes = GetAllNotes(),
+            });
         }
 
-        public IActionResult ShowProfileImage(string id)
+        public IActionResult ShowProfileImage(string userId)
         {
             byte[]? img = (from a in _easyNoteContext.Users
-                          where a.Id == id
-                          select a.ProfileImage).SingleOrDefault();
+                           where a.Id == userId
+                           select a.ProfileImage).SingleOrDefault();
 
             if (img != null)
                 return File(img, "image/jpeg");
             return File("~/assets/profile_icon.png", "image/png");
+        }
+
+        private List<Note?> GetAllNotes()
+        {
+            string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+            List<Note?> notes = (from n in _easyNoteContext.Notes where n.UserId == userId select n).DefaultIfEmpty().ToList();
+            return notes;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> NewNote([FromBody] string userId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Json(new NoteCreateStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "User not login!",
+                    NoteId = "",
+                });
+
+            string? noteId = (from a in _easyNoteContext.Notes 
+                              where a.UserId == userId 
+                              orderby a.NoteId 
+                              select a.NoteId).LastOrDefault();
+            if (noteId == null)
+                noteId = "N000000001";
+            else
+            {
+                int num = Convert.ToInt32(noteId.Substring(1, noteId.Length - 1)) + 1;
+                noteId = "N" + num.ToString("000000000");
+            }
+
+            try
+            {
+                string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
+                if (!Path.Exists(noteFolderPath))
+                    Directory.CreateDirectory(noteFolderPath);
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "<input id=\"title\" placeholder=\"Untitled\"/>");
+
+                Note note = new Note()
+                {
+                    UserId = userId,
+                    NoteId = noteId,
+                    NoteName = "Untitled",
+                    CreateDate = DateTime.Now,
+                    LastEditDate = DateTime.Now,
+                };
+                _easyNoteContext.Notes.Add(note);
+                await _easyNoteContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Json(new NoteCreateStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Note not create correctly!",
+                    NoteId = "",
+                });
+            }
+
+            
+            return Json(new NoteCreateStatusDTO()
+            {
+                IsSuccessed = true,
+                ErrorMsg = "",
+                NoteId = noteId,
+            });
+        }
+
+        [HttpPost]
+        public IActionResult GetNote([FromBody] string noteId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+            Note? note = (from n in _easyNoteContext.Notes 
+                          where n.UserId == userId && n.NoteId == noteId 
+                          select n).FirstOrDefault();
+            if (note == null)
+                return Redirect("/");
+
+            return Json(new NoteContentDTO()
+            {
+                Content = System.IO.File.ReadAllText(Path.Combine("wwwroot/notes", note.UserId, note.NoteId + ".html")),
+            });
         }
 
         public IActionResult Logout()

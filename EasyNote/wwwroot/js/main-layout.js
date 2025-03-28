@@ -20,6 +20,20 @@ function logout() {
     window.location.href = window.location.href.replace("Workspace", "logout");
 }
 
-function newNote() {
-
+function newNote(url, id) {
+    fetch(url, {
+        method: "POST",
+        body: JSON.stringify(id),
+        headers: {
+            "Content-type": "application/json"
+        }
+    })
+        .then((response) => response.json())
+        .then((json) => {
+            if (json["isSuccessed"]) {
+                window.location.href = window.location.href + "?noteId=" + json["noteId"];
+            }
+            else
+                window.alert(json["errorMsg"]);
+        })
 }

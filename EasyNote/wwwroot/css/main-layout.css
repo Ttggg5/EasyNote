@@ -182,6 +182,8 @@ header {
     flex-direction: column;
     justify-content: space-between;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    grid-column-start: 1;
+    grid-column-end: 1;
 }
 
     .note-nav div {
@@ -202,7 +204,6 @@ header {
             .note-nav div ul li {
                 user-select: none;
                 display: flex;
-                padding: 10px;
                 border-radius: 10px;
             }
 
@@ -216,6 +217,9 @@ header {
                     font-weight: bold;
                     cursor: default;
                     text-decoration: unset;
+                    width: 100%;
+                    height: 100%;
+                    padding: 10px;
                 }
 
 .new-note-btn {
@@ -278,3 +282,10 @@ header {
     ::-webkit-scrollbar-thumb:hover {
         background: #373737;
     }
+
+main {
+    grid-column-start: 2;
+    width: 100%;
+    margin-top: 70px;
+    padding: 20px;
+}

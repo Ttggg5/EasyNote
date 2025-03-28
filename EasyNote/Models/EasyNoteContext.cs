@@ -15,6 +15,8 @@ public partial class EasyNoteContext : DbContext
 
     public virtual DbSet<Administrator> Administrators { get; set; }
 
+    public virtual DbSet<Note> Notes { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -34,6 +36,27 @@ public partial class EasyNoteContext : DbContext
                 .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Note>(entity =>
+        {
+            entity.HasKey(e => e.CreateDate);
+
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
+            entity.Property(e => e.LastEditDate).HasColumnType("datetime");
+            entity.Property(e => e.NoteId)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.NoteName)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.UserId)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .IsFixedLength();
         });
 
         modelBuilder.Entity<User>(entity =>
