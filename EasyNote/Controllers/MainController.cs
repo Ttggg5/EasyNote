@@ -270,7 +270,7 @@ namespace EasyNote.Controllers
         public async Task<IActionResult> NewNote([FromBody] string userId)
         {
             if (!User.Identity.IsAuthenticated)
-                return Json(new NoteCreateStatusDTO()
+                return Json(new NoteStatusDTO()
                 {
                     IsSuccessed = false,
                     ErrorMsg = "User not login!",
@@ -309,7 +309,7 @@ namespace EasyNote.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new NoteCreateStatusDTO()
+                return Json(new NoteStatusDTO()
                 {
                     IsSuccessed = false,
                     ErrorMsg = "Note not create correctly!",
@@ -318,7 +318,7 @@ namespace EasyNote.Controllers
             }
 
             
-            return Json(new NoteCreateStatusDTO()
+            return Json(new NoteStatusDTO()
             {
                 IsSuccessed = true,
                 ErrorMsg = "",
@@ -341,8 +341,61 @@ namespace EasyNote.Controllers
 
             return Json(new NoteContentDTO()
             {
+                UserId = userId,
+                NoteId = noteId,
+                NoteName = note.NoteName,
                 Content = System.IO.File.ReadAllText(Path.Combine("wwwroot/notes", note.UserId, note.NoteId + ".html")),
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditNote([FromBody] NoteContentDTO noteContentDTO)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                Note? note = (from n in _easyNoteContext.Notes
+                              where n.UserId == noteContentDTO.UserId && n.NoteId == noteContentDTO.NoteId
+                              select n).FirstOrDefault();
+                if (note == null)
+                    return Json(new NoteStatusDTO()
+                    {
+                        IsSuccessed = false,
+                        ErrorMsg = "Note not found!",
+                        NoteId = noteContentDTO.NoteId,
+                    });
+
+            
+                string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", noteContentDTO.UserId);
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteContentDTO.NoteId + ".html", noteContentDTO.Content);
+
+                if (!note.NoteName.Equals(noteContentDTO.NoteName))
+                {
+                    note.NoteName = noteContentDTO.NoteName;
+                    note.LastEditDate = DateTime.Now;
+
+                    _easyNoteContext.Notes.Update(note);
+                    await _easyNoteContext.SaveChangesAsync();
+                }
+
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = true,
+                    ErrorMsg = "",
+                    NoteId = noteContentDTO.NoteId,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknowned error!",
+                    NoteId = noteContentDTO.NoteId,
+                });
+            }
         }
 
         public IActionResult Logout()

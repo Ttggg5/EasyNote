@@ -5,20 +5,26 @@
 @model AllNotesDTO
 @{
     string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+    string selectedNoteId = Model.SelectedNoteId;
 }
 
 <link rel="stylesheet" href="~/css/workspace.css" />
 
-@if (Model != null)
-{
-    <div id="main"></div>
-}
-else
-{
-    <h1>Welcome @User.Claims.First(claim => claim.Type == ClaimTypes.Name).Value</h1>
-}
+<div id="main">
+    @if (Model.SelectedNoteId != null)
+    {
+        <script src="~/js/workspace.js"></script>
+        <script>
+            showNote('@userId', '@selectedNoteId');
+            StartAutoSave('@userId', '@selectedNoteId');
+        </script>
+    }
+    else
+    {
+        <h1>Welcome @User.Claims.First(claim => claim.Type == ClaimTypes.Name).Value</h1>
+    }
+</div>
 
-<script src="~/js/workspace.js"></script>
-<script>
-    showNote('@userId', '@Model.SelectedNoteId');
-</script>
+<div id="contextmenu">
+    
+</div>

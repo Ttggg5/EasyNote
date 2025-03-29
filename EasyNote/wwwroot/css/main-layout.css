@@ -165,30 +165,29 @@ header {
     color: indianred;
 }
 
-.main {
-    display: grid;
-    position: absolute;
-    grid-template-columns: 180px auto;
-    grid-template-rows: 1fr;
-    height: 100%;
-}
-
-.note-nav {
+.main-body {
     position: absolute;
     display: flex;
     width: 100%;
+    height: 100%;
+    flex-direction: row;
+}
+
+.note-nav {
+    display: flex;
+    width: 250px;
+    max-width: 250px;
     height: 100%;
     background: #4f4f4f;
     flex-direction: column;
     justify-content: space-between;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
-    grid-column-start: 1;
-    grid-column-end: 1;
 }
 
     .note-nav div {
         display: flex;
         flex-direction: column;
+        width: 100%;
         height: 100%;
     }
 
@@ -198,13 +197,15 @@ header {
             margin-top: 10px;
             width: 100%;
             height: 60%;
-            overflow: auto;
+            overflow-x: clip;
+            overflow-y: auto;
         }
 
             .note-nav div ul li {
                 user-select: none;
                 display: flex;
                 border-radius: 10px;
+                overflow: clip;
             }
 
                 .note-nav div ul li:hover {
@@ -220,6 +221,7 @@ header {
                     width: 100%;
                     height: 100%;
                     padding: 10px;
+                    overflow: clip;
                 }
 
 .new-note-btn {
@@ -284,8 +286,6 @@ header {
     }
 
 main {
-    grid-column-start: 2;
     width: 100%;
     margin-top: 70px;
-    padding: 20px;
 }

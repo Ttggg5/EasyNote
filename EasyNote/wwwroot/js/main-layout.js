@@ -25,7 +25,7 @@ function newNote(url, id) {
         method: "POST",
         body: JSON.stringify(id),
         headers: {
-            "Content-type": "application/json"
+            "Content-type": "application/json; charset=UTF-8"
         }
     })
         .then((response) => response.json())
