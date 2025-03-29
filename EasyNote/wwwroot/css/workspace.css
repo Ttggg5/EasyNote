@@ -7,8 +7,10 @@
     }
 
 #title {
+    width: 100%;
     font-size: 35px;
     font-weight: bold;
+    overflow-wrap: break-word;
 }
 
 #main {

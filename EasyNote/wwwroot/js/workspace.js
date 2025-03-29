@@ -40,30 +40,44 @@ function showNote(userId, noteId) {
         }
     })
         .then((response) => response.json())
-        .then((json) => { document.getElementById("main").innerHTML = json["content"] })
+        .then((json) => {
+            document.getElementById("main").innerHTML = json["content"];
+            startAutoSave(userId, noteId);
+        })
 }
 
-function StartAutoSave(userId, noteId) {
-    var intervalID = setInterval(function () {
-        if (previousContent != document.getElementById("main").innerHTML) {
-            previousContent = (" " + document.getElementById("main").innerHTML).slice(1); // deep copy
+function startAutoSave(userId, noteId) {
+    config = {
+        attributes: true,
+        subtree: true,
+        childList: true,
+        characterData: true,
+    }
 
-            fetch("/Main/EditNote", {
-                method: "POST",
-                body: JSON.stringify({
-                    UserId: userId,
-                    NoteId: noteId,
-                    NoteName: document.getElementById("title").innerText,
-                    Content: previousContent,
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
+    const observer = new MutationObserver((mutationsList, observer) => {
+        fetch("/Main/EditNote", {
+            method: "POST",
+            body: JSON.stringify({
+                UserId: userId,
+                NoteId: noteId,
+                NoteName: document.getElementById("title").innerText,
+                Content: document.getElementById("main").innerHTML,
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                console.log(json);
             })
-                .then((response) => response.json())
-                .then((json) => {
-                    console.log(json);
-                })
-        }
-    }, 1000);
+    });
+
+    observer.observe(document.getElementById("main"), config);
+
+    const titleObserver = new MutationObserver((mutationsList, observer) => {
+        document.getElementById(noteId).innerText = document.getElementById("title").innerText;
+    });
+
+    titleObserver.observe(document.getElementById("title"), config);
 }

@@ -294,7 +294,7 @@ namespace EasyNote.Controllers
                 string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
                 if (!Path.Exists(noteFolderPath))
                     Directory.CreateDirectory(noteFolderPath);
-                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "<input id=\"title\" placeholder=\"Untitled\"/>");
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "<div id=\"title\" contenteditable=\"true\">Untitled</div>");
 
                 Note note = new Note()
                 {
@@ -306,6 +306,13 @@ namespace EasyNote.Controllers
                 };
                 _easyNoteContext.Notes.Add(note);
                 await _easyNoteContext.SaveChangesAsync();
+
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = true,
+                    ErrorMsg = "",
+                    NoteId = noteId,
+                });
             }
             catch (Exception ex)
             {
@@ -316,14 +323,6 @@ namespace EasyNote.Controllers
                     NoteId = "",
                 });
             }
-
-            
-            return Json(new NoteStatusDTO()
-            {
-                IsSuccessed = true,
-                ErrorMsg = "",
-                NoteId = noteId,
-            });
         }
 
         [HttpPost]

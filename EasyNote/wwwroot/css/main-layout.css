@@ -174,14 +174,16 @@ header {
 }
 
 .note-nav {
+    position: absolute;
     display: flex;
-    width: 250px;
+    width: 200px;
     max-width: 250px;
     height: 100%;
     background: #4f4f4f;
     flex-direction: column;
     justify-content: space-between;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    z-index: 1;
 }
 
     .note-nav div {
@@ -286,6 +288,10 @@ header {
     }
 
 main {
+    position: absolute;
     width: 100%;
-    margin-top: 70px;
+    height: 100%;
+    padding-top: 70px;
+    padding-left: 200px;
+    z-index: 0;
 }
