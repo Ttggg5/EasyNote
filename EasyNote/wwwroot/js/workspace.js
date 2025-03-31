@@ -41,7 +41,9 @@ function showNote(userId, noteId) {
     })
         .then((response) => response.json())
         .then((json) => {
+            document.getElementById("title").value = json["noteName"];
             document.getElementById("main").innerHTML = json["content"];
+            document.getElementById(json["noteId"]).style.background = "#656565ff"; // show as selected
             startAutoSave(userId, noteId);
         })
 }
@@ -54,30 +56,40 @@ function startAutoSave(userId, noteId) {
         characterData: true,
     }
 
+    document.getElementById("title").addEventListener("change", (event) => {
+        document.getElementById(noteId).innerText = document.getElementById("title").value;
+        sendEditRequest(userId, noteId);
+    });
+
     const observer = new MutationObserver((mutationsList, observer) => {
-        fetch("/Main/EditNote", {
-            method: "POST",
-            body: JSON.stringify({
-                UserId: userId,
-                NoteId: noteId,
-                NoteName: document.getElementById("title").innerText,
-                Content: document.getElementById("main").innerHTML,
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-            .then((response) => response.json())
-            .then((json) => {
-                console.log(json);
-            })
+        sendEditRequest(userId, noteId);
     });
 
     observer.observe(document.getElementById("main"), config);
+}
 
-    const titleObserver = new MutationObserver((mutationsList, observer) => {
-        document.getElementById(noteId).innerText = document.getElementById("title").innerText;
-    });
+function sendEditRequest(userId, noteId) {
+    fetch("/Main/EditNote", {
+        method: "POST",
+        body: JSON.stringify({
+            UserId: userId,
+            NoteId: noteId,
+            NoteName: document.getElementById("title").value,
+            Content: document.getElementById("main").innerHTML,
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
+        .then((response) => response.json())
+        .then((json) => {
+            console.log(json);
+        })
+}
 
-    titleObserver.observe(document.getElementById("title"), config);
+function newBlock(sneder) {
+    const newNode = document.createElement("div");
+    newNode.contentEditable = "true";
+    newNode.className = "content-block";
+    document.getElementById("main").insertBefore(newNode, sneder);
 }

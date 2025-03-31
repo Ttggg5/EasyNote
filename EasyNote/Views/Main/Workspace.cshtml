@@ -10,6 +10,7 @@
 
 <link rel="stylesheet" href="~/css/workspace.css" />
 
+<input id="title" placeholder="Untitled"/>
 <div id="main">
     @if (Model.SelectedNoteId != null)
     {
@@ -20,6 +21,9 @@
     }
     else
     {
+        <script>
+            document.getElementById("title").style.display = "none";
+        </script>
         <h1>Welcome @User.Claims.First(claim => claim.Type == ClaimTypes.Name).Value</h1>
     }
 </div>

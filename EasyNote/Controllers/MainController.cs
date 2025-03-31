@@ -294,7 +294,7 @@ namespace EasyNote.Controllers
                 string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
                 if (!Path.Exists(noteFolderPath))
                     Directory.CreateDirectory(noteFolderPath);
-                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "<div id=\"title\" contenteditable=\"true\">Untitled</div>");
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "");
 
                 Note note = new Note()
                 {
@@ -371,13 +371,11 @@ namespace EasyNote.Controllers
                 System.IO.File.WriteAllText(noteFolderPath + "/" + noteContentDTO.NoteId + ".html", noteContentDTO.Content);
 
                 if (!note.NoteName.Equals(noteContentDTO.NoteName))
-                {
                     note.NoteName = noteContentDTO.NoteName;
-                    note.LastEditDate = DateTime.Now;
+                note.LastEditDate = DateTime.Now;
 
-                    _easyNoteContext.Notes.Update(note);
-                    await _easyNoteContext.SaveChangesAsync();
-                }
+                _easyNoteContext.Notes.Update(note);
+                await _easyNoteContext.SaveChangesAsync();
 
                 return Json(new NoteStatusDTO()
                 {

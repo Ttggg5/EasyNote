@@ -23,6 +23,7 @@
   <ItemGroup>
     <Folder Include="Migrations\" />
     <Folder Include="wwwroot\notes\" />
+    <Folder Include="wwwroot\notes\U000000002\" />
   </ItemGroup>
 
 </Project>
