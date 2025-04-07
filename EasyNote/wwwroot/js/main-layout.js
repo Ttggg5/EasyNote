@@ -11,6 +11,10 @@ document.getElementsByClassName("main-body")[0].addEventListener("mousedown", ev
     }
 });
 
+function iconClicked() {
+    window.location.href = '/Workspace';
+}
+
 function dropdownClicked() {
     if (dropdownCb.checked) showDropdown();
     else hideDropdown();
@@ -41,7 +45,7 @@ function newNote(url, id) {
         .then((response) => response.json())
         .then((json) => {
             if (json["isSuccessed"]) {
-                window.location.href = window.location.href + "?noteId=" + json["noteId"];
+                window.location.href = "/Workspace?noteId=" + json["noteId"];
             }
             else
                 window.alert(json["errorMsg"]);

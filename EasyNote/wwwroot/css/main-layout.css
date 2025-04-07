@@ -19,12 +19,14 @@ header {
     display: flex;
     margin-left: 30px;
     align-items: center;
+    cursor: pointer;
 }
 
     .icon img {
         width: 40px;
         height: 40px;
         border-radius: 8px;
+        user-select: none;
     }
 
     .icon div {
@@ -32,6 +34,7 @@ header {
         font-weight: bold;
         margin-left: 10px;
         font-size: 23px;
+        user-select: none;
     }
 
 #dropdown_cb {

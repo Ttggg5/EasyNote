@@ -298,7 +298,8 @@ namespace EasyNote.Controllers
                 string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
                 if (!Path.Exists(noteFolderPath))
                     Directory.CreateDirectory(noteFolderPath);
-                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "");
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", 
+                    "<div id=\"note\"><button id=\"new_block_btn\" onclick=\"newBlock(this);\">+ Line</button></div>");
 
                 Note note = new Note()
                 {
