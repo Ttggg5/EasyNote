@@ -5,15 +5,25 @@ const dropdownItems = document.getElementById("profile-block-dropdown-items");
 dropdownItems.style.animation = "dropdown-items-hide 0s forwards";
 dropdownItems.style.display = "unset";
 
+document.getElementsByClassName("main-body")[0].addEventListener("mousedown", event => {
+    if (event.button == 0) { // left button
+        hideDropdown();
+    }
+});
+
 function dropdownClicked() {
-    if (dropdownCb.checked) {
-        dropdownIcon.style.animation = "dropdown-img-rotate 0.3s forwards";
-        dropdownItems.style.animation = "dropdown-items-show 0.3s forwards";
-    }
-    else {
-        dropdownIcon.style.animation = "dropdown-img-rotate-reverse 0.3s forwards";
-        dropdownItems.style.animation = "dropdown-items-hide 0.3s forwards";
-    }
+    if (dropdownCb.checked) showDropdown();
+    else hideDropdown();
+}
+
+function showDropdown() {
+    dropdownIcon.style.animation = "dropdown-img-rotate 0.3s forwards";
+    dropdownItems.style.animation = "dropdown-items-show 0.3s forwards";
+}
+
+function hideDropdown() {
+    dropdownIcon.style.animation = "dropdown-img-rotate-reverse 0.3s forwards";
+    dropdownItems.style.animation = "dropdown-items-hide 0.3s forwards";
 }
 
 function logout() {

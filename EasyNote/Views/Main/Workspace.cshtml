@@ -10,6 +10,15 @@
 
 <link rel="stylesheet" href="~/css/workspace.css" />
 
+<div id="contextmenu_page" class="custom-contextmenu">
+</div>
+
+<div id="contextmenu_content_block" class="custom-contextmenu" target-id="">
+    <ul>
+        <li id="delete_line">Delete line</li>
+    </ul>
+</div>
+
 <input id="title" placeholder="Untitled"/>
 <div id="main">
     @if (Model.SelectedNoteId != null)
@@ -26,8 +35,4 @@
         </script>
         <h1>Welcome @User.Claims.First(claim => claim.Type == ClaimTypes.Name).Value</h1>
     }
-</div>
-
-<div id="contextmenu">
-    
 </div>

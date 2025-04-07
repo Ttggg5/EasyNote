@@ -366,7 +366,6 @@ namespace EasyNote.Controllers
                         NoteId = noteContentDTO.NoteId,
                     });
 
-            
                 string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", noteContentDTO.UserId);
                 System.IO.File.WriteAllText(noteFolderPath + "/" + noteContentDTO.NoteId + ".html", noteContentDTO.Content);
 
