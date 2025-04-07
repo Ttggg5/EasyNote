@@ -19,13 +19,14 @@
     </ul>
 </div>
 
-<input id="title" placeholder="Untitled"/>
 <div id="main">
+    <input id="title" placeholder="Untitled" />
     @if (Model.SelectedNoteId != null)
     {
         <script src="~/js/workspace.js"></script>
         <script>
-            showNote('@userId', '@selectedNoteId');
+            setInfo('@userId', '@selectedNoteId');
+            showNote();
         </script>
     }
     else

@@ -9,6 +9,10 @@ using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using static System.Net.Mime.MediaTypeNames;
+using HtmlAgilityPack;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Reflection.Metadata;
+using System.Threading.Tasks.Dataflow;
 
 namespace EasyNote.Controllers
 {
@@ -348,7 +352,7 @@ namespace EasyNote.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditNote([FromBody] NoteContentDTO noteContentDTO)
+        public async Task<IActionResult> EditNote([FromBody] NoteEditDTO noteEditDTO)
         {
             if (!User.Identity.IsAuthenticated)
                 return Redirect("/");
@@ -356,21 +360,49 @@ namespace EasyNote.Controllers
             try
             {
                 Note? note = (from n in _easyNoteContext.Notes
-                              where n.UserId == noteContentDTO.UserId && n.NoteId == noteContentDTO.NoteId
+                              where n.UserId == noteEditDTO.UserId && n.NoteId == noteEditDTO.NoteId
                               select n).FirstOrDefault();
                 if (note == null)
                     return Json(new NoteStatusDTO()
                     {
                         IsSuccessed = false,
                         ErrorMsg = "Note not found!",
-                        NoteId = noteContentDTO.NoteId,
+                        NoteId = noteEditDTO.NoteId,
                     });
 
-                string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", noteContentDTO.UserId);
-                System.IO.File.WriteAllText(noteFolderPath + "/" + noteContentDTO.NoteId + ".html", noteContentDTO.Content);
+                HtmlDocument htmlDocument = new HtmlDocument();
+                string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", noteEditDTO.UserId);
+                htmlDocument.Load(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                switch (Enum.Parse(typeof(NoteEditType), noteEditDTO.EditType))
+                {
+                    case NoteEditType.Name:
+                        note.NoteName = noteEditDTO.NoteName;
+                        break;
+                    case NoteEditType.Content:
+                        HtmlNode contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
+                        if (contentBlock == null)
+                            throw new Exception();
 
-                if (!note.NoteName.Equals(noteContentDTO.NoteName))
-                    note.NoteName = noteContentDTO.NoteName;
+                        contentBlock.ChildNodes[1].InnerHtml = noteEditDTO.Content;
+                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                        break;
+                    case NoteEditType.AddContentBlock:
+                        if (!noteEditDTO.ContentBlockId.StartsWith("CB"))
+                            throw new Exception();
+
+                        contentBlock = CreateContentBlock(noteEditDTO.ContentBlockId);
+                        htmlDocument.GetElementbyId("note").InsertBefore(contentBlock, htmlDocument.GetElementbyId("new_block_btn"));
+                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                        break;
+                    case NoteEditType.DeleteContentBlock:
+                        contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
+                        if (contentBlock == null)
+                            throw new Exception();
+
+                        contentBlock.Remove();
+                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                        break;
+                }
                 note.LastEditDate = DateTime.Now;
 
                 _easyNoteContext.Notes.Update(note);
@@ -380,7 +412,7 @@ namespace EasyNote.Controllers
                 {
                     IsSuccessed = true,
                     ErrorMsg = "",
-                    NoteId = noteContentDTO.NoteId,
+                    NoteId = noteEditDTO.NoteId,
                 });
             }
             catch (Exception ex)
@@ -389,9 +421,39 @@ namespace EasyNote.Controllers
                 {
                     IsSuccessed = false,
                     ErrorMsg = "Unknowned error!",
-                    NoteId = noteContentDTO.NoteId,
+                    NoteId = noteEditDTO.NoteId,
                 });
             }
+        }
+
+        private HtmlNode CreateContentBlock(string id)
+        {
+            HtmlDocument document = new HtmlDocument();
+            document.OptionUseIdAttribute = true;
+
+            HtmlNode contentBlock = document.CreateElement("div");
+            contentBlock.AddClass("content-block");
+            contentBlock.SetAttributeValue("id", id);
+            contentBlock.SetAttributeValue("tabindex", "-1");
+
+            HtmlNode dragBlock = document.CreateElement("div");
+            dragBlock.AddClass("drag-block");
+            dragBlock.InnerHtml = "<img src=\"/assets/bars-solid.svg\"/>";
+
+            HtmlNode content = document.CreateElement("div");
+            content.SetAttributeValue("contenteditable", "true");
+            content.AddClass("content");
+
+            HtmlNode optionBlock = document.CreateElement("div");
+            optionBlock.AddClass("option-block");
+            optionBlock.InnerHtml = "<img src=\"/assets/ellipsis-vertical-solid.svg\"/>";
+            optionBlock.SetAttributeValue("onclick", "showOptions(this)");
+
+            contentBlock.AppendChild(dragBlock);
+            contentBlock.AppendChild(content);
+            contentBlock.AppendChild(optionBlock);
+
+            return contentBlock;
         }
 
         public IActionResult Logout()

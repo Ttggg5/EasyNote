@@ -1,4 +1,7 @@
-﻿document.addEventListener('contextmenu', event => event.preventDefault());
+﻿const userId = "";
+const noteId = "";
+
+document.addEventListener('contextmenu', event => event.preventDefault());
 
 document.getElementById("main").addEventListener("mousedown", event => {
     if (event.button == 2) // right button
@@ -15,6 +18,7 @@ document.getElementsByClassName("main-body")[0].addEventListener("mousedown", ev
 document.getElementById("delete_line").addEventListener("mousedown", event => {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     document.getElementById(targetId).remove();
+    sendEditRequest("DeleteContentBlock", "", targetId, "");
 });
 
 function showContextmenu(target) {
@@ -34,13 +38,18 @@ function hideContextmenu(target) {
     target.style.display = "none";
 }
 
-function showNote(userId, noteId) {
-    if (userId == "" || noteId == "")
+function setInfo(userId, noteId) {
+    this.userId = userId;
+    this.noteId = noteId;
+}
+
+function showNote() {
+    if (this.userId == "" || this.noteId == "")
         return;
 
     fetch("/Main/GetNote", {
         method: "POST",
-        body: JSON.stringify(noteId),
+        body: JSON.stringify(this.noteId),
         headers: {
             "Content-type": "application/json"
         }
@@ -48,13 +57,13 @@ function showNote(userId, noteId) {
         .then((response) => response.json())
         .then((json) => {
             document.getElementById("title").value = json["noteName"];
-            document.getElementById("main").innerHTML = json["content"];
+            document.getElementById("main").insertAdjacentHTML("beforeend", json["content"]);
             document.getElementById(json["noteId"]).style.background = "#656565ff"; // show as selected
-            startAutoSave(userId, noteId);
+            startAutoSave();
         })
 }
 
-function startAutoSave(userId, noteId) {
+function startAutoSave() {
     config = {
         attributes: true,
         subtree: true,
@@ -63,25 +72,36 @@ function startAutoSave(userId, noteId) {
     }
 
     document.getElementById("title").addEventListener("change", (event) => {
-        document.getElementById(noteId).innerText = document.getElementById("title").value;
-        sendEditRequest(userId, noteId);
+        const noteName = document.getElementById("title").value;
+        document.getElementById(this.noteId).innerText = noteName;
+        sendEditRequest("Name", noteName, "", "");
     });
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        sendEditRequest(userId, noteId);
+        var targetNode = mutationsList[0].target;
+        try {
+            while (targetNode.parentNode.className != "content-block") {
+                targetNode = targetNode.parentNode;
+            }
+        } catch(error) {
+            return;
+        }
+        sendEditRequest("Content", "", targetNode.parentNode.id, targetNode.innerHTML);
     });
 
     observer.observe(document.getElementById("main"), config);
 }
 
-function sendEditRequest(userId, noteId) {
+function sendEditRequest(editType, noteName, contentBlockId, content) {
     fetch("/Main/EditNote", {
         method: "POST",
         body: JSON.stringify({
-            UserId: userId,
-            NoteId: noteId,
-            NoteName: document.getElementById("title").value,
-            Content: document.getElementById("main").innerHTML,
+            UserId: this.userId,
+            NoteId: this.noteId,
+            EditType: editType,
+            NoteName: noteName,
+            ContentBlockId: contentBlockId,
+            Content: content,
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -89,7 +109,7 @@ function sendEditRequest(userId, noteId) {
     })
         .then((response) => response.json())
         .then((json) => {
-            console.log(json);
+            //console.log(json);
         })
 }
 
@@ -119,7 +139,9 @@ function newBlock(sneder) {
     contentBlock.appendChild(content);
     contentBlock.appendChild(optionBlock);
 
-    document.getElementById("main").insertBefore(contentBlock, sneder);
+    document.getElementById("note").insertBefore(contentBlock, sneder);
+
+    sendEditRequest("AddContentBlock", "", id, "");
 }
 
 function showOptions(sender) {
