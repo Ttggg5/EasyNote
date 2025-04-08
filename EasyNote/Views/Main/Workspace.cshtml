@@ -14,16 +14,14 @@
 </div>
 
 <div id="contextmenu_content_block" class="custom-contextmenu" target-id="">
-    <ul>
-        <li id="delete_line">Delete line</li>
-    </ul>
+    <div id="delete_line"><i class="bi bi-trash-fill"></i>Delete line</div>
 </div>
 
 <div id="main">
     <input id="title" placeholder="Untitled" />
+    <script src="~/js/workspace.js"></script>
     @if (Model.SelectedNoteId != null)
     {
-        <script src="~/js/workspace.js"></script>
         <script>
             setInfo('@userId', '@selectedNoteId');
             showNote();

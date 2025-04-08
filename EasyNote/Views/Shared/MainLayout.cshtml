@@ -26,9 +26,9 @@
         
         <div>
             <ul id="profile-block-dropdown-items">
-                <li>Profile</li>
-                <li>Setting</li>
-                <li id="profile-block-dropdown-items-logout" onclick="logout()">Logout</li>
+                <li><i class="bi bi-person"></i>Profile</li>
+                <li><i class="bi bi-gear"></i>Setting</li>
+                <li id="profile-block-dropdown-items-logout" onclick="logout()"><i class="bi bi-box-arrow-right"></i>Logout</li>
             </ul>
 
             <input id="dropdown_cb" type="checkbox" onclick="dropdownClicked()"/>
@@ -57,7 +57,14 @@
                         {
                             if (note == null)
                                 continue;
-                            <li><a id="@note.NoteId" href="/Workspace?noteId=@note.NoteId">@note.NoteName</a></li>
+                            <li>
+                                <a id="@note.NoteId" href="/Workspace?noteId=@note.NoteId" draggable="false">@note.NoteName</a>
+                                
+                                <div class="note-nav-options">
+                                    <i class="bi bi-pencil-square" title="Rename" onclick="renameNote('@id', '@note.NoteId', '@note.NoteName');"></i>
+                                    <i class="bi bi-trash-fill" title="Delete" onclick="deleteNote('@note.NoteId', '@note.NoteName');"></i>
+                                </div>
+                            </li>
                         }
                     }
                 </ul>

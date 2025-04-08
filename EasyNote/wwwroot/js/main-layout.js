@@ -51,3 +51,57 @@ function newNote(url, id) {
                 window.alert(json["errorMsg"]);
         })
 }
+
+function renameNote(userId, noteId, noteName) {
+    var result = prompt("Rename", noteName);
+    if (result != null) {
+        fetch("/Main/EditNote", {
+            method: "POST",
+            body: JSON.stringify({
+                UserId: userId,
+                NoteId: noteId,
+                EditType: "Name",
+                NoteName: result,
+                ContentBlockId: "",
+                Content: "",
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                // apply new name in note list
+                document.getElementById(json["noteId"]).innerHTML = result;
+
+                // apply new name in title input if current page is showing the same note
+                var urlParameter = new URL(window.location.href).searchParams.get("noteId");
+                if (urlParameter != null && urlParameter == json["noteId"])
+                    document.getElementById("title").value = result
+            })
+    }
+}
+
+function deleteNote(noteId, noteName) {
+    if (confirm("Are you sure you want to delete \"" + noteName + "\"")) {
+        fetch("/DeleteNote", {
+            method: "POST",
+            body: JSON.stringify(noteId),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                if (json["isSuccessed"]) {
+                    var urlParameter = new URL(window.location.href).searchParams.get("noteId");
+                    if (urlParameter != null && urlParameter == json["noteId"])
+                        window.location.href = "/Workspace";
+                    else
+                        document.getElementById(json["noteId"]).parentElement.remove();
+                }
+                else
+                    window.alert(json["errorMsg"]);
+            })
+    }
+}

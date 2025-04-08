@@ -439,7 +439,7 @@ namespace EasyNote.Controllers
 
             HtmlNode dragBlock = document.CreateElement("div");
             dragBlock.AddClass("drag-block");
-            dragBlock.InnerHtml = "<img src=\"/assets/bars-solid.svg\"/>";
+            dragBlock.InnerHtml = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
 
             HtmlNode content = document.CreateElement("div");
             content.SetAttributeValue("contenteditable", "true");
@@ -447,7 +447,7 @@ namespace EasyNote.Controllers
 
             HtmlNode optionBlock = document.CreateElement("div");
             optionBlock.AddClass("option-block");
-            optionBlock.InnerHtml = "<img src=\"/assets/ellipsis-vertical-solid.svg\"/>";
+            optionBlock.InnerHtml = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
             optionBlock.SetAttributeValue("onclick", "showOptions(this)");
 
             contentBlock.AppendChild(dragBlock);
@@ -455,6 +455,48 @@ namespace EasyNote.Controllers
             contentBlock.AppendChild(optionBlock);
 
             return contentBlock;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteNote([FromBody] string noteId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "You are not login!",
+                    NoteId = noteId,
+                });
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                Note? note = (from n in _easyNoteContext.Notes
+                              where n.UserId == userId && n.NoteId == noteId
+                              select n).FirstOrDefault();
+
+                _easyNoteContext.Notes.Remove(note);
+                await _easyNoteContext.SaveChangesAsync();
+
+                string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
+                System.IO.File.Delete(noteFolderPath + "/" + noteId + ".html");
+
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = true,
+                    ErrorMsg = "",
+                    NoteId = noteId,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                    NoteId = noteId,
+                });
+            }
         }
 
         public IActionResult Logout()

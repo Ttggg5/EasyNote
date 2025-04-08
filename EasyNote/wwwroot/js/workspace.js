@@ -58,7 +58,7 @@ function showNote() {
         .then((json) => {
             document.getElementById("title").value = json["noteName"];
             document.getElementById("main").insertAdjacentHTML("beforeend", json["content"]);
-            document.getElementById(json["noteId"]).style.background = "#656565ff"; // show as selected
+            document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
             startAutoSave();
         })
 }
@@ -124,7 +124,7 @@ function newBlock(sneder) {
 
     const dragBlock = document.createElement("div");
     dragBlock.className = "drag-block";
-    dragBlock.innerHTML = "<img src=\"/assets/bars-solid.svg\"/>";
+    dragBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
 
     const content = document.createElement("div");
     content.contentEditable = "true";
@@ -132,7 +132,7 @@ function newBlock(sneder) {
 
     const optionBlock = document.createElement("div");
     optionBlock.className = "option-block";
-    optionBlock.innerHTML = "<img src=\"/assets/ellipsis-vertical-solid.svg\"/>";
+    optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
     optionBlock.setAttribute("onclick", "showOptions(this)");
 
     contentBlock.appendChild(dragBlock);

@@ -138,24 +138,32 @@
 }
 
 #contextmenu_content_block {
-    width: 100px;
+    width: 150px;
     height: auto;
+    flex-direction: column;
+    padding: 10px 5px;
+    justify-content: center;
+    align-items: center;
 }
 
-    #contextmenu_content_block ul {
+    #contextmenu_content_block div {
         list-style-type: none;
         padding: 5px;
         user-select: none;
+        border-radius: 5px;
+        padding: 5px;
     }
-        #contextmenu_content_block ul li {
-            border-radius: 5px;
-            padding: 5px;
-        }
 
-            #contextmenu_content_block ul li:hover {
-                background: #858585ff;
-            }
+    #contextmenu_content_block div:hover {
+        background: #515151;
+    }
+
+    #contextmenu_content_block div i {
+        margin-right: 5px;
+    }
 
 #delete_line {
     color: indianred;
+    text-align: center;
+    width: 100%;
 }
