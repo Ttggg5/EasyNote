@@ -8,9 +8,14 @@
     string selectedNoteId = Model.SelectedNoteId;
 }
 
+<link rel="stylesheet" href="~/css/text-style.css" />
 <link rel="stylesheet" href="~/css/workspace.css" />
 
 <div id="contextmenu_page" class="custom-contextmenu">
+    <div title="Bold" onclick="changeSelectedTextStyle('text-weight-bold');"><i class="bi bi-type-bold"></i></div>
+    <div title="Italicize" onclick="changeSelectedTextStyle('text-italicize');"><i class="bi bi-type-italic"></i></div>
+    <div title="Underline" onclick="changeSelectedTextStyle('text-underline');"><i class="bi bi-type-underline"></i></div>
+    <div title="Line through" onclick="changeSelectedTextStyle('text-line-through');"><i class="bi bi-type-strikethrough"></i></div>
 </div>
 
 <div id="contextmenu_content_block" class="custom-contextmenu" target-id="">

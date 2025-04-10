@@ -134,8 +134,22 @@
 
 #contextmenu_page {
     width: 150px;
-    height: 200px;
+    height: auto;
+    padding: 10px;
+    justify-content: space-between;
 }
+
+    #contextmenu_page div {
+        list-style-type: none;
+        padding: 5px;
+        user-select: none;
+        border-radius: 5px;
+        padding: 5px;
+    }
+
+        #contextmenu_page div:hover {
+            background: #515151;
+        }
 
 #contextmenu_content_block {
     width: 150px;
@@ -166,4 +180,9 @@
     color: indianred;
     text-align: center;
     width: 100%;
+}
+
+/*this is to fix bootstrap icon not vertically aligned*/
+.bi {
+    vertical-align: 0.125em;
 }

@@ -1,25 +1,32 @@
 ﻿const userId = "";
 const noteId = "";
 
-document.addEventListener('contextmenu', event => event.preventDefault());
+rangy.init();
 
-document.getElementById("main").addEventListener("mousedown", event => {
-    if (event.button == 2) // right button
-        showContextmenu(document.getElementById("contextmenu_page"));
+document.addEventListener('contextmenu', event => {
+    event.preventDefault();
 });
 
-document.getElementsByClassName("main-body")[0].addEventListener("mousedown", event => {
+document.getElementById("main").addEventListener("mousedown", event => {
     if (event.button == 0) { // left button
         hideContextmenu(document.getElementById("contextmenu_page"));
         hideContextmenu(document.getElementById("contextmenu_content_block"));
     }
+    else if (event.button == 2) // right button
+        showContextmenu(document.getElementById("contextmenu_page"))
 });
 
-document.getElementById("delete_line").addEventListener("mousedown", event => {
+document.getElementById("delete_line").addEventListener("click", event => {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     document.getElementById(targetId).remove();
     sendEditRequest("DeleteContentBlock", "", targetId, "");
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
 });
+
+function changeSelectedTextStyle(className) {
+    var classApplier = rangy.createClassApplier(className);
+    classApplier.toggleSelection();
+}
 
 function showContextmenu(target) {
     target.style.display = "flex";
