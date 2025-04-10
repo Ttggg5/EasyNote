@@ -72,7 +72,10 @@ function startAutoSave() {
     }
 
     document.getElementById("title").addEventListener("change", (event) => {
-        const noteName = document.getElementById("title").value;
+        var noteName = document.getElementById("title").value;
+        if (noteName == "")
+            noteName = "Untitled";
+
         document.getElementById(this.noteId).innerText = noteName;
         sendEditRequest("Name", noteName, "", "");
     });

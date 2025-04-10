@@ -55,6 +55,11 @@ function newNote(url, id) {
 function renameNote(userId, noteId, noteName) {
     var result = prompt("Rename", noteName);
     if (result != null) {
+        if (result == "") {
+            alert("Note name can not be empty!");
+            return;
+        }
+
         fetch("/Main/EditNote", {
             method: "POST",
             body: JSON.stringify({
