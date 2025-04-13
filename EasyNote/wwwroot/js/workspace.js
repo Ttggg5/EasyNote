@@ -12,8 +12,10 @@ document.getElementById("main").addEventListener("mousedown", event => {
         hideContextmenu(document.getElementById("contextmenu_page"));
         hideContextmenu(document.getElementById("contextmenu_content_block"));
     }
-    else if (event.button == 2) // right button
-        showContextmenu(document.getElementById("contextmenu_page"))
+    else if (event.button == 2) { // right button
+        hideContextmenu(document.getElementById("contextmenu_page"));
+        showContextmenu(document.getElementById("contextmenu_page"), event);
+    }
 });
 
 document.getElementById("delete_line").addEventListener("click", event => {
@@ -24,11 +26,34 @@ document.getElementById("delete_line").addEventListener("click", event => {
 });
 
 function changeSelectedTextStyle(className) {
-    var classApplier = rangy.createClassApplier(className);
-    classApplier.toggleSelection();
+    var sel = rangy.getSelection();
+    if (sel.rangeCount > 0) {
+        var allClasses = [];
+        if (className.startsWith("text-color-"))
+            allClasses = ["text-color-yellow", "text-color-red", "text-color-blue", "text-color-green"];
+        else if (className.startsWith("highlight-"))
+            allClasses = ["highlight-yellow", "highlight-red", "highlight-blue", "highlight-green"];
+        else {
+            rangy.createClassApplier(className).toggleSelection();
+            return;
+        }
+
+        var classAppliers = [];
+        allClasses.forEach(value => {
+            classAppliers.push(rangy.createClassApplier(value));
+        });
+
+        var index = allClasses.indexOf(className);
+        for (var i = 0; i < classAppliers.length; i++) {
+            classAppliers[i].undoToSelection();
+            if (i == index)
+                classAppliers[i].applyToSelection();
+        }
+    }
+    hideContextmenu(document.getElementById("contextmenu_page"));
 }
 
-function showContextmenu(target) {
+function showContextmenu(target, event) {
     target.style.display = "flex";
 
     var x = event.clientX, y = event.clientY;
@@ -43,6 +68,7 @@ function showContextmenu(target) {
 
 function hideContextmenu(target) {
     target.style.display = "none";
+    document.getElementById("text_color_dropdown").style.display = "none";
 }
 
 function setInfo(userId, noteId) {
@@ -171,4 +197,19 @@ function getOffset(el) {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY
     };
+}
+
+function toggleDropdownDisplay() {
+    var dropdown = document.getElementById("text_color_dropdown");
+    if (dropdown.style.display == "block")
+        dropdown.style.display = "none";
+    else {
+        dropdown.style.display = "block";
+        dropdown.style.top = "60px";
+
+        var height = document.getElementById("main").offsetHeight;
+        var top = document.getElementById("contextmenu_page").offsetTop;
+        if (height - top <= dropdown.offsetHeight)
+            dropdown.style.top = (-5 - dropdown.offsetHeight) + "px";
+    }
 }

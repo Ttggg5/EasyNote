@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<EasyNoteContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MainDatabase")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MainDatabase"), sqlServerOptions =>
+    sqlServerOptions.EnableRetryOnFailure()));
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options => {
         options.LoginPath = new PathString("/Login");

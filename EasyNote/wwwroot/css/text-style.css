@@ -14,13 +14,7 @@
     text-decoration: line-through;
 }
 
-.highlight-yellow {
-    background: #fff600
-}
 
-.highlight-red {
-    background: #ff0000
-}
 
 .text-color-yellow {
     color: #fff600;
@@ -28,4 +22,34 @@
 
 .text-color-red {
     color: #ff0000;
+}
+
+.text-color-blue {
+    color: #008aff;
+}
+
+.text-color-green {
+    color: #0aff00;
+}
+
+
+
+.highlight-yellow {
+    background: #fff600;
+    border-radius: 5px;
+}
+
+.highlight-red {
+    background: #ff0000;
+    border-radius: 5px;
+}
+
+.highlight-blue {
+    background: #008aff;
+    border-radius: 5px;
+}
+
+.highlight-green {
+    background: #0aff00;
+    border-radius: 5px;
 }

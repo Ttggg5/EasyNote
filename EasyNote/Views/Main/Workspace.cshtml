@@ -12,10 +12,28 @@
 <link rel="stylesheet" href="~/css/workspace.css" />
 
 <div id="contextmenu_page" class="custom-contextmenu">
-    <div title="Bold" onclick="changeSelectedTextStyle('text-weight-bold');"><i class="bi bi-type-bold"></i></div>
-    <div title="Italicize" onclick="changeSelectedTextStyle('text-italicize');"><i class="bi bi-type-italic"></i></div>
-    <div title="Underline" onclick="changeSelectedTextStyle('text-underline');"><i class="bi bi-type-underline"></i></div>
-    <div title="Line through" onclick="changeSelectedTextStyle('text-line-through');"><i class="bi bi-type-strikethrough"></i></div>
+    <div class="contextmenu-functions" title="Bold" onclick="changeSelectedTextStyle('text-weight-bold');"><i class="bi bi-type-bold"></i></div>
+    <div class="contextmenu-functions" title="Italicize" onclick="changeSelectedTextStyle('text-italicize');"><i class="bi bi-type-italic"></i></div>
+    <div class="contextmenu-functions" title="Underline" onclick="changeSelectedTextStyle('text-underline');"><i class="bi bi-type-underline"></i></div>
+    <div class="contextmenu-functions" title="Line through" onclick="changeSelectedTextStyle('text-line-through');"><i class="bi bi-type-strikethrough"></i></div>
+    <div class="contextmenu-functions" title="Text color" onclick="toggleDropdownDisplay()">A <i class="bi bi-chevron-down"></i></div>
+    <div id="text_color_dropdown">
+        <a>Text</a>
+        <div>
+            <div title="Yellow" class="text-color-yellow" onclick="changeSelectedTextStyle('text-color-yellow')">A</div>
+            <div title="Red" class="text-color-red" onclick="changeSelectedTextStyle('text-color-red')">A</div>
+            <div title="Blue" class="text-color-blue" onclick="changeSelectedTextStyle('text-color-blue')">A</div>
+            <div title="Green" class="text-color-green" onclick="changeSelectedTextStyle('text-color-green')">A</div>
+        </div>
+
+        <a>Background</a>
+        <div>
+            <div title="Yellow" class="highlight-yellow" onclick="changeSelectedTextStyle('highlight-yellow')">A</div>
+            <div title="Red" class="highlight-red" onclick="changeSelectedTextStyle('highlight-red')">A</div>
+            <div title="Blue" class="highlight-blue" onclick="changeSelectedTextStyle('highlight-blue')">A</div>
+            <div title="Green" class="highlight-green" onclick="changeSelectedTextStyle('highlight-green')">A</div>
+        </div>
+    </div>
 </div>
 
 <div id="contextmenu_content_block" class="custom-contextmenu" target-id="">

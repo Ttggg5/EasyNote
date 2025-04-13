@@ -130,7 +130,7 @@ namespace EasyNote.Controllers
                     return Redirect("/Workspace");
                 }
             }
-            catch {
+            catch(Exception ex) {
                 TempData["error"] = "unexpected error!";
                 return Redirect("/Index");
             }
