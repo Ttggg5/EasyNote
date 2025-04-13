@@ -23,16 +23,15 @@
     border-radius: 10px;
     justify-content: space-between;
     align-items: center;
+    border: 4px solid #fff;
 }
 
     .content-block:hover {
-        background: #e9e9e9;
-        filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
+        border: 4px solid #4f4f4f;
     }
 
     .content-block:focus {
-        background: #e9e9e9;
-        filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
+        border: 4px solid #4f4f4f;
     }
 
         .content-block:hover .drag-block {
@@ -154,10 +153,10 @@
 #text_color_dropdown {
     display: none;
     position: absolute;
-    width: 150px;
+    width: 160px;
     height: auto;
     background: #313131;
-    left: 65px;
+    left: 55px;
     top: 60px;
     padding: 10px;
     border-radius: 10px;
@@ -177,7 +176,7 @@
     }
 
     #text_color_dropdown > div > div {
-        padding: 5px;
+        padding: 3px;
         font-weight: bold;
         border-radius: 5px;
         width: 30px;
@@ -190,7 +189,7 @@
         }
 
 #contextmenu_content_block {
-    width: 150px;
+    width: auto;
     height: auto;
     flex-direction: column;
     padding: 10px 5px;
@@ -198,26 +197,21 @@
     align-items: center;
 }
 
-    #contextmenu_content_block div {
-        list-style-type: none;
-        padding: 5px;
-        user-select: none;
-        border-radius: 5px;
-        padding: 5px;
-    }
+#contextmenu_content_block_delete_line {
+    color: indianred;
+    text-align: center;
+    width: auto;
+    margin-top: 10px;
+    padding: 5px 10px;
+}
 
-    #contextmenu_content_block div:hover {
-        background: #515151;
-    }
-
-    #contextmenu_content_block div i {
+    #contextmenu_content_block_delete_line i {
         margin-right: 5px;
     }
 
-#delete_line {
-    color: indianred;
-    text-align: center;
-    width: 100%;
+#contextmenu_content_block_justify_functions{
+    display: flex;
+    justify-content: space-evenly;
 }
 
 /*this is to fix bootstrap icon not vertically aligned*/

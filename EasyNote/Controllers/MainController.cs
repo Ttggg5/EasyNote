@@ -384,7 +384,9 @@ namespace EasyNote.Controllers
                         if (contentBlock == null)
                             throw new Exception();
 
-                        contentBlock.ChildNodes[1].InnerHtml = noteEditDTO.Content;
+                        HtmlDocument contentHD = new HtmlDocument();
+                        contentHD.LoadHtml(noteEditDTO.Content);
+                        contentBlock.ChildNodes[1] = contentHD.DocumentNode;
                         htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
                         break;
                     case NoteEditType.AddContentBlock:

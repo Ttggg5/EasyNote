@@ -3,6 +3,17 @@ const noteId = "";
 
 rangy.init();
 
+window.addEventListener("paste", function (e) {
+    // cancel paste
+    e.preventDefault();
+
+    // get text representation of clipboard
+    var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+
+    // insert text manually
+    document.execCommand("insertHTML", false, text);
+});
+
 document.addEventListener('contextmenu', event => {
     event.preventDefault();
 });
@@ -18,12 +29,18 @@ document.getElementById("main").addEventListener("mousedown", event => {
     }
 });
 
-document.getElementById("delete_line").addEventListener("click", event => {
+document.getElementById("contextmenu_content_block_delete_line").addEventListener("click", event => {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     document.getElementById(targetId).remove();
     sendEditRequest("DeleteContentBlock", "", targetId, "");
     hideContextmenu(document.getElementById("contextmenu_content_block"));
 });
+
+function justifyText(pos) {
+    const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
+    const content = document.getElementById(targetId).children[1];
+    content.style.textAlign = pos;
+}
 
 function changeSelectedTextStyle(className) {
     var sel = rangy.getSelection();
@@ -122,7 +139,7 @@ function startAutoSave() {
         } catch(error) {
             return;
         }
-        sendEditRequest("Content", "", targetNode.parentNode.id, targetNode.innerHTML);
+        sendEditRequest("Content", "", targetNode.parentNode.id, targetNode.outerHTML);
     });
 
     observer.observe(document.getElementById("main"), config);
