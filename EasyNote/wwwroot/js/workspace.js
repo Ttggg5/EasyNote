@@ -40,6 +40,14 @@ function justifyText(pos) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     const content = document.getElementById(targetId).children[1];
     content.style.textAlign = pos;
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
+}
+
+function headingText(headingSize) {
+    const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
+    const content = document.getElementById(targetId).children[1];
+    content.style.fontSize = headingSize;
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
 }
 
 function changeSelectedTextStyle(className) {
@@ -47,9 +55,9 @@ function changeSelectedTextStyle(className) {
     if (sel.rangeCount > 0) {
         var allClasses = [];
         if (className.startsWith("text-color-"))
-            allClasses = ["text-color-yellow", "text-color-red", "text-color-blue", "text-color-green"];
+            allClasses = ["text-color-white", "text-color-black", "text-color-yellow", "text-color-red", "text-color-blue", "text-color-green"];
         else if (className.startsWith("highlight-"))
-            allClasses = ["highlight-yellow", "highlight-red", "highlight-blue", "highlight-green"];
+            allClasses = ["highlight-transparent", "highlight-black", "highlight-yellow", "highlight-red", "highlight-blue", "highlight-green"];
         else {
             rangy.createClassApplier(className).toggleSelection();
             return;
@@ -200,7 +208,13 @@ function newBlock(sneder) {
 function showOptions(sender) {
     const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
     contextmenuContentBlock.style.display = "flex";
-    contextmenuContentBlock.style.top = (getOffset(sender).top + sender.offsetHeight) + "px"
+
+    var windowInnerHeight = window.innerHeight;
+    var optionBlockOffsets = getOffset(sender);
+    if (windowInnerHeight - optionBlockOffsets.height - optionBlockOffsets.top <= contextmenuContentBlock.offsetHeight)
+        contextmenuContentBlock.style.top = (optionBlockOffsets.top - contextmenuContentBlock.offsetHeight) + "px";
+    else
+        contextmenuContentBlock.style.top = (optionBlockOffsets.top + optionBlockOffsets.height) + "px";
     contextmenuContentBlock.style.left = (window.innerWidth - contextmenuContentBlock.offsetWidth - 20) + "px";
 
     sender.parentElement.focus();
@@ -212,7 +226,9 @@ function getOffset(el) {
     const rect = el.getBoundingClientRect();
     return {
         left: rect.left + window.scrollX,
-        top: rect.top + window.scrollY
+        top: rect.top + window.scrollY,
+        width: el.offsetWidth,
+        height: el.offsetHeight,
     };
 }
 

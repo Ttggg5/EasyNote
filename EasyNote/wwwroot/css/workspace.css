@@ -1,7 +1,9 @@
 ﻿#title {
     width: 100%;
-    font-size: 35px;
-    font-weight: bold;
+    font-size: 38px;
+    font-family: "Noto Sans TC", sans-serif;
+    font-weight: 900;
+    font-style: normal;
     overflow-wrap: break-word;
     padding: 20px;
     border: none;
@@ -23,15 +25,16 @@
     border-radius: 10px;
     justify-content: space-between;
     align-items: center;
-    border: 4px solid #fff;
 }
 
     .content-block:hover {
-        border: 4px solid #4f4f4f;
+        background: #efefef;
+        filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
     }
 
     .content-block:focus {
-        border: 4px solid #4f4f4f;
+        background: #efefef;
+        filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
     }
 
         .content-block:hover .drag-block {
@@ -139,12 +142,23 @@
 }
 
 .contextmenu-functions {
-    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
     padding: 5px;
     user-select: none;
     border-radius: 5px;
-    margin: 0 5px;
 }
+    .contextmenu-functions i {
+        padding: 5px 2px;
+        margin-bottom: 0.125em;
+    }
+
+        .contextmenu-functions i:first-of-type {
+            padding: 5px;
+            color: #b5b5b5;
+        }
 
     .contextmenu-functions:hover {
         background: #515151;
@@ -153,7 +167,7 @@
 #text_color_dropdown {
     display: none;
     position: absolute;
-    width: 160px;
+    width: 165px;
     height: auto;
     background: #313131;
     left: 55px;
@@ -163,16 +177,17 @@
     user-select: none;
 }
 
-    #text_color_dropdown > div {
-        display: flex;
-        justify-content: space-evenly;
-        background: #313131;
-    }
-
     #text_color_dropdown > a {
-        margin: 10px 3px;
         font-size: 12px;
         text-align: start;
+    }
+
+    #text_color_dropdown > div {
+        display: flex;
+        margin: 5px 0 10px 0;
+        justify-content: start;
+        flex-wrap: wrap;
+        background: #313131;
     }
 
     #text_color_dropdown > div > div {
@@ -182,6 +197,7 @@
         width: 30px;
         height: 30px;
         text-align: center;
+        margin: 3px;
     }
 
         #text_color_dropdown > div > div:hover {
@@ -199,19 +215,16 @@
 
 #contextmenu_content_block_delete_line {
     color: indianred;
-    text-align: center;
-    width: auto;
-    margin-top: 10px;
-    padding: 5px 10px;
 }
 
     #contextmenu_content_block_delete_line i {
-        margin-right: 5px;
+        color: indianred;
     }
 
-#contextmenu_content_block_justify_functions{
+.flex-row {
     display: flex;
     justify-content: space-evenly;
+    flex-direction: row;
 }
 
 /*this is to fix bootstrap icon not vertically aligned*/

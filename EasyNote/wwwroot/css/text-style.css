@@ -16,6 +16,14 @@
 
 
 
+.text-color-white {
+    color: #fff;
+}
+
+.text-color-black {
+    color: #000;
+}
+
 .text-color-yellow {
     color: #fff600;
 }
@@ -33,6 +41,16 @@
 }
 
 
+
+.highlight-transparent {
+    background: #fff0;
+    border-radius: 5px;
+}
+
+.highlight-black {
+    background: #000;
+    border-radius: 5px;
+}
 
 .highlight-yellow {
     background: #fff600;

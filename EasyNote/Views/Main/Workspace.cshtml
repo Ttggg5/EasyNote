@@ -8,18 +8,25 @@
     string selectedNoteId = Model.SelectedNoteId;
 }
 
+<!--title font-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="~/css/text-style.css" />
 <link rel="stylesheet" href="~/css/workspace.css" />
 
-<div id="contextmenu_page" class="custom-contextmenu">
+<div id="contextmenu_page" class="custom-contextmenu" tabindex="-1">
     <div class="contextmenu-functions" title="Bold" onclick="changeSelectedTextStyle('text-weight-bold');"><i class="bi bi-type-bold"></i></div>
     <div class="contextmenu-functions" title="Italicize" onclick="changeSelectedTextStyle('text-italicize');"><i class="bi bi-type-italic"></i></div>
     <div class="contextmenu-functions" title="Underline" onclick="changeSelectedTextStyle('text-underline');"><i class="bi bi-type-underline"></i></div>
     <div class="contextmenu-functions" title="Line through" onclick="changeSelectedTextStyle('text-line-through');"><i class="bi bi-type-strikethrough"></i></div>
-    <div class="contextmenu-functions" title="Text color" onclick="toggleDropdownDisplay()">A <i class="bi bi-chevron-down"></i></div>
+    <div class="contextmenu-functions" title="Text color" onclick="toggleDropdownDisplay()"><i class="bi bi-palette"></i><i class="bi bi-chevron-down"></i></div>
     <div id="text_color_dropdown">
         <a>Text</a>
         <div>
+            <div title="White" class="text-color-white" onclick="changeSelectedTextStyle('text-color-white')">A</div>
+            <div title="Black" class="text-color-black" onclick="changeSelectedTextStyle('text-color-black')">A</div>
             <div title="Yellow" class="text-color-yellow" onclick="changeSelectedTextStyle('text-color-yellow')">A</div>
             <div title="Red" class="text-color-red" onclick="changeSelectedTextStyle('text-color-red')">A</div>
             <div title="Blue" class="text-color-blue" onclick="changeSelectedTextStyle('text-color-blue')">A</div>
@@ -28,6 +35,8 @@
 
         <a>Background</a>
         <div>
+            <div title="Transparent" class="highlight-transparent" onclick="changeSelectedTextStyle('highlight-transparent')">A</div>
+            <div title="Black" class="highlight-black" onclick="changeSelectedTextStyle('highlight-black')">A</div>
             <div title="Yellow" class="highlight-yellow" onclick="changeSelectedTextStyle('highlight-yellow')">A</div>
             <div title="Red" class="highlight-red" onclick="changeSelectedTextStyle('highlight-red')">A</div>
             <div title="Blue" class="highlight-blue" onclick="changeSelectedTextStyle('highlight-blue')">A</div>
@@ -36,12 +45,16 @@
     </div>
 </div>
 
-<div id="contextmenu_content_block" class="custom-contextmenu" target-id="">
-    <div id="contextmenu_content_block_justify_functions">
+<div id="contextmenu_content_block" class="custom-contextmenu" tabindex="-1" target-id="">
+    <div class="flex-row">
         <div title="Text left" class="contextmenu-functions" onclick="justifyText('left')"><i class="bi bi-text-left"></i></div>
         <div title="Text center" class="contextmenu-functions" onclick="justifyText('center')"><i class="bi bi-text-center"></i></div>
         <div title="Text right" class="contextmenu-functions" onclick="justifyText('right')"><i class="bi bi-text-right"></i></div>
     </div>
+
+    <div class="contextmenu-functions" onclick="headingText('2em')"><i class="bi bi-type-h1"></i>Heading 1</div>
+    <div class="contextmenu-functions" onclick="headingText('1.5em')"><i class="bi bi-type-h2"></i>Heading 2</div>
+    <div class="contextmenu-functions" onclick="headingText('1.17em')"><i class="bi bi-type-h3"></i>Heading 3</div>
     <div id="contextmenu_content_block_delete_line" class="contextmenu-functions"><i class="bi bi-trash-fill"></i>Delete</div>
 </div>
 
