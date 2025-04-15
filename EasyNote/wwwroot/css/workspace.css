@@ -137,7 +137,7 @@
 #contextmenu_page {
     width: auto;
     height: auto;
-    padding: 10px;
+    padding: 5px;
     justify-content: space-between;
 }
 
@@ -151,14 +151,18 @@
     border-radius: 5px;
 }
     .contextmenu-functions i {
-        padding: 5px 2px;
+        padding: 2px 5px;
         margin-bottom: 0.125em;
     }
 
         .contextmenu-functions i:first-of-type {
-            padding: 5px;
             color: #b5b5b5;
         }
+
+    .contextmenu-functions a {
+        margin-left: 5px;
+        padding-right: 5px;
+    }
 
     .contextmenu-functions:hover {
         background: #515151;

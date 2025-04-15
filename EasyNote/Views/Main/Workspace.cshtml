@@ -21,7 +21,7 @@
     <div class="contextmenu-functions" title="Italicize" onclick="changeSelectedTextStyle('text-italicize');"><i class="bi bi-type-italic"></i></div>
     <div class="contextmenu-functions" title="Underline" onclick="changeSelectedTextStyle('text-underline');"><i class="bi bi-type-underline"></i></div>
     <div class="contextmenu-functions" title="Line through" onclick="changeSelectedTextStyle('text-line-through');"><i class="bi bi-type-strikethrough"></i></div>
-    <div class="contextmenu-functions" title="Text color" onclick="toggleDropdownDisplay()"><i class="bi bi-palette"></i><i class="bi bi-chevron-down"></i></div>
+    <div class="contextmenu-functions" title="Text color" onclick="toggleTextColorDropdownDisplay()"><i class="bi bi-palette"></i><i class="bi bi-chevron-down"></i></div>
     <div id="text_color_dropdown">
         <a>Text</a>
         <div>
@@ -52,9 +52,10 @@
         <div title="Text right" class="contextmenu-functions" onclick="justifyText('right')"><i class="bi bi-text-right"></i></div>
     </div>
 
-    <div class="contextmenu-functions" onclick="headingText('2em')"><i class="bi bi-type-h1"></i>Heading 1</div>
-    <div class="contextmenu-functions" onclick="headingText('1.5em')"><i class="bi bi-type-h2"></i>Heading 2</div>
-    <div class="contextmenu-functions" onclick="headingText('1.17em')"><i class="bi bi-type-h3"></i>Heading 3</div>
+    <div class="contextmenu-functions" onclick="setTextSize('2em')"><i class="bi bi-type-h1"></i><a>Heading 1</a></div>
+    <div class="contextmenu-functions" onclick="setTextSize('1.5em')"><i class="bi bi-type-h2"></i><a>Heading 2</a></div>
+    <div class="contextmenu-functions" onclick="setTextSize('1.17em')"><i class="bi bi-type-h3"></i><a>Heading 3</a></div>
+    <div class="contextmenu-functions" onclick="setTextSize('1em')"><i class="bi bi-fonts"></i><a>Text</a></div>
     <div id="contextmenu_content_block_delete_line" class="contextmenu-functions"><i class="bi bi-trash-fill"></i>Delete</div>
 </div>
 

@@ -20,10 +20,11 @@ document.addEventListener('contextmenu', event => {
 
 document.getElementById("main").addEventListener("mousedown", event => {
     if (event.button == 0) { // left button
-        hideContextmenu(document.getElementById("contextmenu_page"));
         hideContextmenu(document.getElementById("contextmenu_content_block"));
+        hideContextmenu(document.getElementById("contextmenu_page"));
     }
     else if (event.button == 2) { // right button
+        hideContextmenu(document.getElementById("contextmenu_content_block"));
         hideContextmenu(document.getElementById("contextmenu_page"));
         showContextmenu(document.getElementById("contextmenu_page"), event);
     }
@@ -43,10 +44,10 @@ function justifyText(pos) {
     hideContextmenu(document.getElementById("contextmenu_content_block"));
 }
 
-function headingText(headingSize) {
+function setTextSize(size) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     const content = document.getElementById(targetId).children[1];
-    content.style.fontSize = headingSize;
+    content.style.fontSize = size;
     hideContextmenu(document.getElementById("contextmenu_content_block"));
 }
 
@@ -139,15 +140,21 @@ function startAutoSave() {
     });
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        var targetNode = mutationsList[0].target;
-        try {
-            while (targetNode.parentNode.className != "content-block") {
-                targetNode = targetNode.parentNode;
+        var targets = {};
+        mutationsList.forEach(value => {
+            var targetNode = value.target;
+            try {
+                while (targetNode.parentNode.className != "content-block") {
+                    targetNode = targetNode.parentNode;
+                }
+                targets[targetNode.parentNode.id] = targetNode.outerHTML;
+            } catch (error) {
+                console.log(error);
             }
-        } catch(error) {
-            return;
+        });
+        for (const [key, value] of Object.entries(targets)) {
+            sendEditRequest("Content", "", key, value);
         }
-        sendEditRequest("Content", "", targetNode.parentNode.id, targetNode.outerHTML);
     });
 
     observer.observe(document.getElementById("main"), config);
@@ -232,13 +239,14 @@ function getOffset(el) {
     };
 }
 
-function toggleDropdownDisplay() {
-    var dropdown = document.getElementById("text_color_dropdown");
+function toggleTextColorDropdownDisplay() {
+    const dropdown = document.getElementById("text_color_dropdown");
+    const dropdownIcon = document.getElementById("text_color_dropdown_icon");
     if (dropdown.style.display == "block")
         dropdown.style.display = "none";
     else {
         dropdown.style.display = "block";
-        dropdown.style.top = "60px";
+        dropdown.style.top = "55px";
 
         var height = document.getElementById("main").offsetHeight;
         var top = document.getElementById("contextmenu_page").offsetTop;
