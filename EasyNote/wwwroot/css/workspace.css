@@ -107,17 +107,28 @@
 #new_block_btn {
     margin-top: 10px;
     border-radius: 50px;
-    width: 100px;
+    width: 130px;
     font-weight: bold;
     color: #fff;
     background: #4f4f4f;
     border: none;
     padding: 5px;
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    user-select: none;
+    font-size: 20px;
 }
 
     #new_block_btn:hover {
         background: #858585ff;
+    }
+
+    #new_block_btn i {
+        margin-right: 5px;
+    }
+
+    #new_block_btn span {
+        font-size: 14px;
+        vertical-align: middle;
     }
 
 .custom-contextmenu {
@@ -229,9 +240,4 @@
     display: flex;
     justify-content: space-evenly;
     flex-direction: row;
-}
-
-/*this is to fix bootstrap icon not vertically aligned*/
-.bi {
-    vertical-align: 0.125em;
 }

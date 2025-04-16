@@ -14,28 +14,38 @@ window.addEventListener("paste", function (e) {
     document.execCommand("insertHTML", false, text);
 });
 
-document.addEventListener('contextmenu', event => {
-    event.preventDefault();
-});
-
 document.getElementById("main").addEventListener("mousedown", event => {
-    if (event.button == 0) { // left button
-        hideContextmenu(document.getElementById("contextmenu_content_block"));
-        hideContextmenu(document.getElementById("contextmenu_page"));
-    }
-    else if (event.button == 2) { // right button
-        hideContextmenu(document.getElementById("contextmenu_content_block"));
-        hideContextmenu(document.getElementById("contextmenu_page"));
-        showContextmenu(document.getElementById("contextmenu_page"), event);
-    }
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
 });
 
-document.getElementById("contextmenu_content_block_delete_line").addEventListener("click", event => {
+document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => {
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
+});
+
+document.getElementsByTagName("header")[0].addEventListener("mousedown", event => {
+    hideContextmenu(document.getElementById("contextmenu_content_block"));
+});
+
+document.addEventListener("mouseup", event => {
+    const selection = window.getSelection();
+    if (selection) {
+        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            showContextmenu(document.getElementById("contextmenu_page"), rect);
+            return;
+        }
+    }
+
+    hideContextmenu(document.getElementById("contextmenu_page"));
+});
+    
+function deleteContentBlock() {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
     document.getElementById(targetId).remove();
     sendEditRequest("DeleteContentBlock", "", targetId, "");
     hideContextmenu(document.getElementById("contextmenu_content_block"));
-});
+}
 
 function justifyText(pos) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
@@ -79,13 +89,17 @@ function changeSelectedTextStyle(className) {
     hideContextmenu(document.getElementById("contextmenu_page"));
 }
 
-function showContextmenu(target, event) {
+function showContextmenu(target, relativeOffsets) {
     target.style.display = "flex";
 
-    var x = event.clientX, y = event.clientY;
-    if (window.innerWidth - event.clientX < target.offsetWidth + 10)
+    const mainDiv = document.getElementById("main");
+    var x = relativeOffsets.left, y = relativeOffsets.top - target.offsetHeight;
+    if (window.innerWidth - x < target.offsetWidth + 10)
         x = window.innerWidth - target.offsetWidth - 10;
-    if (window.innerHeight - event.clientY < target.offsetHeight + 10)
+
+    if (y < mainDiv.offsetTop)
+        y = relativeOffsets.top + target.offsetHeight;
+    else if (window.innerHeight - y < target.offsetHeight + 10)
         y = window.innerHeight - target.offsetHeight - 10;
 
     target.style.left = x + "px";
@@ -118,6 +132,7 @@ function showNote() {
             document.getElementById("title").value = json["noteName"];
             document.getElementById("main").insertAdjacentHTML("beforeend", json["content"]);
             document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
+
             startAutoSave();
         })
 }

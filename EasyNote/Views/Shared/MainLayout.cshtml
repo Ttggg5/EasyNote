@@ -48,8 +48,9 @@
     <div class="main-body">
         <nav class="note-nav">
             <div>
-                <button class="new-note-btn" onclick="newNote('@(Url.Action("NewNote", "Main"))', '@(id)')">+ Note</button>
+                <button class="new-note-btn" title="New note" onclick="newNote('@(Url.Action("NewNote", "Main"))', '@(id)')"><i class="bi bi-journal-text"></i><span>New note</span></button>
                 <!--all user's note-->
+                <span>Notes</span>
                 <ul id="note_list">
                     <!--example: "<li><a href="#">note 1</a></li>"-->
                     @{
