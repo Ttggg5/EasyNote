@@ -298,11 +298,7 @@ namespace EasyNote.Controllers
                 string noteFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/notes", userId);
                 if (!Path.Exists(noteFolderPath))
                     Directory.CreateDirectory(noteFolderPath);
-                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html",
-                    "<div id=\"note\"><button id=\"new_block_btn\" onclick=\"newBlock(this);\">" +
-                        "<i class=\"bi bi-plus-circle-fill\"></i>" +
-                        "<span>New line</span></button>" +
-                    "</div>");
+                System.IO.File.WriteAllText(noteFolderPath + "/" + noteId + ".html", "");
 
                 Note note = new Note()
                 {
@@ -389,7 +385,7 @@ namespace EasyNote.Controllers
 
                         HtmlDocument contentHD = new HtmlDocument();
                         contentHD.LoadHtml(noteEditDTO.Content);
-                        contentBlock.ChildNodes[1] = contentHD.DocumentNode;
+                        contentBlock.ChildNodes[0] = contentHD.DocumentNode;
                         htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
                         break;
                     case NoteEditType.AddContentBlock:
@@ -397,8 +393,7 @@ namespace EasyNote.Controllers
                             throw new Exception();
 
                         contentBlock = CreateContentBlock(noteEditDTO.ContentBlockId);
-                        htmlDocument.GetElementbyId("note").InsertBefore(contentBlock, htmlDocument.GetElementbyId("new_block_btn"));
-                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                        System.IO.File.AppendAllText(noteFolderPath + "/" + noteEditDTO.NoteId + ".html", contentBlock.OuterHtml);
                         break;
                     case NoteEditType.DeleteContentBlock:
                         contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
@@ -442,22 +437,11 @@ namespace EasyNote.Controllers
             contentBlock.SetAttributeValue("id", id);
             contentBlock.SetAttributeValue("tabindex", "-1");
 
-            HtmlNode dragBlock = document.CreateElement("div");
-            dragBlock.AddClass("drag-block");
-            dragBlock.InnerHtml = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
-
             HtmlNode content = document.CreateElement("div");
             content.SetAttributeValue("contenteditable", "true");
             content.AddClass("content");
 
-            HtmlNode optionBlock = document.CreateElement("div");
-            optionBlock.AddClass("option-block");
-            optionBlock.InnerHtml = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
-            optionBlock.SetAttributeValue("onclick", "showOptions(this)");
-
-            contentBlock.AppendChild(dragBlock);
             contentBlock.AppendChild(content);
-            contentBlock.AppendChild(optionBlock);
 
             return contentBlock;
         }

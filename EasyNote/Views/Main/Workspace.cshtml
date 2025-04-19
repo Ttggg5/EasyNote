@@ -62,12 +62,16 @@
 <div id="main">
     <input id="title" placeholder="Untitled"/>
     <script src="~/js/workspace.js"></script>
+    <div id="note">
+        
+    </div>
     @if (Model.SelectedNoteId != null)
     {
         <script>
             setInfo('@userId', '@selectedNoteId');
             showNote();
         </script>
+        <button id="new_block_btn" onclick="newBlock(this);"><i class="bi bi-plus-circle-fill"></i><span>New line</span></button>
     }
     else
     {

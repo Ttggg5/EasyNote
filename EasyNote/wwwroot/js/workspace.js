@@ -130,7 +130,22 @@ function showNote() {
         .then((response) => response.json())
         .then((json) => {
             document.getElementById("title").value = json["noteName"];
-            document.getElementById("main").insertAdjacentHTML("beforeend", json["content"]);
+
+            const note = document.getElementById("note");
+            note.insertAdjacentHTML("beforeend", json["content"]);
+            for (const child of note.children) {
+                const dragBlock = document.createElement("div");
+                dragBlock.className = "drag-block";
+                dragBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
+                child.insertBefore(dragBlock, child.childNodes[0]);
+
+                const optionBlock = document.createElement("div");
+                optionBlock.className = "option-block";
+                optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
+                optionBlock.setAttribute("onclick", "showOptions(this)");
+                child.appendChild(optionBlock);
+            }
+
             document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
 
             startAutoSave();
@@ -172,7 +187,7 @@ function startAutoSave() {
         }
     });
 
-    observer.observe(document.getElementById("main"), config);
+    observer.observe(document.getElementById("note"), config);
 }
 
 function sendEditRequest(editType, noteName, contentBlockId, content) {
@@ -222,7 +237,7 @@ function newBlock(sneder) {
     contentBlock.appendChild(content);
     contentBlock.appendChild(optionBlock);
 
-    document.getElementById("note").insertBefore(contentBlock, sneder);
+    document.getElementById("note").appendChild(contentBlock);
 
     sendEditRequest("AddContentBlock", "", id, "");
 }

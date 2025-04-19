@@ -274,7 +274,8 @@ header {
     }
 
 .new-note-btn {
-    background: #fff0;
+    display: flex;
+    background: #4f4f4f;
     border: none;
     border-radius: 10px;
     color: #fff;
@@ -283,6 +284,7 @@ header {
     font-weight: bold;
     text-align: left;
     font-size: 20px;
+    align-items: center;
 }
 
     .new-note-btn:hover {
@@ -295,7 +297,6 @@ header {
 
     .new-note-btn span {
         font-size: 14px;
-        vertical-align: middle;
     }
 
 .clander {
