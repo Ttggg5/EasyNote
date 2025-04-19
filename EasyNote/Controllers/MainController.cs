@@ -342,12 +342,14 @@ namespace EasyNote.Controllers
             if (note == null)
                 return Redirect("/");
 
+            HtmlDocument htmlDocument = new HtmlDocument();
+            htmlDocument.Load(Path.Combine("wwwroot/notes", note.UserId, note.NoteId + ".html"));
             return Json(new NoteContentDTO()
             {
                 UserId = userId,
                 NoteId = noteId,
                 NoteName = note.NoteName,
-                Content = System.IO.File.ReadAllText(Path.Combine("wwwroot/notes", note.UserId, note.NoteId + ".html")),
+                Content = htmlDocument.DocumentNode.InnerHtml,
             });
         }
 
@@ -378,6 +380,7 @@ namespace EasyNote.Controllers
                     case NoteEditType.Name:
                         note.NoteName = noteEditDTO.NoteName;
                         break;
+
                     case NoteEditType.Content:
                         HtmlNode contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
                         if (contentBlock == null)
@@ -388,19 +391,30 @@ namespace EasyNote.Controllers
                         contentBlock.ChildNodes[0] = contentHD.DocumentNode;
                         htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
                         break;
+
                     case NoteEditType.AddContentBlock:
                         if (!noteEditDTO.ContentBlockId.StartsWith("CB"))
                             throw new Exception();
 
                         contentBlock = CreateContentBlock(noteEditDTO.ContentBlockId);
-                        System.IO.File.AppendAllText(noteFolderPath + "/" + noteEditDTO.NoteId + ".html", contentBlock.OuterHtml);
+                        htmlDocument.DocumentNode.AppendChild(contentBlock);
+                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
                         break;
+
                     case NoteEditType.DeleteContentBlock:
                         contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
                         if (contentBlock == null)
                             throw new Exception();
 
                         contentBlock.Remove();
+                        htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
+                        break;
+
+                    case NoteEditType.ContentBlockOrder:
+                        HtmlNodeCollection hnc = htmlDocument.DocumentNode.ChildNodes;
+                        HtmlNode tmp = hnc[noteEditDTO.ContentBlockOldIndex];
+                        hnc.RemoveAt(noteEditDTO.ContentBlockOldIndex);
+                        hnc.Insert(noteEditDTO.ContentBlockNewIndex, tmp);
                         htmlDocument.Save(noteFolderPath + "/" + noteEditDTO.NoteId + ".html");
                         break;
                 }

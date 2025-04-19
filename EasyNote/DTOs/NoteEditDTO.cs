@@ -6,6 +6,7 @@
         Content,
         AddContentBlock,
         DeleteContentBlock,
+        ContentBlockOrder,
     }
 
     public class NoteEditDTO
@@ -16,5 +17,7 @@
         public string NoteName { get; set; }
         public string ContentBlockId { get; set; }
         public string Content { get; set; }
+        public int ContentBlockOldIndex { get; set; }
+        public int ContentBlockNewIndex { get; set; }
     }
 }

@@ -134,19 +134,23 @@ function showNote() {
             const note = document.getElementById("note");
             note.insertAdjacentHTML("beforeend", json["content"]);
             for (const child of note.children) {
-                const dragBlock = document.createElement("div");
-                dragBlock.className = "drag-block";
-                dragBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
-                child.insertBefore(dragBlock, child.childNodes[0]);
-
-                const optionBlock = document.createElement("div");
-                optionBlock.className = "option-block";
-                optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
-                optionBlock.setAttribute("onclick", "showOptions(this)");
-                child.appendChild(optionBlock);
+                child.insertBefore(createDragBlock(), child.childNodes[0]);
+                child.appendChild(createOptionBlock());
             }
 
             document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
+
+            Sortable.create(note, {
+                disabled: false, // 關閉Sortable
+                animation: 150,  // 物件移動時間(單位:毫秒)
+                handle: ".drag-block",  // 可拖曳的區域
+                draggable: ".content-block",  // the element that is draggable
+
+                // Element dragging ended
+                onEnd: event => {
+                    sendEditRequest("ContentBlockOrder", "", "", "", event.oldIndex, event.newIndex);
+                },
+            });
 
             startAutoSave();
         })
@@ -169,28 +173,31 @@ function startAutoSave() {
         sendEditRequest("Name", noteName, "", "");
     });
 
-    const observer = new MutationObserver((mutationsList, observer) => {
-        var targets = {};
-        mutationsList.forEach(value => {
-            var targetNode = value.target;
-            try {
-                while (targetNode.parentNode.className != "content-block") {
-                    targetNode = targetNode.parentNode;
+    const note = document.getElementById("note");
+    for (const child of note.children) {
+        const observer = new MutationObserver((mutationsList, observer) => {
+            var targets = {};
+            mutationsList.forEach(value => {
+                var targetNode = value.target;
+                try {
+                    while (targetNode.parentNode.className != "content-block") {
+                        targetNode = targetNode.parentNode;
+                    }
+                    targets[targetNode.parentNode.id] = targetNode.outerHTML;
+                } catch (error) {
+                    console.log(error);
                 }
-                targets[targetNode.parentNode.id] = targetNode.outerHTML;
-            } catch (error) {
-                console.log(error);
+            });
+            for (const [key, value] of Object.entries(targets)) {
+                sendEditRequest("Content", "", key, value);
             }
         });
-        for (const [key, value] of Object.entries(targets)) {
-            sendEditRequest("Content", "", key, value);
-        }
-    });
 
-    observer.observe(document.getElementById("note"), config);
+        observer.observe(child.children[1], config);
+    }
 }
 
-function sendEditRequest(editType, noteName, contentBlockId, content) {
+function sendEditRequest(editType, noteName, contentBlockId, content, contentBlockOldIndex = -1, contentBlockNewIndex = -1) {
     fetch("/Main/EditNote", {
         method: "POST",
         body: JSON.stringify({
@@ -200,6 +207,8 @@ function sendEditRequest(editType, noteName, contentBlockId, content) {
             NoteName: noteName,
             ContentBlockId: contentBlockId,
             Content: content,
+            ContentBlockOldIndex: contentBlockOldIndex,
+            ContentBlockNewIndex: contentBlockNewIndex,
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -220,26 +229,32 @@ function newBlock(sneder) {
     contentBlock.id = id;
     contentBlock.setAttribute("tabindex", "-1");
 
-    const dragBlock = document.createElement("div");
-    dragBlock.className = "drag-block";
-    dragBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
-
     const content = document.createElement("div");
     content.contentEditable = "true";
     content.className = "content";
 
-    const optionBlock = document.createElement("div");
-    optionBlock.className = "option-block";
-    optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
-    optionBlock.setAttribute("onclick", "showOptions(this)");
-
-    contentBlock.appendChild(dragBlock);
+    contentBlock.appendChild(createDragBlock());
     contentBlock.appendChild(content);
-    contentBlock.appendChild(optionBlock);
+    contentBlock.appendChild(createOptionBlock());
 
     document.getElementById("note").appendChild(contentBlock);
 
     sendEditRequest("AddContentBlock", "", id, "");
+}
+
+function createDragBlock() {
+    const dragBlock = document.createElement("div");
+    dragBlock.className = "drag-block";
+    dragBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/bars-solid.svg\"/>";
+    return dragBlock;
+}
+
+function createOptionBlock() {
+    const optionBlock = document.createElement("div");
+    optionBlock.className = "option-block";
+    optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
+    optionBlock.setAttribute("onclick", "showOptions(this)");
+    return optionBlock;
 }
 
 function showOptions(sender) {
