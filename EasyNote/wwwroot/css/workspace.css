@@ -20,6 +20,11 @@
     overflow-y: auto;
 }
 
+.empty-block {
+    height: 30px;
+    user-select: none;
+}
+
 .content-block {
     display: flex;
     border-radius: 10px;
@@ -27,35 +32,29 @@
     align-items: center;
 }
 
-    .content-block:hover {
+    .content-block-hover, .content-block:hover {
         background: #efefef;
         filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
     }
 
-    .content-block:focus {
-        background: #efefef;
-        filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
-    }
-
-        .content-block:hover .drag-block {
+        .content-block-hover .drag-block, .content-block:hover .drag-block {
             opacity: 100%;
             filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
         }
 
-        .content-block:focus .drag-block {
+        .content-block-hover .option-block, .content-block:hover .option-block {
             opacity: 100%;
             filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
         }
 
-        .content-block:hover .option-block {
-            opacity: 100%;
-            filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
-        }
+.insert-line {
+    border-bottom: 5px solid #66badb;
+    border-radius: 0;
+}
 
-        .content-block:focus .option-block {
-            opacity: 100%;
-            filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
-        }
+.content-image {
+
+}
 
 .content {
     width: 95%;
@@ -65,6 +64,10 @@
     .content:focus {
         outline: none;
     }
+
+.content-auto-width {
+    width: auto;
+}
 
 .drag-block {
     display: flex;
@@ -242,4 +245,8 @@
     display: flex;
     justify-content: space-evenly;
     flex-direction: row;
+}
+
+#file_form {
+    display: none;
 }

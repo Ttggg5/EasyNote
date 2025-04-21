@@ -45,7 +45,7 @@
     </div>
 </div>
 
-<div id="contextmenu_content_block" class="custom-contextmenu" tabindex="-1" target-id="">
+<div id="contextmenu_content_block" class="custom-contextmenu" tabindex="-1" data-target-id="">
     <div class="flex-row">
         <div title="Text left" class="contextmenu-functions" onclick="justifyText('left')"><i class="bi bi-text-left"></i></div>
         <div title="Text center" class="contextmenu-functions" onclick="justifyText('center')"><i class="bi bi-text-center"></i></div>
@@ -69,9 +69,13 @@
     {
         <script>
             setInfo('@userId', '@selectedNoteId');
-            showNote();
+            const promise = new Promise(showNote);
+            promise.then(value => {
+                initNote();
+                startAutoSave();
+            });
         </script>
-        <button id="new_block_btn" onclick="newBlock(this);"><i class="bi bi-plus-circle-fill"></i><span>New line</span></button>
+        <button id="new_block_btn" onclick="newBlock('text');"><i class="bi bi-plus-circle-fill"></i><span>New line</span></button>
     }
     else
     {

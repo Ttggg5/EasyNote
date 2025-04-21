@@ -16,6 +16,7 @@
         public string EditType { get; set; }
         public string NoteName { get; set; }
         public string ContentBlockId { get; set; }
+        public string ContentBlockType { get; set; }
         public string Content { get; set; }
         public int ContentBlockOldIndex { get; set; }
         public int ContentBlockNewIndex { get; set; }

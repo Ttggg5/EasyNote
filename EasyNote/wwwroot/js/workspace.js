@@ -1,64 +1,99 @@
 ﻿const userId = "";
 const noteId = "";
 
+const observers = {}; // "contentBlockId": observer
+observerOptions = {
+    attributes: true,
+    subtree: true,
+    childList: true,
+    characterData: true,
+}
+
 rangy.init();
 
-window.addEventListener("paste", function (e) {
+window.addEventListener("dragenter", event => {
+    event.preventDefault();
+});
+
+window.addEventListener("dragover", event => {
+    event.preventDefault();
+});
+
+window.addEventListener("drop", event => {
+    event.preventDefault();
+});
+
+window.addEventListener("paste", event => {
     // cancel paste
-    e.preventDefault();
+    event.preventDefault();
 
     // get text representation of clipboard
-    var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+    var text = (event.originalEvent || event).clipboardData.getData('text/plain');
 
     // insert text manually
     document.execCommand("insertHTML", false, text);
 });
 
-document.getElementById("main").addEventListener("mousedown", event => {
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
-});
+document.getElementById("main").addEventListener("mousedown", event => unFocusContentBlock());
+document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
+document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
 
-document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => {
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
-});
-
-document.getElementsByTagName("header")[0].addEventListener("mousedown", event => {
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
-});
+function unFocusContentBlock() {
+    const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
+    const targetId = contextmenuContentBlock.dataset.targetId;
+    if (targetId == "") return;
+    document.getElementById(targetId).classList.remove("content-block-hover");
+    hideContentBlockOptions(contextmenuContentBlock);
+}
 
 document.addEventListener("mouseup", event => {
+    const contextmenuPage = document.getElementById("contextmenu_page");
     const selection = window.getSelection();
     if (selection) {
         if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            showContextmenu(document.getElementById("contextmenu_page"), rect);
+            showContextmenu(contextmenuPage, rect);
             return;
         }
     }
 
-    hideContextmenu(document.getElementById("contextmenu_page"));
+    contextmenuPage.style.display = "none";
+    document.getElementById("text_color_dropdown").style.display = "none";
 });
-    
+
+function getContentBlockChildNode(contentBlockId, className = "content") {
+    for (const child of document.getElementById(contentBlockId).children) {
+        if (child.classList.contains(className))
+            return child;
+    }
+}
+
 function deleteContentBlock() {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
+    observers[targetId].disconnect();
+    delete observers[targetId];
     document.getElementById(targetId).remove();
-    sendEditRequest("DeleteContentBlock", "", targetId, "");
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
+
+    sendEditRequest("DeleteContentBlock", {
+        contentBlockId: targetId,
+    });
+
+    hideContentBlockOptions();
 }
 
 function justifyText(pos) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = document.getElementById(targetId).children[1];
+    const content = getContentBlockChildNode(targetId);
     content.style.textAlign = pos;
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
+    hideContentBlockOptions();
 }
 
 function setTextSize(size) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = document.getElementById(targetId).children[1];
+    const content = getContentBlockChildNode(targetId);
     content.style.fontSize = size;
-    hideContextmenu(document.getElementById("contextmenu_content_block"));
+    hideContentBlockOptions();
 }
 
 function changeSelectedTextStyle(className) {
@@ -106,17 +141,12 @@ function showContextmenu(target, relativeOffsets) {
     target.style.top = y + "px";
 }
 
-function hideContextmenu(target) {
-    target.style.display = "none";
-    document.getElementById("text_color_dropdown").style.display = "none";
-}
-
 function setInfo(userId, noteId) {
     this.userId = userId;
     this.noteId = noteId;
 }
 
-function showNote() {
+function showNote(resolve, reject) {
     if (this.userId == "" || this.noteId == "")
         return;
 
@@ -138,89 +168,166 @@ function showNote() {
                 child.appendChild(createOptionBlock());
             }
 
+            // append an empty block in note(only for drop file use)
+            const emptyBlock = document.createElement("div");
+            emptyBlock.className = "empty-block";
+            note.insertBefore(emptyBlock, note.childNodes[0]);
+
             document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
 
-            Sortable.create(note, {
-                disabled: false, // 關閉Sortable
-                animation: 150,  // 物件移動時間(單位:毫秒)
-                handle: ".drag-block",  // 可拖曳的區域
-                draggable: ".content-block",  // the element that is draggable
+            resolve("ok");
+        })
+}
 
-                // Element dragging ended
-                onEnd: event => {
-                    sendEditRequest("ContentBlockOrder", "", "", "", event.oldIndex, event.newIndex);
-                },
+function initNote() {
+    const note = document.getElementById("note");
+
+    Sortable.create(note, {
+        disabled: false, // Sortable
+        animation: 150,  // the element's move animation time(ms)
+        handle: ".drag-block",  // the element that is draggable
+        draggable: ".content-block",  // the element that will drag with handle
+
+        // Element dragging ended
+        onEnd: async event => {
+            // -1 index because there is an empty block at index 0
+            await sendEditRequest("ContentBlockOrder", {
+                contentBlockOldIndex: event.oldIndex - 1,
+                contentBlockNewIndex: event.newIndex - 1,
             });
+        },
+    });
 
-            startAutoSave();
+    for (const child of note.children) {
+        child.addEventListener("dragover", event => {
+            event.preventDefault();
+            child.classList.add("insert-line");
+        });
+
+        child.addEventListener("dragleave", event => {
+            child.classList.remove("insert-line");
+        });
+
+        child.addEventListener("drop", async (event) => {
+            event.preventDefault();
+
+            child.classList.remove("insert-line");
+
+            for (const file of event.dataTransfer.files) {
+                if (file.type === "image/png" || file.type === "image/jpeg") {
+                    const contentBlock = await newBlock("image");
+
+                    var oldIndex = note.children.length - 1;
+                    var newIndex = 1;
+                    for (const c of note.children) {
+                        if (c.id === child.id)
+                            break;
+                        newIndex++;
+                    }
+
+                    note.children[newIndex - 1].after(note.children[oldIndex]);
+                    // -1 index because there is an empty block at index 0
+                    sendEditRequest("ContentBlockOrder", {
+                        contentBlockOldIndex: oldIndex - 1,
+                        contentBlockNewIndex: newIndex - 1,
+                    });
+
+                    uploadFile(file, contentBlock.id);
+                }
+            }
+        });
+    }
+}
+
+function uploadFile(file, contentBlockId) {
+    const formData = new FormData();
+    formData.append("NoteId", this.noteId);
+    formData.append("ContentBlockId", contentBlockId);
+    formData.append("File", file);
+    fetch("/Main/UploadFile", {
+        method: "POST",
+        body: formData,
+    })
+        .then((response) => response.json())
+        .then((json) => {
+            //console.log(json);
+            getContentBlockChildNode(contentBlockId, "content-image").src = json["filePath"];
         })
 }
 
 function startAutoSave() {
-    config = {
-        attributes: true,
-        subtree: true,
-        childList: true,
-        characterData: true,
-    }
-
     document.getElementById("title").addEventListener("change", (event) => {
         var noteName = document.getElementById("title").value;
         if (noteName == "")
             noteName = "Untitled";
 
         document.getElementById(this.noteId).innerText = noteName;
-        sendEditRequest("Name", noteName, "", "");
+        sendEditRequest("Name", {
+            noteName: noteName,
+        });
     });
 
     const note = document.getElementById("note");
     for (const child of note.children) {
-        const observer = new MutationObserver((mutationsList, observer) => {
-            var targets = {};
-            mutationsList.forEach(value => {
-                var targetNode = value.target;
-                try {
-                    while (targetNode.parentNode.className != "content-block") {
-                        targetNode = targetNode.parentNode;
-                    }
-                    targets[targetNode.parentNode.id] = targetNode.outerHTML;
-                } catch (error) {
-                    console.log(error);
-                }
-            });
-            for (const [key, value] of Object.entries(targets)) {
-                sendEditRequest("Content", "", key, value);
-            }
-        });
-
-        observer.observe(child.children[1], config);
+        if (!child.classList.contains("content-block"))
+            continue;
+        
+        // add observer to content
+        const observer = new MutationObserver(observerCallback);
+        observer.observe(child.children[1], observerOptions);
+        observers[child.id] = observer;
     }
 }
 
-function sendEditRequest(editType, noteName, contentBlockId, content, contentBlockOldIndex = -1, contentBlockNewIndex = -1) {
-    fetch("/Main/EditNote", {
-        method: "POST",
-        body: JSON.stringify({
-            UserId: this.userId,
-            NoteId: this.noteId,
-            EditType: editType,
-            NoteName: noteName,
-            ContentBlockId: contentBlockId,
-            Content: content,
-            ContentBlockOldIndex: contentBlockOldIndex,
-            ContentBlockNewIndex: contentBlockNewIndex,
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
+async function observerCallback(mutationsList, observer) {
+    var targets = {};
+    mutationsList.forEach(value => {
+        var targetNode = value.target;
+        try {
+            while (!targetNode.parentElement.classList.contains("content-block")) {
+                targetNode = targetNode.parentElement;
+            }
+            targets[targetNode.parentNode.id] = targetNode.outerHTML;
+        } catch (error) {
+            console.log(error);
         }
-    })
-        .then((response) => response.json())
-        .then((json) => {
-            //console.log(json);
-        })
+    });
+    for (const [key, value] of Object.entries(targets)) {
+        await sendEditRequest("Content", {
+            contentBlockId: key,
+            content: value,
+        });
+    }
 }
 
-function newBlock(sneder) {
+function sendEditRequest(editType, { noteName = "", contentBlockId = "", contentBlockType = "", content = "", contentBlockOldIndex = -1, contentBlockNewIndex = -1 }) {
+    return new Promise((resolve, reject) => {
+        fetch("/Main/EditNote", {
+            method: "POST",
+            body: JSON.stringify({
+                UserId: this.userId,
+                NoteId: this.noteId,
+                EditType: editType,
+                NoteName: noteName,
+                ContentBlockId: contentBlockId,
+                ContentBlockType: contentBlockType,
+                Content: content,
+                ContentBlockOldIndex: contentBlockOldIndex,
+                ContentBlockNewIndex: contentBlockNewIndex,
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                //console.log(json);
+                resolve(json);
+            })
+    });
+}
+
+async function newBlock(type) {
     const surDate = new Date()
     const id = "CB" + surDate.getTime();
 
@@ -228,18 +335,37 @@ function newBlock(sneder) {
     contentBlock.className = "content-block";
     contentBlock.id = id;
     contentBlock.setAttribute("tabindex", "-1");
+    contentBlock.dataset.type = type;
 
     const content = document.createElement("div");
     content.contentEditable = "true";
-    content.className = "content";
+    content.classList.add("content");
 
     contentBlock.appendChild(createDragBlock());
+    if (type == "image") {
+        content.classList.add("content-auto-width");
+        const image = document.createElement("img");
+        image.src = "/assets/loading_spinner.gif";
+        image.width = 300;
+        image.classList.add("content-image");
+        contentBlock.appendChild(image);
+    }
     contentBlock.appendChild(content);
     contentBlock.appendChild(createOptionBlock());
 
     document.getElementById("note").appendChild(contentBlock);
 
-    sendEditRequest("AddContentBlock", "", id, "");
+    // add observer to content
+    const observer = new MutationObserver(observerCallback);
+    observer.observe(content, observerOptions);
+    observers[id] = observer;
+
+    await sendEditRequest("AddContentBlock", {
+        contentBlockId: id,
+        contentBlockType: type,
+    });
+
+    return contentBlock;
 }
 
 function createDragBlock() {
@@ -253,11 +379,11 @@ function createOptionBlock() {
     const optionBlock = document.createElement("div");
     optionBlock.className = "option-block";
     optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
-    optionBlock.setAttribute("onclick", "showOptions(this)");
+    optionBlock.setAttribute("onclick", "showContentBlockOptions(this)");
     return optionBlock;
 }
 
-function showOptions(sender) {
+function showContentBlockOptions(sender) {
     const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
     contextmenuContentBlock.style.display = "flex";
 
@@ -269,9 +395,15 @@ function showOptions(sender) {
         contextmenuContentBlock.style.top = (optionBlockOffsets.top + optionBlockOffsets.height) + "px";
     contextmenuContentBlock.style.left = (window.innerWidth - contextmenuContentBlock.offsetWidth - 20) + "px";
 
-    sender.parentElement.focus();
+    sender.parentElement.classList.add("content-block-hover");
 
     contextmenuContentBlock.dataset.targetId = sender.parentElement.id;
+}
+
+function hideContentBlockOptions() {
+    const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
+    contextmenuContentBlock.style.display = "none";
+    contextmenuContentBlock.dataset.targetId = "";
 }
 
 function getOffset(el) {
