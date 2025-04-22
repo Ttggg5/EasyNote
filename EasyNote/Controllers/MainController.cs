@@ -362,9 +362,23 @@ namespace EasyNote.Controllers
 
         private HtmlNode? GetContentBlockChildNode(HtmlDocument htmlDocument, string ContentBlockId, string className)
         {
-            return (from c in htmlDocument.GetElementbyId(ContentBlockId).ChildNodes
-                    where c.HasClass(className)
-                    select c).FirstOrDefault();
+            Queue<HtmlNode> htmlNodes = new Queue<HtmlNode>();
+            htmlNodes.Enqueue(htmlDocument.GetElementbyId(ContentBlockId));
+            while (htmlNodes.Count > 0)
+            {
+                HtmlNode tmp = htmlNodes.Dequeue();
+                if (tmp.HasClass(className))
+                    return tmp;
+
+                if (tmp.HasChildNodes)
+                {
+                    foreach (HtmlNode node in tmp.ChildNodes)
+                    {
+                        htmlNodes.Enqueue(node);
+                    }
+                }
+            }
+            return null;
         }
 
         [HttpPost]
@@ -476,17 +490,23 @@ namespace EasyNote.Controllers
             contentBlock.SetAttributeValue("data-type", contentBlockType);
 
             HtmlNode content = document.CreateElement("div");
-            content.SetAttributeValue("contenteditable", "true");
             content.AddClass("content");
 
+            HtmlNode contentText = document.CreateElement("div");
+            contentText.SetAttributeValue("contenteditable", "true");
+            contentText.AddClass("content-text");
             if (contentBlockType.Equals("image"))
             {
-                content.AddClass("content-auto-width");
+                content.SetAttributeValue("contenteditable", "false");
+                contentBlock.AddClass("content-block-image");
+                
                 HtmlNode image = document.CreateElement("img");
                 image.SetAttributeValue("width", "300");
                 image.AddClass("content-image");
-                contentBlock.AppendChild(image);
+                content.AppendChild(image);
             }
+            content.AppendChild(contentText);
+
             contentBlock.AppendChild(content);
 
             return contentBlock;
@@ -514,7 +534,7 @@ namespace EasyNote.Controllers
                 await _easyNoteContext.SaveChangesAsync();
 
                 string notePath = GetNotePath(userId, noteId);
-                System.IO.File.Delete(notePath);
+                Directory.Delete(Directory.GetParent(notePath).FullName, true);
 
                 return Json(new NoteStatusDTO()
                 {

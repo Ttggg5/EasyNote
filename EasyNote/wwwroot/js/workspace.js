@@ -39,11 +39,11 @@ document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", eve
 document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
 
 function unFocusContentBlock() {
-    const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
-    const targetId = contextmenuContentBlock.dataset.targetId;
+    const contentBlockOptions = document.getElementById("content_block_options");
+    const targetId = contentBlockOptions.dataset.targetId;
     if (targetId == "") return;
     document.getElementById(targetId).classList.remove("content-block-hover");
-    hideContentBlockOptions(contextmenuContentBlock);
+    hideContentBlockOptions(contentBlockOptions);
 }
 
 document.addEventListener("mouseup", event => {
@@ -63,14 +63,22 @@ document.addEventListener("mouseup", event => {
 });
 
 function getContentBlockChildNode(contentBlockId, className) {
-    for (const child of document.getElementById(contentBlockId).children) {
-        if (child.classList.contains(className))
-            return child;
+    const childNodes = [];
+    childNodes.push(document.getElementById(contentBlockId));
+    while (childNodes.length > 0) {
+        const tmp = childNodes.shift();
+        if (tmp.classList.contains(className))
+            return tmp;
+
+        for (const child of tmp.children) {
+            childNodes.push(child);
+        }
     }
+    return null;
 }
 
 function deleteContentBlock() {
-    const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
+    const targetId = document.getElementById("content_block_options").dataset.targetId;
     observers[targetId].disconnect();
     delete observers[targetId];
     document.getElementById(targetId).remove();
@@ -83,16 +91,34 @@ function deleteContentBlock() {
 }
 
 function justifyText(pos) {
-    const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = getContentBlockChildNode(targetId, "content");
-    content.style.textAlign = pos;
+    const targetId = document.getElementById("content_block_options").dataset.targetId;
+    const contentText = getContentBlockChildNode(targetId, "content-text");
+    contentText.style.textAlign = pos;
+    if (document.getElementById(targetId).dataset.type === "image") {
+        const content = getContentBlockChildNode(targetId, "content");
+        content.style.alignItems = pos;
+        switch (pos) {
+            case "start":
+                content.style.flexDirection = "row";
+                break;
+
+            case "center":
+                content.style.flexDirection = "column";
+                break;
+
+            case "end":
+                content.style.flexDirection = "row-reverse";
+                break;
+        }
+    }
+
     hideContentBlockOptions();
 }
 
 function setTextSize(size) {
-    const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = getContentBlockChildNode(targetId, "content");
-    content.style.fontSize = size;
+    const targetId = document.getElementById("content_block_options").dataset.targetId;
+    const contentText = getContentBlockChildNode(targetId, "content-text");
+    contentText.style.fontSize = size;
     hideContentBlockOptions();
 }
 
@@ -353,18 +379,23 @@ async function newBlock(type) {
     contentBlock.dataset.type = type;
 
     const content = document.createElement("div");
-    content.contentEditable = "true";
     content.classList.add("content");
 
-    contentBlock.appendChild(createDragBlock());
+    const contentText = document.createElement("div");
+    contentText.contentEditable = "true";
+    contentText.classList.add("content-text");
     if (type == "image") {
-        content.classList.add("content-auto-width");
+        contentBlock.classList.add("content-block-image");
+
         const image = document.createElement("img");
         image.src = "/assets/loading_spinner.gif";
         image.width = 300;
         image.classList.add("content-image");
-        contentBlock.appendChild(image);
+        content.appendChild(image);
     }
+    content.appendChild(contentText);
+
+    contentBlock.appendChild(createDragBlock());
     contentBlock.appendChild(content);
     contentBlock.appendChild(createOptionBlock());
 
@@ -399,26 +430,26 @@ function createOptionBlock() {
 }
 
 function showContentBlockOptions(sender) {
-    const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
-    contextmenuContentBlock.style.display = "flex";
+    const contentBlockOptions = document.getElementById("content_block_options");
+    contentBlockOptions.style.display = "flex";
 
     var windowInnerHeight = window.innerHeight;
     var optionBlockOffsets = getOffset(sender);
-    if (windowInnerHeight - optionBlockOffsets.height - optionBlockOffsets.top <= contextmenuContentBlock.offsetHeight)
-        contextmenuContentBlock.style.top = (optionBlockOffsets.top - contextmenuContentBlock.offsetHeight) + "px";
+    if (windowInnerHeight - optionBlockOffsets.height - optionBlockOffsets.top <= contentBlockOptions.offsetHeight)
+        contentBlockOptions.style.top = (optionBlockOffsets.top - contentBlockOptions.offsetHeight) + "px";
     else
-        contextmenuContentBlock.style.top = (optionBlockOffsets.top + optionBlockOffsets.height) + "px";
-    contextmenuContentBlock.style.left = (window.innerWidth - contextmenuContentBlock.offsetWidth - 20) + "px";
+        contentBlockOptions.style.top = (optionBlockOffsets.top + optionBlockOffsets.height) + "px";
+    contentBlockOptions.style.left = (window.innerWidth - contentBlockOptions.offsetWidth - 20) + "px";
 
     sender.parentElement.classList.add("content-block-hover");
 
-    contextmenuContentBlock.dataset.targetId = sender.parentElement.id;
+    contentBlockOptions.dataset.targetId = sender.parentElement.id;
 }
 
 function hideContentBlockOptions() {
-    const contextmenuContentBlock = document.getElementById("contextmenu_content_block");
-    contextmenuContentBlock.style.display = "none";
-    contextmenuContentBlock.dataset.targetId = "";
+    const contentBlockOptions = document.getElementById("content_block_options");
+    contentBlockOptions.style.display = "none";
+    contentBlockOptions.dataset.targetId = "";
 }
 
 function getOffset(el) {
