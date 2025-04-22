@@ -363,8 +363,8 @@ namespace EasyNote.Controllers
         private HtmlNode? GetContentBlockChildNode(HtmlDocument htmlDocument, string ContentBlockId, string className)
         {
             return (from c in htmlDocument.GetElementbyId(ContentBlockId).ChildNodes
-                                   where c.HasClass(className)
-                                   select c).FirstOrDefault();
+                    where c.HasClass(className)
+                    select c).FirstOrDefault();
         }
 
         [HttpPost]
@@ -553,8 +553,17 @@ namespace EasyNote.Controllers
                     FilePath = "",
                 });
 
+            if (!fileDTO.File.ContentType.StartsWith("image/"))
+                return Json(new UploadStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Image file only!",
+                    FilePath = "",
+                });
+
             try
             {
+                // save image file
                 string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
                 string noteFolderPath = Directory.GetParent(GetNotePath(userId, fileDTO.NoteId)).FullName;
                 string fileName = $"F{DateTime.Now.Ticks.ToString()}.{fileDTO.File.FileName}";
@@ -564,6 +573,7 @@ namespace EasyNote.Controllers
                     await fileDTO.File.CopyToAsync(stream);
                 }
 
+                // edit image src in given contentBlockId
                 HtmlDocument htmlDocument = new HtmlDocument();
                 string notePath = GetNotePath(userId, fileDTO.NoteId);
                 htmlDocument.Load(notePath);
@@ -582,6 +592,7 @@ namespace EasyNote.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return Json(new UploadStatusDTO()
                 {
                     IsSuccessed = false,

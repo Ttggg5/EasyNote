@@ -62,7 +62,7 @@ document.addEventListener("mouseup", event => {
     document.getElementById("text_color_dropdown").style.display = "none";
 });
 
-function getContentBlockChildNode(contentBlockId, className = "content") {
+function getContentBlockChildNode(contentBlockId, className) {
     for (const child of document.getElementById(contentBlockId).children) {
         if (child.classList.contains(className))
             return child;
@@ -84,14 +84,14 @@ function deleteContentBlock() {
 
 function justifyText(pos) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = getContentBlockChildNode(targetId);
+    const content = getContentBlockChildNode(targetId, "content");
     content.style.textAlign = pos;
     hideContentBlockOptions();
 }
 
 function setTextSize(size) {
     const targetId = document.getElementById("contextmenu_content_block").dataset.targetId;
-    const content = getContentBlockChildNode(targetId);
+    const content = getContentBlockChildNode(targetId, "content");
     content.style.fontSize = size;
     hideContentBlockOptions();
 }
@@ -214,7 +214,7 @@ function initNote() {
             child.classList.remove("insert-line");
 
             for (const file of event.dataTransfer.files) {
-                if (file.type === "image/png" || file.type === "image/jpeg") {
+                if (file.type.includes("image/")) {
                     const contentBlock = await newBlock("image");
 
                     var oldIndex = note.children.length - 1;
@@ -230,9 +230,16 @@ function initNote() {
                     sendEditRequest("ContentBlockOrder", {
                         contentBlockOldIndex: oldIndex - 1,
                         contentBlockNewIndex: newIndex - 1,
-                    });
-
-                    uploadFile(file, contentBlock.id);
+                    })
+                        .then(json => {
+                            uploadFile(file, contentBlock.id)
+                                .then(json => {
+                                    getContentBlockChildNode(contentBlock.id, "content-image").src = json["filePath"];
+                                })
+                                .catch(json => {
+                                    alert(json["errorMsg"]);
+                                });
+                        });
                 }
             }
         });
@@ -240,19 +247,24 @@ function initNote() {
 }
 
 function uploadFile(file, contentBlockId) {
-    const formData = new FormData();
-    formData.append("NoteId", this.noteId);
-    formData.append("ContentBlockId", contentBlockId);
-    formData.append("File", file);
-    fetch("/Main/UploadFile", {
-        method: "POST",
-        body: formData,
-    })
-        .then((response) => response.json())
-        .then((json) => {
-            //console.log(json);
-            getContentBlockChildNode(contentBlockId, "content-image").src = json["filePath"];
+    return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append("NoteId", this.noteId);
+        formData.append("ContentBlockId", contentBlockId);
+        formData.append("File", file);
+        fetch("/Main/UploadFile", {
+            method: "POST",
+            body: formData,
         })
+            .then((response) => response.json())
+            .then((json) => {
+                //console.log(json);
+                if (json["isSuccessed"])
+                    resolve(json);
+                else
+                    reject(json);
+            })
+    });
 }
 
 function startAutoSave() {
@@ -274,7 +286,7 @@ function startAutoSave() {
         
         // add observer to content
         const observer = new MutationObserver(observerCallback);
-        observer.observe(child.children[1], observerOptions);
+        observer.observe(getContentBlockChildNode(child.id, "content"), observerOptions);
         observers[child.id] = observer;
     }
 }
@@ -322,7 +334,10 @@ function sendEditRequest(editType, { noteName = "", contentBlockId = "", content
             .then((response) => response.json())
             .then((json) => {
                 //console.log(json);
-                resolve(json);
+                if (json["isSuccessed"])
+                    resolve(json);
+                else
+                    reject(json);
             })
     });
 }

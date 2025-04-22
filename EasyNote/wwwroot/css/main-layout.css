@@ -1,4 +1,11 @@
-﻿body {
+﻿:root {
+    --main-color: #4f4f4f;
+    --main-color-hover: #656565ff;
+    --drop-shdow-color: #00000082;
+    --white-background-color-hover: #d9d9d9ff;
+}
+
+body {
     margin: 0;
 }
 
@@ -6,8 +13,8 @@ header {
     position: absolute;
     width: 100%;
     height: 70px;
-    background: #4f4f4f;
-    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    background: var(--main-color);
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -48,13 +55,13 @@ header {
     margin-right: 30px;
     border-radius: 50px;
     background: #fff;
-    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     align-items: center;
     justify-content: space-between;
 }
 
     .profile-block:hover {
-        background: #d9d9d9ff;
+        background: var(--white-background-color-hover);
     }
 
 .profile-info {
@@ -67,7 +74,7 @@ header {
     border-radius: 50px;
     height: 35px;
     width: 35px;
-    filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
 }
 
 .profile-info-name {
@@ -84,8 +91,8 @@ header {
 #profile-block-dropdowns-img {
     height: 20px;
     width: 20px;
-    color: #4f4f4f;
-    filter: drop-shadow(#00000082 0.1rem 0.1rem 2px);
+    color: var(--main-color);
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
     user-select: none;
 }
 
@@ -133,7 +140,7 @@ header {
     }
 
         #profile-block-dropdown-items li:hover {
-            background: #d9d9d9ff;
+            background: var(--white-background-color-hover);
         }
 
         #profile-block-dropdown-items li i {
@@ -186,10 +193,10 @@ header {
     width: 200px;
     max-width: 250px;
     height: 100%;
-    background: #4f4f4f;
+    background: var(--main-color);
     flex-direction: column;
     justify-content: space-between;
-    filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     z-index: 1;
 }
 
@@ -226,12 +233,13 @@ header {
             }
 
                 .note-nav div ul li:hover {
-                    background: #656565ff;
+                    background: var(--main-color-hover);
                 }
 
                     .note-nav div ul li:hover div {
                         height: 100%;
                         opacity: 100%;
+                        transition: all 0.3s;
                     }
 
                 .note-nav div ul li a {
@@ -253,7 +261,6 @@ header {
     align-items: center;
     height: 0;
     opacity: 0;
-    transition: all 0.3s;
 }
 
 .note-nav-options i {
@@ -275,7 +282,7 @@ header {
 
 .new-note-btn {
     display: flex;
-    background: #4f4f4f;
+    background: var(--main-color);
     border: none;
     border-radius: 10px;
     color: #fff;
@@ -288,7 +295,7 @@ header {
 }
 
     .new-note-btn:hover {
-        background: #656565ff;
+        background: var(--main-color-hover);
     }
 
     .new-note-btn i {
@@ -315,7 +322,7 @@ header {
 }
 
     .clander:hover {
-        background: #656565ff;
+        background: var(--main-color-hover);
     }
 
     .clander img {
@@ -329,7 +336,7 @@ header {
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #4f4f4f;
+    background: var(--main-color);
     border-radius: 10px;
 }
 
