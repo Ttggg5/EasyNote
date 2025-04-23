@@ -7,7 +7,12 @@ observerOptions = {
     subtree: true,
     childList: true,
     characterData: true,
+    attributeFilter: ["class", "style"],
 }
+
+const contentImageResizer = document.getElementById("content_image_resizer");
+
+var previousMouseX = -1;
 
 rangy.init();
 
@@ -63,31 +68,34 @@ document.addEventListener("mouseup", event => {
 });
 
 function getContentBlockChildNode(contentBlockId, className) {
-    const childNodes = [];
-    childNodes.push(document.getElementById(contentBlockId));
-    while (childNodes.length > 0) {
-        const tmp = childNodes.shift();
-        if (tmp.classList.contains(className))
-            return tmp;
+    try {
+        const childNodes = [];
+        childNodes.push(document.getElementById(contentBlockId));
+        while (childNodes.length > 0) {
+            const tmp = childNodes.shift();
+            if (tmp.classList.contains(className))
+                return tmp;
 
-        for (const child of tmp.children) {
-            childNodes.push(child);
+            for (const child of tmp.children) {
+                childNodes.push(child);
+            }
         }
+    } catch (exception) {
+        return null;
     }
-    return null;
 }
 
 function deleteContentBlock() {
     const targetId = document.getElementById("content_block_options").dataset.targetId;
     observers[targetId].disconnect();
     delete observers[targetId];
+
+    hideContentBlockOptions();
     document.getElementById(targetId).remove();
 
     sendEditRequest("DeleteContentBlock", {
         contentBlockId: targetId,
     });
-
-    hideContentBlockOptions();
 }
 
 function justifyText(pos) {
@@ -208,8 +216,9 @@ function showNote(resolve, reject) {
 function initNote() {
     const note = document.getElementById("note");
 
+    // init Sortable
     Sortable.create(note, {
-        disabled: false, // Sortable
+        disabled: false,
         animation: 150,  // the element's move animation time(ms)
         handle: ".drag-block",  // the element that is draggable
         draggable: ".content-block",  // the element that will drag with handle
@@ -224,6 +233,7 @@ function initNote() {
         },
     });
 
+    // init file drop behavior
     for (const child of note.children) {
         child.addEventListener("dragover", event => {
             event.preventDefault();
@@ -270,6 +280,51 @@ function initNote() {
             }
         });
     }
+
+    // init content-image-resizer behavior
+    contentImageResizer.addEventListener("mouseenter", event => {
+        contentImageResizer.style.display = "block";
+    });
+
+    contentImageResizer.addEventListener("mouseleave", event => {
+        if (previousMouseX >= 0)
+            contentImageResizer.style.display = "none";
+    });
+
+    contentImageResizer.addEventListener("mousedown", event => {
+        previousMouseX = event.clientX;
+        window.addEventListener("mousemove", windowMousemoveCallback);
+        window.addEventListener("mouseup", windowMouseupCallback);
+    });
+
+    document.getElementById("main").addEventListener("scroll", event => {
+        contentImageResizer.style.display = "none";
+    });
+
+    // init content-image behavior
+    for (const contentImage of document.getElementsByClassName("content-image")) {
+        initContentImage(contentImage);
+    }
+}
+
+function initContentImage(contentImage) {
+    contentImage.addEventListener("mouseenter", event => {
+        contentImageResizer.style.display = "block";
+        if (previousMouseX < 0) {
+            contentImageResizer.dataset.targetId = contentImage.parentElement.parentElement.id;
+
+            const imageOffsets = getOffset(contentImage);
+            contentImageResizer.style.left = (imageOffsets.left + imageOffsets.width - contentImageResizer.offsetWidth - 2) + "px";
+            contentImageResizer.style.top = (imageOffsets.top + imageOffsets.height - contentImageResizer.offsetHeight - 2) + "px";
+
+            if (contentImageResizer.offsetTop + contentImageResizer.offsetHeight > window.innerHeight)
+                contentImageResizer.style.display = "none";
+        }
+    });
+
+    contentImage.addEventListener("mouseleave", event => {
+        contentImageResizer.style.display = "none";
+    });
 }
 
 function uploadFile(file, contentBlockId) {
@@ -290,6 +345,30 @@ function uploadFile(file, contentBlockId) {
                 else
                     reject(json);
             })
+    });
+}
+
+function windowMousemoveCallback(event) {
+    const targetImage = getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-image");
+    
+    const moveRangeX = event.clientX - previousMouseX;
+    previousMouseX = event.clientX;
+
+    targetImage.width += moveRangeX;
+    const imageOffsets = getOffset(targetImage);
+    contentImageResizer.style.left = (imageOffsets.left + targetImage.width - contentImageResizer.offsetWidth - 2) + "px";
+    contentImageResizer.style.top = (imageOffsets.top + targetImage.height - contentImageResizer.offsetHeight - 2) + "px";
+}
+
+function windowMouseupCallback(event) {
+    previousMouseX = -1;
+    contentImageResizer.style.display = "none";
+    window.removeEventListener("mousemove", windowMousemoveCallback);
+    window.removeEventListener("mouseup", windowMouseupCallback);
+
+    sendEditRequest("Content", {
+        contentBlockId: contentImageResizer.dataset.targetId,
+        content: getContentBlockChildNode(contentImageResizer.dataset.targetId, "content").outerHTML,
     });
 }
 
@@ -373,7 +452,7 @@ async function newBlock(type) {
     const id = "CB" + surDate.getTime();
 
     const contentBlock = document.createElement("div");
-    contentBlock.className = "content-block";
+    contentBlock.classList.add("content-block");
     contentBlock.id = id;
     contentBlock.setAttribute("tabindex", "-1");
     contentBlock.dataset.type = type;
@@ -390,8 +469,11 @@ async function newBlock(type) {
         const image = document.createElement("img");
         image.src = "/assets/loading_spinner.gif";
         image.width = 300;
+        image.setAttribute("draggable", "false");
         image.classList.add("content-image");
         content.appendChild(image);
+
+        initContentImage(image);
     }
     content.appendChild(contentText);
 
@@ -449,7 +531,10 @@ function showContentBlockOptions(sender) {
 function hideContentBlockOptions() {
     const contentBlockOptions = document.getElementById("content_block_options");
     contentBlockOptions.style.display = "none";
-    contentBlockOptions.dataset.targetId = "";
+    if (contentBlockOptions.dataset.targetId != "") {
+        document.getElementById(contentBlockOptions.dataset.targetId).classList.remove("content-block-hover");
+        contentBlockOptions.dataset.targetId = "";
+    }
 }
 
 function getOffset(el) {
