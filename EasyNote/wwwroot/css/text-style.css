@@ -40,6 +40,18 @@
     color: #0aff00;
 }
 
+.text-color-darkgreen {
+    color: #27641c;
+}
+
+.text-color-darkblue {
+    color: #00256d;
+}
+
+.text-color-darkred {
+    color: #830000;
+}
+
 
 
 .highlight-transparent {
@@ -69,5 +81,20 @@
 
 .highlight-green {
     background: #0aff00;
+    border-radius: 5px;
+}
+
+.highlight-darkgreen {
+    background: #27641c;
+    border-radius: 5px;
+}
+
+.highlight-darkblue {
+    background: #00256d;
+    border-radius: 5px;
+}
+
+.highlight-darkred {
+    background: #830000;
     border-radius: 5px;
 }

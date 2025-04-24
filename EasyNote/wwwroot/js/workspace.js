@@ -1,6 +1,9 @@
 ﻿const userId = "";
 const noteId = "";
 
+const allTextColorClasses = ["text-color-white", "text-color-black", "text-color-yellow", "text-color-red", "text-color-blue", "text-color-green", "text-color-darkgreen", "text-color-darkblue", "text-color-darkred"];
+const allHighlightColorClasses = ["highlight-transparent", "highlight-black", "highlight-yellow", "highlight-red", "highlight-blue", "highlight-green", "highlight-darkgreen", "highlight-darkblue", "highlight-darkred"];
+
 const observers = {}; // "contentBlockId": observer
 observerOptions = {
     attributes: true,
@@ -59,11 +62,13 @@ document.addEventListener("mouseup", event => {
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
             showContextmenu(contextmenuPage, rect);
+
+            document.getElementById("main").addEventListener("scroll", showContextmenu(contextmenuPage, rect));
             return;
         }
     }
 
-    contextmenuPage.style.display = "none";
+    hideContextmenu();
     document.getElementById("text_color_dropdown").style.display = "none";
 });
 
@@ -135,9 +140,9 @@ function changeSelectedTextStyle(className) {
     if (sel.rangeCount > 0) {
         var allClasses = [];
         if (className.startsWith("text-color-"))
-            allClasses = ["text-color-white", "text-color-black", "text-color-yellow", "text-color-red", "text-color-blue", "text-color-green"];
+            allClasses = allTextColorClasses;
         else if (className.startsWith("highlight-"))
-            allClasses = ["highlight-transparent", "highlight-black", "highlight-yellow", "highlight-red", "highlight-blue", "highlight-green"];
+            allClasses = allHighlightColorClasses;
         else {
             rangy.createClassApplier(className).toggleSelection();
             return;
@@ -155,7 +160,7 @@ function changeSelectedTextStyle(className) {
                 classAppliers[i].applyToSelection();
         }
     }
-    hideContextmenu(document.getElementById("contextmenu_page"));
+    hideContextmenu();
 }
 
 function showContextmenu(target, relativeOffsets) {
@@ -173,6 +178,10 @@ function showContextmenu(target, relativeOffsets) {
 
     target.style.left = x + "px";
     target.style.top = y + "px";
+}
+
+function hideContextmenu(){
+    document.getElementById("contextmenu_page").style.display = "none";
 }
 
 function setInfo(userId, noteId) {
@@ -284,21 +293,19 @@ function initNote() {
     // init content-image-resizer behavior
     contentImageResizer.addEventListener("mouseenter", event => {
         contentImageResizer.style.display = "block";
+        //document.getElementById("main").addEventListener("scroll", mainScrollCallback);
     });
 
     contentImageResizer.addEventListener("mouseleave", event => {
-        if (previousMouseX >= 0)
-            contentImageResizer.style.display = "none";
+        hideContentImageResizer();
+        //document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
     });
 
     contentImageResizer.addEventListener("mousedown", event => {
         previousMouseX = event.clientX;
+        getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-text").style.width = "auto";
         window.addEventListener("mousemove", windowMousemoveCallback);
         window.addEventListener("mouseup", windowMouseupCallback);
-    });
-
-    document.getElementById("main").addEventListener("scroll", event => {
-        contentImageResizer.style.display = "none";
     });
 
     // init content-image behavior
@@ -309,22 +316,34 @@ function initNote() {
 
 function initContentImage(contentImage) {
     contentImage.addEventListener("mouseenter", event => {
-        contentImageResizer.style.display = "block";
-        if (previousMouseX < 0) {
-            contentImageResizer.dataset.targetId = contentImage.parentElement.parentElement.id;
+        showContentImageResizer(contentImage);
+        document.getElementById("main").addEventListener("scroll", mainScrollCallback);
+    });
 
-            const imageOffsets = getOffset(contentImage);
-            contentImageResizer.style.left = (imageOffsets.left + imageOffsets.width - contentImageResizer.offsetWidth - 2) + "px";
-            contentImageResizer.style.top = (imageOffsets.top + imageOffsets.height - contentImageResizer.offsetHeight - 2) + "px";
-
-            if (contentImageResizer.offsetTop + contentImageResizer.offsetHeight > window.innerHeight)
-                contentImageResizer.style.display = "none";
-        }
+    contentImage.addEventListener("mousemove", event => {
+        showContentImageResizer(contentImage);
     });
 
     contentImage.addEventListener("mouseleave", event => {
-        contentImageResizer.style.display = "none";
+        hideContentImageResizer();
+        document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
     });
+}
+
+function showContentImageResizer(relativeImage) {
+    contentImageResizer.dataset.targetId = relativeImage.parentElement.parentElement.id;
+    contentImageResizer.style.display = "block";
+
+    const imageOffsets = getOffset(relativeImage);
+    contentImageResizer.style.left = (imageOffsets.left + imageOffsets.width - contentImageResizer.offsetWidth - 2) + "px";
+    contentImageResizer.style.top = (imageOffsets.top + imageOffsets.height - contentImageResizer.offsetHeight - 2) + "px";
+
+    if (contentImageResizer.offsetTop + contentImageResizer.offsetHeight > window.innerHeight)
+        contentImageResizer.style.display = "none";
+}
+
+function hideContentImageResizer() {
+    contentImageResizer.style.display = "none";
 }
 
 function uploadFile(file, contentBlockId) {
@@ -348,9 +367,13 @@ function uploadFile(file, contentBlockId) {
     });
 }
 
+function mainScrollCallback(event) {
+    showContentImageResizer(getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-image"));
+}
+
 function windowMousemoveCallback(event) {
     const targetImage = getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-image");
-    
+
     const moveRangeX = event.clientX - previousMouseX;
     previousMouseX = event.clientX;
 
@@ -365,6 +388,8 @@ function windowMouseupCallback(event) {
     contentImageResizer.style.display = "none";
     window.removeEventListener("mousemove", windowMousemoveCallback);
     window.removeEventListener("mouseup", windowMouseupCallback);
+
+    getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-text").style.width = "100%";
 
     sendEditRequest("Content", {
         contentBlockId: contentImageResizer.dataset.targetId,

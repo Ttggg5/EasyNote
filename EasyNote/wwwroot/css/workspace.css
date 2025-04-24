@@ -60,7 +60,7 @@
 .content {
     display: flex;
     width: 95%;
-    padding: 10px 0px;
+    padding: 10px 10px;
 }
 
     .content:focus {
@@ -69,17 +69,21 @@
 
 .content-image {
     border-radius: 10px;
-    margin-right: 20px;
-    margin-left: 20px;
     max-width: 100%;
     min-width: 20%;
     user-select: none;
+    flex-shrink: 0;
+    align-self: center;
 }
 
 .content-text {
     border-radius: 10px;
     width: 100%;
     align-self: center;
+    padding: 0 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
     .content-text:focus {
@@ -204,10 +208,10 @@
 #text_color_dropdown {
     display: none;
     position: absolute;
-    width: 165px;
+    width: 170px;
     height: auto;
     background: #313131;
-    left: 55px;
+    left: 45px;
     top: 60px;
     padding: 10px;
     border-radius: 10px;
@@ -225,6 +229,8 @@
         justify-content: start;
         flex-wrap: wrap;
         background: #313131;
+        overflow-y: scroll;
+        height: 75px;
     }
 
     #text_color_dropdown > div > div {
