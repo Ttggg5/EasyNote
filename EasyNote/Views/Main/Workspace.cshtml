@@ -73,10 +73,11 @@
 
 <div id="main">
     <input id="title" placeholder="Untitled"/>
-    <script src="~/js/workspace.js"></script>
     <div id="note">
         
     </div>
+
+    <script src="~/js/workspace.js"></script>
     @if (Model.SelectedNoteId != null)
     {
         <script>
@@ -87,7 +88,6 @@
                 startAutoSave();
             });
         </script>
-        <button id="new_block_btn" onclick="newBlock('text');"><i class="bi bi-plus-circle-fill"></i><span>New line</span></button>
     }
     else
     {

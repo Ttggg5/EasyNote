@@ -497,8 +497,6 @@ namespace EasyNote.Controllers
             contentText.AddClass("content-text");
             if (contentBlockType.Equals("image"))
             {
-                contentBlock.AddClass("content-block-image");
-
                 HtmlNode image = document.CreateElement("img");
                 image.SetAttributeValue("width", "300");
                 image.SetAttributeValue("draggable", "false");

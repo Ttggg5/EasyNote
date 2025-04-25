@@ -21,8 +21,12 @@
 }
 
 .empty-block {
-    height: 30px;
+    height: 0;
     user-select: none;
+}
+
+.content-block-wrapper {
+    
 }
 
 .content-block {
@@ -46,11 +50,6 @@
             opacity: 100%;
             filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
         }
-
-.content-block-image {
-    padding: 10px;
-
-}
 
 .insert-line {
     border-bottom: 5px solid #66badb;
@@ -128,33 +127,81 @@
         user-select: none;
     }
 
-#new_block_btn {
+.content-block-insert-dropdown {
     display: flex;
-    margin-top: 10px;
+    height: 20px;
+    align-items: center;
+    transition: all 0.3s;
+}
+    .content-block-insert-dropdown:hover {
+        height: 40px;
+    }
+
+        .content-block-insert-dropdown:hover .content-block-insert-dropdown-button {
+            visibility: visible;
+            opacity: 100%;
+            transform: translateY(0);
+        }
+
+.content-block-insert-dropdown-button {
+    display: flex;
     border-radius: 50px;
-    width: 130px;
+    width: auto;
     font-weight: bold;
     color: #fff;
     background: var(--main-color);
     border: none;
-    padding: 5px;
+    padding: 5px 10px;
     filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     user-select: none;
     font-size: 20px;
     align-items: center;
-    justify-content: center;
+    visibility: collapse;
+    opacity: 0;
+    transform: translateY(-40px);
+    transition: all 0.3s;
 }
 
-    #new_block_btn:hover {
+    .content-block-insert-dropdown-button:hover {
         background: var(--main-color-hover);
     }
 
-    #new_block_btn i {
-        margin-right: 5px;
+.content-block-insert-dropdown-items {
+    display: flex;
+    width: 90%;
+    align-items: center;
+}
+
+    .content-block-insert-dropdown-items button {
+        display: flex;
+        margin-left: 10px;
+        border: none;
+        border-radius: 20px;
+        background: var(--main-color);
+        color: #fff;
+        padding: 5px 15px;
+        filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+        visibility: collapse;
+        transform: scale(0, 0);
+        transition: all 0.3s;
     }
 
-    #new_block_btn span {
-        font-size: 14px;
+        .content-block-insert-dropdown-items button:hover {
+            background: var(--main-color-hover);
+        }
+
+        .content-block-insert-dropdown-items button i {
+            color: #b5b5b5;
+            margin-right: 5px;
+        }
+
+        .content-block-insert-dropdown-items button:nth-child(2) {
+            transition-delay: 0.1s;
+        }
+
+    .content-block-insert-dropdown-items-show button {
+        visibility: visible;
+        transform: scale(100%, 100%);
     }
 
 .custom-contextmenu {

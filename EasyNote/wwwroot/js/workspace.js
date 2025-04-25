@@ -13,6 +13,8 @@ observerOptions = {
     attributeFilter: ["class", "style"],
 }
 
+const note = document.getElementById("note");
+const contextmenu = document.getElementById("contextmenu_page");
 const contentImageResizer = document.getElementById("content_image_resizer");
 
 var previousMouseX = -1;
@@ -55,22 +57,38 @@ function unFocusContentBlock() {
 }
 
 document.addEventListener("mouseup", event => {
-    const contextmenuPage = document.getElementById("contextmenu_page");
     const selection = window.getSelection();
     if (selection) {
         if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            showContextmenu(contextmenuPage, rect);
+            showContextmenu(rect);
 
-            document.getElementById("main").addEventListener("scroll", showContextmenu(contextmenuPage, rect));
+            document.getElementById("main").addEventListener("scroll", mainScrollCallback);
             return;
         }
     }
 
     hideContextmenu();
     document.getElementById("text_color_dropdown").style.display = "none";
+    document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
 });
+
+function mainScrollCallback(event) {
+    const selection = window.getSelection();
+    if (selection) {
+        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            showContextmenu(rect);
+            return;
+        }
+    }
+
+    hideContextmenu();
+    document.getElementById("text_color_dropdown").style.display = "none";
+    document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
+}
 
 function getContentBlockChildNode(contentBlockId, className) {
     try {
@@ -163,25 +181,25 @@ function changeSelectedTextStyle(className) {
     hideContextmenu();
 }
 
-function showContextmenu(target, relativeOffsets) {
-    target.style.display = "flex";
+function showContextmenu(relativeOffsets) {
+    contextmenu.style.display = "flex";
 
     const mainDiv = document.getElementById("main");
-    var x = relativeOffsets.left, y = relativeOffsets.top - target.offsetHeight;
-    if (window.innerWidth - x < target.offsetWidth + 10)
-        x = window.innerWidth - target.offsetWidth - 10;
+    var x = relativeOffsets.left, y = relativeOffsets.top - contextmenu.offsetHeight;
+    if (window.innerWidth - x < contextmenu.offsetWidth + 10)
+        x = window.innerWidth - contextmenu.offsetWidth - 10;
 
     if (y < mainDiv.offsetTop)
-        y = relativeOffsets.top + target.offsetHeight;
-    else if (window.innerHeight - y < target.offsetHeight + 10)
-        y = window.innerHeight - target.offsetHeight - 10;
+        y = relativeOffsets.top + contextmenu.offsetHeight;
+    else if (window.innerHeight - y < contextmenu.offsetHeight + 10)
+        y = window.innerHeight - contextmenu.offsetHeight - 10;
 
-    target.style.left = x + "px";
-    target.style.top = y + "px";
+    contextmenu.style.left = x + "px";
+    contextmenu.style.top = y + "px";
 }
 
 function hideContextmenu(){
-    document.getElementById("contextmenu_page").style.display = "none";
+    contextmenu.style.display = "none";
 }
 
 function setInfo(userId, noteId) {
@@ -204,17 +222,34 @@ function showNote(resolve, reject) {
         .then((json) => {
             document.getElementById("title").value = json["noteName"];
 
-            const note = document.getElementById("note");
-            note.insertAdjacentHTML("beforeend", json["content"]);
-            for (const child of note.children) {
-                child.insertBefore(createDragBlock(), child.childNodes[0]);
-                child.appendChild(createOptionBlock());
-            }
-
             // append an empty block in note(only for drop file use)
+            const emptyBlockWrapper = document.createElement("div");
+
             const emptyBlock = document.createElement("div");
             emptyBlock.className = "empty-block";
-            note.insertBefore(emptyBlock, note.childNodes[0]);
+
+            emptyBlockWrapper.appendChild(emptyBlock);
+            emptyBlockWrapper.appendChild(createContentBlockInsertDropdown());
+
+            note.appendChild(emptyBlockWrapper);
+
+            // make content as an element
+            const contents = document.createElement("div");
+            contents.innerHTML = json["content"].trim();
+
+            // append all functions for contentBlock
+            while (contents.childElementCount > 0) {
+                const child = contents.children[0];
+                child.insertBefore(createDragBlock(), child.childNodes[0]);
+                child.appendChild(createOptionBlock());
+
+                const contentBlockWrapper = document.createElement("div");
+                contentBlockWrapper.classList.add("content-block-wrapper");
+                contentBlockWrapper.appendChild(child);
+                contentBlockWrapper.appendChild(createContentBlockInsertDropdown());
+
+                note.appendChild(contentBlockWrapper);
+            }
 
             document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
 
@@ -222,15 +257,25 @@ function showNote(resolve, reject) {
         })
 }
 
-function initNote() {
-    const note = document.getElementById("note");
+function getContentBlockIndex(contentBlock) {
+    // start with 1 because index 0 is empty block
+    var index = 1;
+    for (const c of note.children) {
+        if (c.children[0].id === contentBlock.id)
+            break;
+        index++;
+    }
+    return index;
+}
 
+function initNote() {
     // init Sortable
     Sortable.create(note, {
-        disabled: false,
-        animation: 150,  // the element's move animation time(ms)
-        handle: ".drag-block",  // the element that is draggable
-        draggable: ".content-block",  // the element that will drag with handle
+        disabled: false, // Disables the sortable if set to true.
+        animation: 150,  // ms, animation speed moving items when sorting, `0` — without animation
+        handle: ".drag-block",  // Drag handle selector within list items
+        draggable: ".content-block-wrapper",  // Specifies which items inside the element should be draggable
+        filter: "", // Selectors that do not lead to dragging (String or Function)
 
         // Element dragging ended
         onEnd: async event => {
@@ -260,15 +305,10 @@ function initNote() {
 
             for (const file of event.dataTransfer.files) {
                 if (file.type.includes("image/")) {
-                    const contentBlock = await newBlock("image");
+                    const contentBlock = await newContentBlock("image");
 
                     var oldIndex = note.children.length - 1;
-                    var newIndex = 1;
-                    for (const c of note.children) {
-                        if (c.id === child.id)
-                            break;
-                        newIndex++;
-                    }
+                    var newIndex = getContentBlockIndex(child);
 
                     note.children[newIndex - 1].after(note.children[oldIndex]);
                     // -1 index because there is an empty block at index 0
@@ -293,12 +333,10 @@ function initNote() {
     // init content-image-resizer behavior
     contentImageResizer.addEventListener("mouseenter", event => {
         contentImageResizer.style.display = "block";
-        //document.getElementById("main").addEventListener("scroll", mainScrollCallback);
     });
 
     contentImageResizer.addEventListener("mouseleave", event => {
         hideContentImageResizer();
-        //document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
     });
 
     contentImageResizer.addEventListener("mousedown", event => {
@@ -316,25 +354,25 @@ function initNote() {
 
 function initContentImage(contentImage) {
     contentImage.addEventListener("mouseenter", event => {
-        showContentImageResizer(contentImage);
-        document.getElementById("main").addEventListener("scroll", mainScrollCallback);
+        contentImageResizer.dataset.targetId = contentImage.parentElement.parentElement.id;
+        showContentImageResizer();
+        document.getElementById("main").addEventListener("scroll", showContentImageResizer);
     });
 
     contentImage.addEventListener("mousemove", event => {
-        showContentImageResizer(contentImage);
+        showContentImageResizer();
     });
 
     contentImage.addEventListener("mouseleave", event => {
         hideContentImageResizer();
-        document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
+        document.getElementById("main").removeEventListener("scroll", showContentImageResizer);
     });
 }
 
-function showContentImageResizer(relativeImage) {
-    contentImageResizer.dataset.targetId = relativeImage.parentElement.parentElement.id;
+function showContentImageResizer() {
     contentImageResizer.style.display = "block";
 
-    const imageOffsets = getOffset(relativeImage);
+    const imageOffsets = getOffset(getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-image"));
     contentImageResizer.style.left = (imageOffsets.left + imageOffsets.width - contentImageResizer.offsetWidth - 2) + "px";
     contentImageResizer.style.top = (imageOffsets.top + imageOffsets.height - contentImageResizer.offsetHeight - 2) + "px";
 
@@ -365,10 +403,6 @@ function uploadFile(file, contentBlockId) {
                     reject(json);
             })
     });
-}
-
-function mainScrollCallback(event) {
-    showContentImageResizer(getContentBlockChildNode(contentImageResizer.dataset.targetId, "content-image"));
 }
 
 function windowMousemoveCallback(event) {
@@ -409,7 +443,6 @@ function startAutoSave() {
         });
     });
 
-    const note = document.getElementById("note");
     for (const child of note.children) {
         if (!child.classList.contains("content-block"))
             continue;
@@ -472,7 +505,7 @@ function sendEditRequest(editType, { noteName = "", contentBlockId = "", content
     });
 }
 
-async function newBlock(type) {
+async function newContentBlock(type) {
     const surDate = new Date()
     const id = "CB" + surDate.getTime();
 
@@ -489,8 +522,6 @@ async function newBlock(type) {
     contentText.contentEditable = "true";
     contentText.classList.add("content-text");
     if (type == "image") {
-        contentBlock.classList.add("content-block-image");
-
         const image = document.createElement("img");
         image.src = "/assets/loading_spinner.gif";
         image.width = 300;
@@ -506,7 +537,12 @@ async function newBlock(type) {
     contentBlock.appendChild(content);
     contentBlock.appendChild(createOptionBlock());
 
-    document.getElementById("note").appendChild(contentBlock);
+    const contentBlockWrapper = document.createElement("div");
+    contentBlockWrapper.classList.add("content-block-wrapper");
+    contentBlockWrapper.appendChild(contentBlock);
+    contentBlockWrapper.appendChild(createContentBlockInsertDropdown());
+
+    note.appendChild(contentBlockWrapper);
 
     // add observer to content
     const observer = new MutationObserver(observerCallback);
@@ -519,6 +555,13 @@ async function newBlock(type) {
     });
 
     return contentBlock;
+}
+
+function toggleContentBlockInsertDropdownItems(dropdownItems) {
+    if (dropdownItems.classList.contains("content-block-insert-dropdown-items-show"))
+        dropdownItems.classList.remove("content-block-insert-dropdown-items-show");
+    else
+        dropdownItems.classList.add("content-block-insert-dropdown-items-show");
 }
 
 function createDragBlock() {
@@ -534,6 +577,90 @@ function createOptionBlock() {
     optionBlock.innerHTML = "<img draggable=\"false\" src=\"/assets/ellipsis-vertical-solid.svg\"/>";
     optionBlock.setAttribute("onclick", "showContentBlockOptions(this)");
     return optionBlock;
+}
+
+function createContentBlockInsertDropdown() {
+    const contentBlockInsertDropdown = document.createElement("div");
+    contentBlockInsertDropdown.classList.add("content-block-insert-dropdown");
+    contentBlockInsertDropdown.addEventListener("mouseleave", event => {
+        event.currentTarget.children[1].classList.remove("content-block-insert-dropdown-items-show");
+    });
+
+    // create dropdown button
+    const contentBlockInsertDropdownButton = document.createElement("button");
+    contentBlockInsertDropdownButton.classList.add("content-block-insert-dropdown-button");
+    contentBlockInsertDropdownButton.title = "New block";
+    contentBlockInsertDropdownButton.addEventListener("click", event => {
+        toggleContentBlockInsertDropdownItems(event.currentTarget.parentElement.children[1]);
+    });
+
+    contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownButton);
+
+    const icon = document.createElement("i");
+    icon.classList.add("bi");
+    icon.classList.add("bi-plus-lg");
+
+    contentBlockInsertDropdownButton.appendChild(icon);
+
+    // create dropdown items
+    const contentBlockInsertDropdownItems = document.createElement("div");
+    contentBlockInsertDropdownItems.classList.add("content-block-insert-dropdown-items");
+
+    // create new text contentBlock button
+    const newContentBlockTextButton = createNewContentBlockButton("text", "Text", "bi bi-fonts")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockTextButton);
+
+    // create new image contentBlock button
+    const newContentBlockImageButton = createNewContentBlockButton("image", "Image", "bi bi-image")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
+
+    contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownItems);
+
+    return contentBlockInsertDropdown;
+}
+
+function createNewContentBlockButton(type, innerText, iconClassName) {
+    const button = document.createElement("button");
+    var callback;
+    switch (type) {
+        case "text":
+            callback = (event) => {
+                newContentBlock(type)
+                    .then(json => {
+                        const oldIndex = note.childElementCount - 1;
+                        const newIndex = getContentBlockIndex(button.parentElement.parentElement.parentElement.children[0]);
+
+                        note.children[newIndex - 1].after(note.children[oldIndex]);
+
+                        // -1 index because there is an empty block at index 0
+                        sendEditRequest("ContentBlockOrder", {
+                            contentBlockOldIndex: oldIndex - 1,
+                            contentBlockNewIndex: newIndex - 1,
+                        })
+                            .then(json => {
+
+                            });
+                    });
+            };
+            break;
+
+        case "image":
+            callback = (event) => {
+
+            };
+            break;
+    }
+    button.addEventListener("click", callback);
+
+    const icon = document.createElement("i");
+    icon.className = iconClassName;
+    button.appendChild(icon);
+
+    const span = document.createElement("span");
+    span.innerText = innerText;
+    button.appendChild(span);
+
+    return button;
 }
 
 function showContentBlockOptions(sender) {
@@ -582,7 +709,7 @@ function toggleTextColorDropdownDisplay() {
         dropdown.style.top = "55px";
 
         var height = document.getElementById("main").offsetHeight;
-        var top = document.getElementById("contextmenu_page").offsetTop;
+        var top = contextmenu.offsetTop;
         if (height - top <= dropdown.offsetHeight)
             dropdown.style.top = (-5 - dropdown.offsetHeight) + "px";
     }
