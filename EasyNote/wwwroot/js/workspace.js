@@ -305,45 +305,7 @@ function initNote() {
 
     // init file drop behavior
     for (const child of note.children) {
-        child.addEventListener("dragover", event => {
-            event.preventDefault();
-            child.classList.add("insert-line");
-        });
-
-        child.addEventListener("dragleave", event => {
-            child.classList.remove("insert-line");
-        });
-
-        child.addEventListener("drop", async (event) => {
-            event.preventDefault();
-
-            child.classList.remove("insert-line");
-
-            for (const file of event.dataTransfer.files) {
-                if (file.type.includes("image/")) {
-                    const contentBlock = await newContentBlock("image");
-
-                    var oldIndex = note.children.length - 1;
-                    var newIndex = getContentBlockIndex(child.id);
-
-                    note.children[newIndex - 1].after(note.children[oldIndex]);
-                    // -1 index because there is an empty block at index 0
-                    sendEditRequest("ContentBlockOrder", {
-                        contentBlockOldIndex: oldIndex - 1,
-                        contentBlockNewIndex: newIndex - 1,
-                    })
-                        .then(json => {
-                            uploadFile(file, contentBlock.id)
-                                .then(json => {
-                                    getContentBlockWrapperChild(contentBlock.id, "content-image").src = json["filePath"];
-                                })
-                                .catch(json => {
-                                    alert(json["errorMsg"]);
-                                });
-                        });
-                }
-            }
-        });
+        initDragDrop(child);
     }
 
     // init content-image-resizer behavior
@@ -366,6 +328,48 @@ function initNote() {
     for (const contentImage of document.getElementsByClassName("content-image")) {
         initContentImage(contentImage);
     }
+}
+
+function initDragDrop(contentBlockWrapper) {
+    contentBlockWrapper.addEventListener("dragover", event => {
+        event.preventDefault();
+        contentBlockWrapper.classList.add("insert-line");
+    });
+
+    contentBlockWrapper.addEventListener("dragleave", event => {
+        contentBlockWrapper.classList.remove("insert-line");
+    });
+
+    contentBlockWrapper.addEventListener("drop", async (event) => {
+        event.preventDefault();
+
+        contentBlockWrapper.classList.remove("insert-line");
+
+        for (const file of event.dataTransfer.files) {
+            if (file.type.includes("image/")) {
+                const contentBlockWrapperNew = await newContentBlockWrapper("image");
+
+                var oldIndex = note.children.length - 1;
+                var newIndex = getContentBlockIndex(contentBlockWrapper.id);
+
+                note.children[newIndex - 1].after(note.children[oldIndex]);
+                // -1 index because there is an empty block at index 0
+                sendEditRequest("ContentBlockOrder", {
+                    contentBlockOldIndex: oldIndex - 1,
+                    contentBlockNewIndex: newIndex - 1,
+                })
+                    .then(json => {
+                        uploadFile(file, contentBlockWrapperNew.id)
+                            .then(json => {
+                                getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
+                            })
+                            .catch(json => {
+                                alert(json["errorMsg"]);
+                            });
+                    });
+            }
+        }
+    });
 }
 
 function initContentImage(contentImage) {
@@ -521,7 +525,7 @@ function sendEditRequest(editType, { noteName = "", contentBlockId = "", content
     });
 }
 
-async function newContentBlock(type) {
+async function newContentBlockWrapper(type) {
     const surDate = new Date()
     const id = "CB" + surDate.getTime();
 
@@ -538,7 +542,7 @@ async function newContentBlock(type) {
     contentText.classList.add("content-text");
     if (type == "image") {
         const image = document.createElement("img");
-        image.src = "/assets/loading_spinner.gif";
+        image.src = "/assets/loading-spinner.gif";
         image.width = 300;
         image.setAttribute("draggable", "false");
         image.classList.add("content-image");
@@ -557,6 +561,7 @@ async function newContentBlock(type) {
     contentBlockWrapper.classList.add("content-block-wrapper");
     contentBlockWrapper.appendChild(contentBlock);
     contentBlockWrapper.appendChild(createContentBlockInsertDropdown());
+    initDragDrop(contentBlockWrapper);
 
     note.appendChild(contentBlockWrapper);
 
@@ -570,7 +575,7 @@ async function newContentBlock(type) {
         contentBlockType: type,
     });
 
-    return contentBlock;
+    return contentBlockWrapper;
 }
 
 function toggleContentBlockInsertDropdownItems(dropdownItems) {
@@ -641,7 +646,7 @@ function createNewContentBlockButton(type, innerText, iconClassName) {
     switch (type) {
         case "text":
             callback = (event) => {
-                newContentBlock(type)
+                newContentBlockWrapper(type)
                     .then(json => {
                         const oldIndex = note.childElementCount - 1;
                         const newIndex = getContentBlockIndex(getContentBlockId(button));
