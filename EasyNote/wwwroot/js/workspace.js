@@ -352,15 +352,13 @@ function initDragDrop(contentBlockWrapper) {
 
         for (const file of event.dataTransfer.files) {
             if (file.type.includes("image/")) {
-                insertNewContentBlockWrapper("image", getContentBlockIndex(contentBlockWrapper.id))
-                    .then(contentBlockWrapperNew => {
-                        uploadFile(file, contentBlockWrapperNew.id)
-                            .then(json => {
-                                getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
-                            })
-                            .catch(json => {
-                                alert("File upload failed: " + json["errorMsg"]);
-                            });
+                const contentBlockWrapperNew = await insertNewContentBlockWrapper("image", getContentBlockIndex(contentBlockWrapper.id));
+                uploadFile(file, contentBlockWrapperNew.id)
+                    .then(json => {
+                        getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
+                    })
+                    .catch(json => {
+                        alert("File upload failed: " + json["errorMsg"]);
                     });
             }
         }
@@ -595,7 +593,7 @@ async function insertNewContentBlockWrapper(type, index) {
         contentBlockNewIndex: newIndex - 1,
     })
 
-    if (respone["isSuccessed"]) {
+    if (type === "text") {
         getContentBlockWrapperChild(note.children[index].id, "content-block-insert-dropdown-items").classList.remove("content-block-insert-dropdown-items-show");
         getContentBlockWrapperChild(note.children[newIndex].id, "content-block").classList.add("content-block-hover");
         contentBlockOptions.dataset.targetId = note.children[newIndex].id;
@@ -685,18 +683,18 @@ function createNewContentBlockButton(type, innerText, iconClassName) {
                 input.type = "file";
                 input.setAttribute("multiple", "");
                 input.setAttribute("accept", "image/*");
-                input.addEventListener("change", event => {
+                input.addEventListener("change", async event => {
                     for (const file of event.target.files) {
-                        insertNewContentBlockWrapper(type, getContentBlockIndex(getContentBlockWrapper(button).id))
-                            .then(contentBlockWrapperNew => {
-                                uploadFile(file, contentBlockWrapperNew.id)
-                                    .then(json => {
-                                        getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
-                                    })
-                                    .catch(json => {
-                                        alert("File upload failed: " + json["errorMsg"]);
-                                    });
-                            });
+                        const contentBlockWrapperNew = await insertNewContentBlockWrapper(type, getContentBlockIndex(getContentBlockWrapper(button).id));
+                        if (contentBlockWrapperNew != null) {
+                            uploadFile(file, contentBlockWrapperNew.id)
+                                .then(json => {
+                                    getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
+                                })
+                                .catch(json => {
+                                    alert("File upload failed: " + json["errorMsg"]);
+                                });
+                        }
                     }
                 });
                 input.click();
