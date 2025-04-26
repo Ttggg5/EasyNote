@@ -108,15 +108,15 @@ function getContentBlockWrapperChild(contentBlockId, className) {
     }
 }
 
-function getContentBlockId(child) {
+function getContentBlockWrapper(child) {
     var parent = child;
     try {
-        while (!parent.classList.contains("content-block-wrapper")) {
+        while (parent.classList == null || !parent.classList.contains("content-block-wrapper")) {
             parent = parent.parentElement;
         }
-        return parent.id;
+        return parent;
     } catch (exception) {
-        return "";
+        return null;
     }
 }
 
@@ -137,7 +137,7 @@ function justifyText(pos) {
     const targetId = contentBlockOptions.dataset.targetId;
     const contentText = getContentBlockWrapperChild(targetId, "content-text");
     contentText.style.textAlign = pos;
-    if (document.getElementById(targetId).dataset.type === "image") {
+    if (getContentBlockWrapperChild(targetId, "content-block").dataset.type === "image") {
         const content = getContentBlockWrapperChild(targetId, "content");
         content.style.alignItems = pos;
         switch (pos) {
@@ -320,6 +320,11 @@ function initNote() {
     contentImageResizer.addEventListener("mousedown", event => {
         previousMouseX = event.clientX;
         getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-text").style.width = "auto";
+
+        for (const contentImage of document.getElementsByClassName("content-image")) {
+            contentImage.removeEventListener("mouseenter", contentImageMouseenterCallback);
+        }
+
         window.addEventListener("mousemove", windowMousemoveCallback);
         window.addEventListener("mouseup", windowMouseupCallback);
     });
@@ -347,24 +352,14 @@ function initDragDrop(contentBlockWrapper) {
 
         for (const file of event.dataTransfer.files) {
             if (file.type.includes("image/")) {
-                const contentBlockWrapperNew = await newContentBlockWrapper("image");
-
-                var oldIndex = note.children.length - 1;
-                var newIndex = getContentBlockIndex(contentBlockWrapper.id);
-
-                note.children[newIndex - 1].after(note.children[oldIndex]);
-                // -1 index because there is an empty block at index 0
-                sendEditRequest("ContentBlockOrder", {
-                    contentBlockOldIndex: oldIndex - 1,
-                    contentBlockNewIndex: newIndex - 1,
-                })
-                    .then(json => {
+                insertNewContentBlockWrapper("image", getContentBlockIndex(contentBlockWrapper.id))
+                    .then(contentBlockWrapperNew => {
                         uploadFile(file, contentBlockWrapperNew.id)
                             .then(json => {
                                 getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
                             })
                             .catch(json => {
-                                alert(json["errorMsg"]);
+                                alert("File upload failed: " + json["errorMsg"]);
                             });
                     });
             }
@@ -373,11 +368,7 @@ function initDragDrop(contentBlockWrapper) {
 }
 
 function initContentImage(contentImage) {
-    contentImage.addEventListener("mouseenter", event => {
-        contentImageResizer.dataset.targetId = getContentBlockId(contentImage);
-        showContentImageResizer();
-        document.getElementById("main").addEventListener("scroll", showContentImageResizer);
-    });
+    contentImage.addEventListener("mouseenter", contentImageMouseenterCallback);
 
     contentImage.addEventListener("mousemove", event => {
         showContentImageResizer();
@@ -425,6 +416,12 @@ function uploadFile(file, contentBlockId) {
     });
 }
 
+function contentImageMouseenterCallback(event) {
+    contentImageResizer.dataset.targetId = getContentBlockWrapper(event.currentTarget).id;
+    showContentImageResizer();
+    document.getElementById("main").addEventListener("scroll", showContentImageResizer);
+}
+
 function windowMousemoveCallback(event) {
     const targetImage = getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-image");
 
@@ -449,6 +446,10 @@ function windowMouseupCallback(event) {
         contentBlockId: contentImageResizer.dataset.targetId,
         content: getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content").outerHTML,
     });
+
+    for (const contentImage of document.getElementsByClassName("content-image")) {
+        contentImage.addEventListener("mouseenter", contentImageMouseenterCallback);
+    }
 }
 
 function startAutoSave() {
@@ -477,12 +478,9 @@ function startAutoSave() {
 async function observerCallback(mutationsList, observer) {
     var targets = {};
     mutationsList.forEach(value => {
-        var targetNode = value.target;
         try {
-            while (!targetNode.parentElement.classList.contains("content-block")) {
-                targetNode = targetNode.parentElement;
-            }
-            targets[targetNode.parentNode.id] = targetNode.outerHTML;
+            const target = getContentBlockWrapper(value.target);
+            targets[target.id] = getContentBlockWrapperChild(target.id, "content").outerHTML;
         } catch (error) {
             console.log(error);
         }
@@ -563,6 +561,14 @@ async function newContentBlockWrapper(type) {
     contentBlockWrapper.appendChild(createContentBlockInsertDropdown());
     initDragDrop(contentBlockWrapper);
 
+    const responseJson = await sendEditRequest("AddContentBlock", {
+        contentBlockId: id,
+        contentBlockType: type,
+    });
+
+    if (!responseJson["isSuccessed"])
+        return null;
+
     note.appendChild(contentBlockWrapper);
 
     // add observer to content
@@ -570,12 +576,31 @@ async function newContentBlockWrapper(type) {
     observer.observe(content, observerOptions);
     observers[id] = observer;
 
-    await sendEditRequest("AddContentBlock", {
-        contentBlockId: id,
-        contentBlockType: type,
-    });
-
     return contentBlockWrapper;
+}
+
+async function insertNewContentBlockWrapper(type, index) {
+    const contentBlockWrapperNew = await newContentBlockWrapper(type)
+    if (contentBlockWrapperNew == null)
+        return null;
+        
+    const oldIndex = note.childElementCount - 1;
+    const newIndex = index;
+
+    note.children[newIndex - 1].after(note.children[oldIndex]);
+
+    // -1 index because there is an empty block at index 0
+    const respone = await sendEditRequest("ContentBlockOrder", {
+        contentBlockOldIndex: oldIndex - 1,
+        contentBlockNewIndex: newIndex - 1,
+    })
+
+    if (respone["isSuccessed"]) {
+        getContentBlockWrapperChild(note.children[index].id, "content-block-insert-dropdown-items").classList.remove("content-block-insert-dropdown-items-show");
+        getContentBlockWrapperChild(note.children[newIndex].id, "content-block").classList.add("content-block-hover");
+        contentBlockOptions.dataset.targetId = note.children[newIndex].id;
+    }
+    return contentBlockWrapperNew;
 }
 
 function toggleContentBlockInsertDropdownItems(dropdownItems) {
@@ -646,30 +671,35 @@ function createNewContentBlockButton(type, innerText, iconClassName) {
     switch (type) {
         case "text":
             callback = (event) => {
-                newContentBlockWrapper(type)
-                    .then(json => {
-                        const oldIndex = note.childElementCount - 1;
-                        const newIndex = getContentBlockIndex(getContentBlockId(button));
-
-                        note.children[newIndex - 1].after(note.children[oldIndex]);
-
-                        // -1 index because there is an empty block at index 0
-                        sendEditRequest("ContentBlockOrder", {
-                            contentBlockOldIndex: oldIndex - 1,
-                            contentBlockNewIndex: newIndex - 1,
-                        })
-                            .then(json => {
-                                button.parentElement.classList.remove("content-block-insert-dropdown-items-show");
-                                getContentBlockWrapperChild(note.children[newIndex].id, "content-block").classList.add("content-block-hover");
-                                contentBlockOptions.dataset.targetId = note.children[newIndex].id;
-                            });
-                    });
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                if (contentBlockWrapper == null)
+                    insertNewContentBlockWrapper(type, 1); // index 0 is an empty block
+                else
+                    insertNewContentBlockWrapper(type, getContentBlockIndex(contentBlockWrapper.id));
             };
             break;
 
         case "image":
             callback = (event) => {
-
+                const input = document.createElement("input");
+                input.type = "file";
+                input.setAttribute("multiple", "");
+                input.setAttribute("accept", "image/*");
+                input.addEventListener("change", event => {
+                    for (const file of event.target.files) {
+                        insertNewContentBlockWrapper(type, getContentBlockIndex(getContentBlockWrapper(button).id))
+                            .then(contentBlockWrapperNew => {
+                                uploadFile(file, contentBlockWrapperNew.id)
+                                    .then(json => {
+                                        getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
+                                    })
+                                    .catch(json => {
+                                        alert("File upload failed: " + json["errorMsg"]);
+                                    });
+                            });
+                    }
+                });
+                input.click();
             };
             break;
     }
@@ -699,7 +729,7 @@ function showContentBlockOptions(sender) {
 
     sender.parentElement.classList.add("content-block-hover");
 
-    contentBlockOptions.dataset.targetId = getContentBlockId(sender);
+    contentBlockOptions.dataset.targetId = getContentBlockWrapper(sender).id;
 }
 
 function hideContentBlockOptions() {

@@ -26,7 +26,27 @@
 }
 
 .content-block-wrapper {
-    
+    animation: slide-in forwards 0.5s;
+}
+
+@keyframes slide-in {
+    0% {
+        opacity: 0;
+        transform: translateX(50%);
+    }
+
+    50% {
+        opacity: 100%;
+        transform: translateX(0);
+    }
+
+    70% {
+        transform: translateX(2%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
 }
 
 .content-block {
