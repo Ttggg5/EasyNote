@@ -88,13 +88,18 @@
     }
 
 .content-object {
-    border-radius: 10px;
     max-width: 100%;
     min-width: 20%;
     user-select: none;
     flex-shrink: 0;
     align-self: center;
 }
+
+    .content-object img {
+        border-radius: 10px;
+        max-width: 100%;
+        min-width: 100px;
+    }
 
 .content-text {
     border-radius: 10px;
