@@ -424,7 +424,7 @@ namespace EasyNote.Controllers
                         if (!noteEditDTO.ContentBlockId.StartsWith("CB"))
                             throw new Exception();
 
-                        HtmlNode contentBlock = CreateContentBlock(noteEditDTO.ContentBlockId, noteEditDTO.ContentBlockType);
+                        HtmlNode contentBlock = CreateContentBlock(noteEditDTO.ContentBlockId, Enum.Parse<ContentObjectTypes>(noteEditDTO.ContentObjectType), Enum.Parse<ContentTextTypes>(noteEditDTO.ContentTextType));
                         htmlDocument.DocumentNode.AppendChild(contentBlock);
                         htmlDocument.Save(notePath);
                         break;
@@ -434,9 +434,10 @@ namespace EasyNote.Controllers
                         if (contentBlock == null)
                             throw new Exception();
 
-                        if (contentBlock.GetAttributeValue("data-type", "").Equals("image"))
+                        HtmlNode contentObject = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-object");
+                        if (contentObject != null && contentObject.GetAttributeValue("data-object-type", "").Equals(Enum.GetName(ContentObjectTypes.Image)))
                         {
-                            HtmlNode imageNode = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-image");
+                            HtmlNode imageNode = contentObject.FirstChild;
                             try
                             {
                                 System.IO.File.Delete(Path.Combine(_webHostEnvironment.WebRootPath, imageNode.GetAttributeValue("src", "")));
@@ -478,7 +479,7 @@ namespace EasyNote.Controllers
             }
         }
 
-        private HtmlNode CreateContentBlock(string id, string contentBlockType)
+        private HtmlNode CreateContentBlock(string id, ContentObjectTypes contentObjectType, ContentTextTypes contentTextType)
         {
             HtmlDocument document = new HtmlDocument();
             document.OptionUseIdAttribute = true;
@@ -487,25 +488,53 @@ namespace EasyNote.Controllers
             contentBlock.AddClass("content-block");
             contentBlock.SetAttributeValue("id", id);
             contentBlock.SetAttributeValue("tabindex", "-1");
-            contentBlock.SetAttributeValue("data-type", contentBlockType);
 
             HtmlNode content = document.CreateElement("div");
             content.AddClass("content");
 
+            HtmlNode contentObject = document.CreateElement("div");
+            contentObject.AddClass("content-object");
+            contentObject.SetAttributeValue("data-object-type", Enum.GetName<ContentObjectTypes>(contentObjectType));
+            content.AppendChild(contentObject);
+
             HtmlNode contentText = document.CreateElement("div");
             contentText.SetAttributeValue("contenteditable", "true");
             contentText.AddClass("content-text");
-            if (contentBlockType.Equals("image"))
-            {
-                HtmlNode image = document.CreateElement("img");
-                image.SetAttributeValue("width", "300");
-                image.SetAttributeValue("draggable", "false");
-                image.AddClass("content-image");
-                content.AppendChild(image);
-            }
+            contentText.SetAttributeValue("data-text-type", Enum.GetName<ContentTextTypes>(contentTextType));
             content.AppendChild(contentText);
 
             contentBlock.AppendChild(content);
+
+            switch (contentObjectType)
+            {
+                case ContentObjectTypes.None:
+                    content.RemoveChild(contentObject);
+                    break;
+
+                case ContentObjectTypes.Image:
+                    HtmlNode image = document.CreateElement("img");
+                    image.SetAttributeValue("width", "300");
+                    image.SetAttributeValue("draggable", "false");
+                    contentObject.AppendChild(image);
+                    break;
+            }
+
+            switch (contentTextType)
+            {
+                case ContentTextTypes.None:
+                    content.RemoveChild(contentText);
+                    break;
+
+                case ContentTextTypes.Text:
+                    break;
+
+                case ContentTextTypes.BulletList:
+                    HtmlNode ul = document.CreateElement("ul");
+                    HtmlNode li = document.CreateElement("li");
+                    ul.AppendChild(li);
+                    contentText.AppendChild(ul);
+                    break;
+            }
 
             return contentBlock;
         }
@@ -596,7 +625,7 @@ namespace EasyNote.Controllers
                 string notePath = GetNotePath(userId, fileDTO.NoteId);
                 htmlDocument.Load(notePath);
 
-                HtmlNode? imageNode = GetContentBlockChildNode(htmlDocument, fileDTO.ContentBlockId, "content-image");
+                HtmlNode? imageNode = GetContentBlockChildNode(htmlDocument, fileDTO.ContentBlockId, "content-object").FirstChild;
                 string src = Path.GetRelativePath(Directory.GetParent(noteFolderPath).Parent.Parent.FullName, filePath);
                 imageNode.SetAttributeValue("src", src);
                 htmlDocument.Save(notePath);

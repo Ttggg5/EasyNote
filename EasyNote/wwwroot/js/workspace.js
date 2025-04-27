@@ -4,6 +4,37 @@ const noteId = "";
 const allTextColorClasses = ["text-color-white", "text-color-black", "text-color-yellow", "text-color-red", "text-color-blue", "text-color-green", "text-color-darkgreen", "text-color-darkblue", "text-color-darkred"];
 const allHighlightColorClasses = ["highlight-transparent", "highlight-black", "highlight-yellow", "highlight-red", "highlight-blue", "highlight-green", "highlight-darkgreen", "highlight-darkblue", "highlight-darkred"];
 
+const contentTextTypes = {
+    None: "None",
+    Text: "Text",
+    Heading1: "Heading1",
+    Heading2: "Heading2",
+    Heading3: "Heading3",
+    BulletList: "BulletList",
+}
+
+const contentObjectTypes = {
+    None: "None",
+    Image: "Image",
+}
+
+const insertContentButtonTypes = {
+    Text: "Text",
+    Heading1: "Heading1",
+    Heading2: "Heading2",
+    Heading3: "Heading3",
+    BulletList: "BulletList",
+    Image: "Image",
+}
+
+const noteEditTypes = {
+    Name: "Name",
+    Content: "Content",
+    AddContentBlock: "AddContentBlock",
+    DeleteContentBlock: "DeleteContentBlock",
+    ContentBlockOrder: "ContentBlockOrder",
+}
+
 const observers = {}; // "contentBlockId": observer
 observerOptions = {
     attributes: true,
@@ -46,6 +77,25 @@ window.addEventListener("paste", event => {
 });
 
 document.getElementById("main").addEventListener("mousedown", event => unFocusContentBlock());
+document.getElementById("main").addEventListener("scroll", event => {
+    const selection = window.getSelection();
+    if (selection) {
+        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            showContextmenu(rect);
+            return;
+        }
+    }
+
+    hideContextmenu();
+    document.getElementById("text_color_dropdown").style.display = "none";
+
+    if (contentBlockOptions.dataset.targetId != "")
+        showContentBlockOptions(getContentBlockWrapperChild(contentBlockOptions.dataset.targetId, "option-block"));
+    else
+        hideContentBlockOptions();
+});
 document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
 document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
 
@@ -63,32 +113,13 @@ document.addEventListener("mouseup", event => {
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
             showContextmenu(rect);
-
-            document.getElementById("main").addEventListener("scroll", mainScrollCallback);
             return;
         }
     }
 
     hideContextmenu();
     document.getElementById("text_color_dropdown").style.display = "none";
-    document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
 });
-
-function mainScrollCallback(event) {
-    const selection = window.getSelection();
-    if (selection) {
-        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            showContextmenu(rect);
-            return;
-        }
-    }
-
-    hideContextmenu();
-    document.getElementById("text_color_dropdown").style.display = "none";
-    document.getElementById("main").removeEventListener("scroll", mainScrollCallback);
-}
 
 function getContentBlockWrapperChild(contentBlockId, className) {
     try {
@@ -133,11 +164,14 @@ function deleteContentBlock() {
     });
 }
 
-function justifyText(pos) {
+function justifyContent(pos) {
     const targetId = contentBlockOptions.dataset.targetId;
     const contentText = getContentBlockWrapperChild(targetId, "content-text");
-    contentText.style.textAlign = pos;
-    if (getContentBlockWrapperChild(targetId, "content-block").dataset.type === "image") {
+    if (contentText != null)
+        contentText.style.textAlign = pos;
+
+    const contentObject = getContentBlockWrapperChild(targetId, "content-block");
+    if (contentObject != null) {
         const content = getContentBlockWrapperChild(targetId, "content");
         content.style.alignItems = pos;
         switch (pos) {
@@ -158,10 +192,50 @@ function justifyText(pos) {
     hideContentBlockOptions();
 }
 
-function setTextSize(size) {
+async function changeContentTexttType(type) {
     const targetId = contentBlockOptions.dataset.targetId;
     const contentText = getContentBlockWrapperChild(targetId, "content-text");
-    contentText.style.fontSize = size;
+
+    if (contentText.dataset.textType != type) {
+        // get pure content html with type
+        var contentTextHtml = "";
+        if (contentText.dataset.textType === contentTextTypes.BulletList) {
+            for (const child of contentText.children[0].children) {
+                contentTextHtml += child.innerHTML;
+            }
+        }
+        else
+            contentTextHtml = contentText.innerHTML;
+
+        // append type to pure content html
+        switch (type) {
+            case contentTextTypes.Heading1:
+                contentText.style.fontSize = "2em";
+                contentText.innerHTML = contentTextHtml;
+                break;
+
+            case contentTextTypes.Heading2:
+                contentText.style.fontSize = "1.5em";
+                contentText.innerHTML = contentTextHtml;
+                break;
+
+            case contentTextTypes.Heading3:
+                contentText.style.fontSize = "1.17em";
+                contentText.innerHTML = contentTextHtml;
+                break;
+
+            case contentTextTypes.Text:
+                contentText.style.fontSize = "16px";
+                contentText.innerHTML = contentTextHtml;
+                break;
+
+            case contentTextTypes.BulletList:
+                contentText.style.fontSize = "16px";
+                contentText.innerHTML = "<ul><li>" + contentTextHtml + "</li></ul>";
+                break;
+        }
+        contentText.dataset.textType = type;
+    }
     hideContentBlockOptions();
 }
 
@@ -321,17 +395,19 @@ function initNote() {
         previousMouseX = event.clientX;
         getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-text").style.width = "auto";
 
-        for (const contentImage of document.getElementsByClassName("content-image")) {
-            contentImage.removeEventListener("mouseenter", contentImageMouseenterCallback);
+        for (const contentObject of document.getElementsByClassName("content-object")) {
+            if (contentObject.dataset.objectType == contentObjectTypes.Image)
+                contentObject.children[0].removeEventListener("mouseenter", contentImageMouseenterCallback);
         }
 
         window.addEventListener("mousemove", windowMousemoveCallback);
         window.addEventListener("mouseup", windowMouseupCallback);
     });
 
-    // init content-image behavior
-    for (const contentImage of document.getElementsByClassName("content-image")) {
-        initContentImage(contentImage);
+    // init image type content-object behavior
+    for (const contentObject of document.getElementsByClassName("content-object")) {
+        if (contentObject.dataset.objectType == contentObjectTypes.Image)
+            initContentImage(contentObject.children[0]);
     }
 }
 
@@ -352,10 +428,10 @@ function initDragDrop(contentBlockWrapper) {
 
         for (const file of event.dataTransfer.files) {
             if (file.type.includes("image/")) {
-                const contentBlockWrapperNew = await insertNewContentBlockWrapper("image", getContentBlockIndex(contentBlockWrapper.id));
+                const contentBlockWrapperNew = await insertNewContentBlockWrapper(contentObjectTypes.Image, contentTextTypes.Text, getContentBlockIndex(contentBlockWrapper.id));
                 uploadFile(file, contentBlockWrapperNew.id)
                     .then(json => {
-                        getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
+                        getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-object").children[0].src = json["filePath"];
                     })
                     .catch(json => {
                         alert("File upload failed: " + json["errorMsg"]);
@@ -381,7 +457,7 @@ function initContentImage(contentImage) {
 function showContentImageResizer() {
     contentImageResizer.style.display = "block";
 
-    const imageOffsets = getOffset(getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-image"));
+    const imageOffsets = getOffset(getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-object").children[0]);
     contentImageResizer.style.left = (imageOffsets.left + imageOffsets.width - contentImageResizer.offsetWidth - 2) + "px";
     contentImageResizer.style.top = (imageOffsets.top + imageOffsets.height - contentImageResizer.offsetHeight - 2) + "px";
 
@@ -421,7 +497,7 @@ function contentImageMouseenterCallback(event) {
 }
 
 function windowMousemoveCallback(event) {
-    const targetImage = getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-image");
+    const targetImage = getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-object").children[0];
 
     const moveRangeX = event.clientX - previousMouseX;
     previousMouseX = event.clientX;
@@ -445,8 +521,9 @@ function windowMouseupCallback(event) {
         content: getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content").outerHTML,
     });
 
-    for (const contentImage of document.getElementsByClassName("content-image")) {
-        contentImage.addEventListener("mouseenter", contentImageMouseenterCallback);
+    for (const contentObject of document.getElementsByClassName("content-object")) {
+        if (contentObject.dataset.objectType == contentObjectTypes.Image)
+            contentObject.children[0].addEventListener("mouseenter", contentImageMouseenterCallback);
     }
 }
 
@@ -491,7 +568,7 @@ async function observerCallback(mutationsList, observer) {
     }
 }
 
-function sendEditRequest(editType, { noteName = "", contentBlockId = "", contentBlockType = "", content = "", contentBlockOldIndex = -1, contentBlockNewIndex = -1 }) {
+function sendEditRequest(editType, { noteName = "", contentBlockId = "", contentObjectType = "", contentTextType = "", content = "", contentBlockOldIndex = -1, contentBlockNewIndex = -1 }) {
     return new Promise((resolve, reject) => {
         fetch("/Main/EditNote", {
             method: "POST",
@@ -501,7 +578,8 @@ function sendEditRequest(editType, { noteName = "", contentBlockId = "", content
                 EditType: editType,
                 NoteName: noteName,
                 ContentBlockId: contentBlockId,
-                ContentBlockType: contentBlockType,
+                ContentObjectType: contentObjectType,
+                ContentTextType: contentTextType,
                 Content: content,
                 ContentBlockOldIndex: contentBlockOldIndex,
                 ContentBlockNewIndex: contentBlockNewIndex,
@@ -521,31 +599,26 @@ function sendEditRequest(editType, { noteName = "", contentBlockId = "", content
     });
 }
 
-async function newContentBlockWrapper(type) {
+async function newContentBlockWrapper(contentObjectType, contentTextType) {
     const surDate = new Date()
     const id = "CB" + surDate.getTime();
 
     const contentBlock = document.createElement("div");
     contentBlock.classList.add("content-block");
     contentBlock.setAttribute("tabindex", "-1");
-    contentBlock.dataset.type = type;
 
     const content = document.createElement("div");
     content.classList.add("content");
 
+    const contentObject = document.createElement("div");
+    contentObject.classList.add("content-object");
+    contentObject.setAttribute("data-object-type", contentObjectType);
+    content.appendChild(contentObject);
+
     const contentText = document.createElement("div");
     contentText.contentEditable = "true";
     contentText.classList.add("content-text");
-    if (type == "image") {
-        const image = document.createElement("img");
-        image.src = "/assets/loading-spinner.gif";
-        image.width = 300;
-        image.setAttribute("draggable", "false");
-        image.classList.add("content-image");
-        content.appendChild(image);
-
-        initContentImage(image);
-    }
+    contentText.setAttribute("data-text-type", contentTextType);
     content.appendChild(contentText);
 
     contentBlock.appendChild(createDragBlock());
@@ -559,9 +632,42 @@ async function newContentBlockWrapper(type) {
     contentBlockWrapper.appendChild(createContentBlockInsertDropdown());
     initDragDrop(contentBlockWrapper);
 
+    switch (contentObjectType) {
+        case contentObjectTypes.None:
+            contentObject.remove();
+            break;
+
+        case contentObjectTypes.Image:
+            const image = document.createElement("img");
+            image.src = "/assets/loading-spinner.gif";
+            image.width = 300;
+            image.setAttribute("draggable", "false");
+            contentObject.appendChild(image);
+
+            initContentImage(image);
+            break;
+    }
+
+    switch (contentTextType) {
+        case contentTextTypes.None:
+            contentText.remove();
+            break;
+
+        case contentTextTypes.Text:
+            break;
+
+        case contentTextTypes.BulletList:
+            const ul = document.createElement("ul");
+            const li = document.createElement("li");
+            ul.appendChild(li);
+            contentText.appendChild(ul);
+            break;
+    }
+
     const responseJson = await sendEditRequest("AddContentBlock", {
         contentBlockId: id,
-        contentBlockType: type,
+        contentObjectType: contentObjectType,
+        contentTextType: contentTextType,
     });
 
     if (!responseJson["isSuccessed"])
@@ -577,8 +683,8 @@ async function newContentBlockWrapper(type) {
     return contentBlockWrapper;
 }
 
-async function insertNewContentBlockWrapper(type, index) {
-    const contentBlockWrapperNew = await newContentBlockWrapper(type)
+async function insertNewContentBlockWrapper(contentObjectType, contentTextType, index) {
+    const contentBlockWrapperNew = await newContentBlockWrapper(contentObjectType, contentTextType)
     if (contentBlockWrapperNew == null)
         return null;
         
@@ -593,7 +699,7 @@ async function insertNewContentBlockWrapper(type, index) {
         contentBlockNewIndex: newIndex - 1,
     })
 
-    if (type === "text") {
+    if (contentObjectType != contentObjectTypes.Image) {
         getContentBlockWrapperChild(note.children[index].id, "content-block-insert-dropdown-items").classList.remove("content-block-insert-dropdown-items-show");
         getContentBlockWrapperChild(note.children[newIndex].id, "content-block").classList.add("content-block-hover");
         contentBlockOptions.dataset.targetId = note.children[newIndex].id;
@@ -651,54 +757,68 @@ function createContentBlockInsertDropdown() {
     contentBlockInsertDropdownItems.classList.add("content-block-insert-dropdown-items");
 
     // create new text contentBlock button
-    const newContentBlockTextButton = createNewContentBlockButton("text", "Text", "bi bi-fonts")
+    const newContentBlockTextButton = createNewContentBlockButton(insertContentButtonTypes.Text, "Text", "bi bi-fonts")
     contentBlockInsertDropdownItems.appendChild(newContentBlockTextButton);
 
     // create new image contentBlock button
-    const newContentBlockImageButton = createNewContentBlockButton("image", "Image", "bi bi-image")
+    const newContentBlockImageButton = createNewContentBlockButton(insertContentButtonTypes.Image, "Image", "bi bi-image")
     contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
+
+    // create new bullet list contentBlock button
+    const newContentBlockBulletListButton = createNewContentBlockButton(insertContentButtonTypes.BulletList, "Bullet list", "bi bi-list-ul")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockBulletListButton);
 
     contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownItems);
 
     return contentBlockInsertDropdown;
 }
 
-function createNewContentBlockButton(type, innerText, iconClassName) {
+function createNewContentBlockButton(insertContentButtonType, innerText, iconClassName) {
     const button = document.createElement("button");
     var callback;
-    switch (type) {
-        case "text":
+    switch (insertContentButtonType) {
+        case insertContentButtonTypes.Text:
             callback = (event) => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                if (contentBlockWrapper == null)
-                    insertNewContentBlockWrapper(type, 1); // index 0 is an empty block
-                else
-                    insertNewContentBlockWrapper(type, getContentBlockIndex(contentBlockWrapper.id));
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, 1); // index 0 is an empty block
             };
             break;
 
-        case "image":
+        case insertContentButtonTypes.Image:
             callback = (event) => {
                 const input = document.createElement("input");
                 input.type = "file";
                 input.setAttribute("multiple", "");
                 input.setAttribute("accept", "image/*");
                 input.addEventListener("change", async event => {
-                    for (const file of event.target.files) {
-                        const contentBlockWrapperNew = await insertNewContentBlockWrapper(type, getContentBlockIndex(getContentBlockWrapper(button).id));
-                        if (contentBlockWrapperNew != null) {
-                            uploadFile(file, contentBlockWrapperNew.id)
-                                .then(json => {
-                                    getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-image").src = json["filePath"];
-                                })
-                                .catch(json => {
-                                    alert("File upload failed: " + json["errorMsg"]);
-                                });
+                    const contentBlockWrapper = getContentBlockWrapper(button);
+                    var startIndex = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                    const contentBlockWrappersNew = [];
+                    const files = event.target.files;
+                    for (var i = 0; i < files.length; i++) {
+                        contentBlockWrappersNew.push(await insertNewContentBlockWrapper(contentObjectTypes.Image, contentTextTypes.Text, startIndex++));
+                    }
+
+                    for (var i = 0; i < files.length; i++) {
+                        if (contentBlockWrappersNew[i] != null) {
+                            try {
+                                const responJson = await uploadFile(files[i], contentBlockWrappersNew[i].id);
+                                getContentBlockWrapperChild(contentBlockWrappersNew[i].id, "content-object").children[0].src = responJson["filePath"];
+                            } catch (exception) {
+                                alert("File upload failed: " + exception["errorMsg"]);
+                            }
                         }
                     }
                 });
                 input.click();
             };
+            break;
+
+        case insertContentButtonTypes.BulletList:
+            callback = (event) => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, 1); // index 0 is an empty block
+            }
             break;
     }
     button.addEventListener("click", callback);
@@ -733,7 +853,7 @@ function showContentBlockOptions(sender) {
 function hideContentBlockOptions() {
     contentBlockOptions.style.display = "none";
     if (contentBlockOptions.dataset.targetId != "") {
-        document.getElementById(contentBlockOptions.dataset.targetId).classList.remove("content-block-hover");
+        getContentBlockWrapperChild(contentBlockOptions.dataset.targetId, "content-block").classList.remove("content-block-hover");
         contentBlockOptions.dataset.targetId = "";
     }
 }

@@ -1,4 +1,5 @@
 ﻿#title {
+    display: none;
     width: 100%;
     font-size: 38px;
     font-family: "Noto Sans TC", sans-serif;
@@ -86,7 +87,7 @@
         outline: none;
     }
 
-.content-image {
+.content-object {
     border-radius: 10px;
     max-width: 100%;
     min-width: 20%;
@@ -107,6 +108,10 @@
 
     .content-text:focus {
         outline: none;
+    }
+
+    .content-text ul {
+        margin-bottom: 0;
     }
 
 .drag-block {
@@ -152,15 +157,16 @@
     height: 20px;
     align-items: center;
     transition: all 0.3s;
+    transition-delay: 0.2s;
 }
     .content-block-insert-dropdown:hover {
-        height: 40px;
+        height: 60px;
     }
 
         .content-block-insert-dropdown:hover .content-block-insert-dropdown-button {
             visibility: visible;
             opacity: 100%;
-            transform: translateY(0);
+            transform: translateX(0);
         }
 
 .content-block-insert-dropdown-button {
@@ -178,8 +184,9 @@
     align-items: center;
     visibility: collapse;
     opacity: 0;
-    transform: translateY(-40px);
+    transform: translateX(-60px);
     transition: all 0.3s;
+    transition-delay: 0.2s;
 }
 
     .content-block-insert-dropdown-button:hover {
@@ -217,6 +224,10 @@
 
         .content-block-insert-dropdown-items button:nth-child(2) {
             transition-delay: 0.1s;
+        }
+
+        .content-block-insert-dropdown-items button:nth-child(3) {
+            transition-delay: 0.2s;
         }
 
     .content-block-insert-dropdown-items-show button {
@@ -314,6 +325,16 @@
             background: #515151;
         }
 
+@keyframes show-options {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
 #content_block_options {
     width: auto;
     height: auto;
@@ -321,9 +342,24 @@
     padding: 10px 5px;
     justify-content: center;
     align-items: center;
+    animation: show-options 0.2s forwards;
+}
+
+    #content_block_options > a {
+        font-size: 12px;
+        align-self: start;
+        margin-left: 5px;
+        margin-top: 5px;
+        user-select: none;
+    }
+
+.content-type-list {
+    max-height: 120px;
+    overflow-y: scroll;
 }
 
 #content_block_options_delete {
+    margin-top: 20px;
     color: indianred;
 }
 
