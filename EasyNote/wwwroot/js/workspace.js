@@ -756,17 +756,29 @@ function createContentBlockInsertDropdown() {
     const contentBlockInsertDropdownItems = document.createElement("div");
     contentBlockInsertDropdownItems.classList.add("content-block-insert-dropdown-items");
 
+    // create new heading1 contentBlock button
+    const newContentBlockHeading1Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 1", "bi bi-type-h1")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockHeading1Button);
+
+    // create new heading2 contentBlock button
+    const newContentBlockHeading2Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 2", "bi bi-type-h2")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockHeading2Button);
+
+    // create new heading3 contentBlock button
+    const newContentBlockHeading3Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 3", "bi bi-type-h3")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockHeading3Button);
+
     // create new text contentBlock button
     const newContentBlockTextButton = createNewContentBlockButton(insertContentButtonTypes.Text, "Text", "bi bi-fonts")
     contentBlockInsertDropdownItems.appendChild(newContentBlockTextButton);
 
-    // create new image contentBlock button
-    const newContentBlockImageButton = createNewContentBlockButton(insertContentButtonTypes.Image, "Image", "bi bi-image")
-    contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
-
     // create new bullet list contentBlock button
     const newContentBlockBulletListButton = createNewContentBlockButton(insertContentButtonTypes.BulletList, "Bullet list", "bi bi-list-ul")
     contentBlockInsertDropdownItems.appendChild(newContentBlockBulletListButton);
+
+    // create new image contentBlock button
+    const newContentBlockImageButton = createNewContentBlockButton(insertContentButtonTypes.Image, "Image", "bi bi-image")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
 
     contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownItems);
 
@@ -777,11 +789,39 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
     const button = document.createElement("button");
     var callback;
     switch (insertContentButtonType) {
+        case insertContentButtonTypes.Heading1:
+            callback = (event) => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading1, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading1, 1); // index 0 is an empty block
+            };
+            break;
+
+        case insertContentButtonTypes.Heading2:
+            callback = (event) => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading2, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading2, 1); // index 0 is an empty block
+            };
+            break;
+
+        case insertContentButtonTypes.Heading3:
+            callback = (event) => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading3, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading3, 1); // index 0 is an empty block
+            };
+            break;
+
         case insertContentButtonTypes.Text:
             callback = (event) => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
                 contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, 1); // index 0 is an empty block
             };
+            break;
+
+        case insertContentButtonTypes.BulletList:
+            callback = (event) => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, 1); // index 0 is an empty block
+            }
             break;
 
         case insertContentButtonTypes.Image:
@@ -812,13 +852,6 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
                 });
                 input.click();
             };
-            break;
-
-        case insertContentButtonTypes.BulletList:
-            callback = (event) => {
-                const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, 1); // index 0 is an empty block
-            }
             break;
     }
     button.addEventListener("click", callback);
