@@ -1,9 +1,10 @@
 ﻿namespace EasyNote.DTOs
 {
-    public enum NoteEditType
+    public enum NoteEditTypes
     {
         Name,
-        Content,
+        ContentObject,
+        ContentText,
         AddContentBlock,
         DeleteContentBlock,
         ContentBlockOrder,
@@ -23,6 +24,7 @@
     {
         None,
         Image,
+        Youtube,
     }
 
     public class NoteEditDTO

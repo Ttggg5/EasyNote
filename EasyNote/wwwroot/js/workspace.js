@@ -16,6 +16,7 @@ const contentTextTypes = {
 const contentObjectTypes = {
     None: "None",
     Image: "Image",
+    Youtube: "Youtube",
 }
 
 const insertContentButtonTypes = {
@@ -25,17 +26,19 @@ const insertContentButtonTypes = {
     Heading3: "Heading3",
     BulletList: "BulletList",
     Image: "Image",
+    Youtube: "Youtube",
 }
 
 const noteEditTypes = {
     Name: "Name",
-    Content: "Content",
+    ContentText: "ContentText",
+    ContentObject: "ContentObject",
     AddContentBlock: "AddContentBlock",
     DeleteContentBlock: "DeleteContentBlock",
     ContentBlockOrder: "ContentBlockOrder",
 }
 
-const observers = {}; // "contentBlockId": observer
+const contentTextObservers = {}; // "contentBlockId": observer
 observerOptions = {
     attributes: true,
     subtree: true,
@@ -44,10 +47,16 @@ observerOptions = {
     attributeFilter: ["class", "style"],
 }
 
+const youtubeUrlDialog = document.getElementById("youtube_url_dialog");
 const note = document.getElementById("note");
 const contextmenu = document.getElementById("contextmenu_page");
 const contentBlockOptions = document.getElementById("content_block_options");
 const contentImageResizer = document.getElementById("content_image_resizer");
+
+var contentChangedBlockIds = {};
+var counter = 0;
+var editing = false;
+var sendContentTextRequestTimerId = -1;
 
 var previousMouseX = -1;
 
@@ -91,21 +100,13 @@ document.getElementById("main").addEventListener("scroll", event => {
     hideContextmenu();
     document.getElementById("text_color_dropdown").style.display = "none";
 
-    if (contentBlockOptions.dataset.targetId != "")
+    if (contentBlockOptions.style.display != "none" && contentBlockOptions.dataset.targetId != "")
         showContentBlockOptions(getContentBlockWrapperChild(contentBlockOptions.dataset.targetId, "option-block"));
     else
         hideContentBlockOptions();
 });
 document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
 document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
-
-function unFocusContentBlock() {
-    const targetId = contentBlockOptions.dataset.targetId;
-    if (targetId == "") return;
-    getContentBlockWrapperChild(targetId, "content-block").classList.remove("content-block-hover");
-    hideContentBlockOptions(contentBlockOptions);
-}
-
 document.addEventListener("mouseup", event => {
     const selection = window.getSelection();
     if (selection) {
@@ -120,6 +121,33 @@ document.addEventListener("mouseup", event => {
     hideContextmenu();
     document.getElementById("text_color_dropdown").style.display = "none";
 });
+
+// send request when user is not editing if user is editing wait at most 500ms
+async function sendContentTextRequestTimerHandler() {
+    if (editing && counter < 5) {
+        editing = false;
+        counter++;
+        return;
+    }
+
+    for (const [key, value] of Object.entries(contentChangedBlockIds)) {
+        await sendEditRequest(noteEditTypes.ContentText, {
+            contentBlockId: key,
+            content: value,
+        });
+    }
+
+    contentChangedBlockIds = {};
+    editing = false;
+    counter = 0;
+}
+
+function unFocusContentBlock() {
+    const targetId = contentBlockOptions.dataset.targetId;
+    if (targetId == "") return;
+    getContentBlockWrapperChild(targetId, "content-block").classList.remove("content-block-hover");
+    hideContentBlockOptions(contentBlockOptions);
+}
 
 function getContentBlockWrapperChild(contentBlockId, className) {
     try {
@@ -153,8 +181,8 @@ function getContentBlockWrapper(child) {
 
 function deleteContentBlock() {
     const targetId = contentBlockOptions.dataset.targetId;
-    observers[targetId].disconnect();
-    delete observers[targetId];
+    contentTextObservers[targetId].disconnect();
+    delete contentTextObservers[targetId];
 
     hideContentBlockOptions();
     document.getElementById(targetId).remove();
@@ -393,6 +421,9 @@ function initNote() {
 
     contentImageResizer.addEventListener("mousedown", event => {
         previousMouseX = event.clientX;
+
+        // stop contentText observer
+        contentTextObservers[contentImageResizer.dataset.targetId].disconnect();
         getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-text").style.width = "auto";
 
         for (const contentObject of document.getElementsByClassName("content-object")) {
@@ -514,11 +545,14 @@ function windowMouseupCallback(event) {
     window.removeEventListener("mousemove", windowMousemoveCallback);
     window.removeEventListener("mouseup", windowMouseupCallback);
 
-    getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-text").style.width = "100%";
+    // start contentText observer
+    const contentText = getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-text");
+    contentText.style.width = "100%";
+    contentTextObservers[contentImageResizer.dataset.targetId].observe(contentText, observerOptions);
 
-    sendEditRequest("Content", {
+    sendEditRequest(noteEditTypes.ContentObject, {
         contentBlockId: contentImageResizer.dataset.targetId,
-        content: getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content").outerHTML,
+        content: getContentBlockWrapperChild(contentImageResizer.dataset.targetId, "content-object").innerHTML,
     });
 
     for (const contentObject of document.getElementsByClassName("content-object")) {
@@ -543,29 +577,25 @@ function startAutoSave() {
         if (!child.classList.contains("content-block-wrapper"))
             continue;
         
-        // add observer to content
+        // add observer to contentText
         const observer = new MutationObserver(observerCallback);
-        observer.observe(getContentBlockWrapperChild(child.id, "content"), observerOptions);
-        observers[child.id] = observer;
+        observer.observe(getContentBlockWrapperChild(child.id, "content-text"), observerOptions);
+        contentTextObservers[child.id] = observer;
     }
+
+    sendContentTextRequestTimerId = setInterval(sendContentTextRequestTimerHandler, 100);
 }
 
 async function observerCallback(mutationsList, observer) {
-    var targets = {};
     mutationsList.forEach(value => {
         try {
             const target = getContentBlockWrapper(value.target);
-            targets[target.id] = getContentBlockWrapperChild(target.id, "content").outerHTML;
+            contentChangedBlockIds[target.id] = getContentBlockWrapperChild(target.id, "content-text").outerHTML;
+            editing = true;
         } catch (error) {
             console.log(error);
         }
     });
-    for (const [key, value] of Object.entries(targets)) {
-        await sendEditRequest("Content", {
-            contentBlockId: key,
-            content: value,
-        });
-    }
 }
 
 function sendEditRequest(editType, { noteName = "", contentBlockId = "", contentObjectType = "", contentTextType = "", content = "", contentBlockOldIndex = -1, contentBlockNewIndex = -1 }) {
@@ -646,6 +676,16 @@ async function newContentBlockWrapper(contentObjectType, contentTextType) {
 
             initContentImage(image);
             break;
+
+        case contentObjectTypes.Youtube:
+            const youtubeFrame = document.createElement("iframe");
+            youtubeFrame.classList.add("yooutube_embed");
+            youtubeFrame.width = "500";
+            youtubeFrame.height = "300";
+            youtubeFrame.setAttribute("allowfullscreen", "");
+            youtubeFrame.setAttribute("picture-in-picture", "");
+            contentObject.appendChild(youtubeFrame);
+            break;
     }
 
     switch (contentTextType) {
@@ -675,10 +715,10 @@ async function newContentBlockWrapper(contentObjectType, contentTextType) {
 
     note.appendChild(contentBlockWrapper);
 
-    // add observer to content
+    // add observer to contentText
     const observer = new MutationObserver(observerCallback);
-    observer.observe(content, observerOptions);
-    observers[id] = observer;
+    observer.observe(contentText, observerOptions);
+    contentTextObservers[id] = observer;
 
     return contentBlockWrapper;
 }
@@ -780,6 +820,10 @@ function createContentBlockInsertDropdown() {
     const newContentBlockImageButton = createNewContentBlockButton(insertContentButtonTypes.Image, "Image", "bi bi-image")
     contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
 
+    // create new youtube contentBlock button
+    const newContentBlockYoutubeButton = createNewContentBlockButton(insertContentButtonTypes.Youtube, "Youtube", "bi bi-youtube")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockYoutubeButton);
+
     contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownItems);
 
     return contentBlockInsertDropdown;
@@ -790,42 +834,47 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
     var callback;
     switch (insertContentButtonType) {
         case insertContentButtonTypes.Heading1:
-            callback = (event) => {
+            callback = event => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading1, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading1, 1); // index 0 is an empty block
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading1, index);
             };
             break;
 
         case insertContentButtonTypes.Heading2:
-            callback = (event) => {
+            callback = event => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading2, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading2, 1); // index 0 is an empty block
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading2, index);
             };
             break;
 
         case insertContentButtonTypes.Heading3:
-            callback = (event) => {
+            callback = event => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading3, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading3, 1); // index 0 is an empty block
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Heading3, index);
             };
             break;
 
         case insertContentButtonTypes.Text:
-            callback = (event) => {
+            callback = event => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, 1); // index 0 is an empty block
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.Text, index);
             };
             break;
 
         case insertContentButtonTypes.BulletList:
-            callback = (event) => {
+            callback = event => {
                 const contentBlockWrapper = getContentBlockWrapper(button);
-                contentBlockWrapper ? insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, getContentBlockIndex(contentBlockWrapper.id)) : insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, 1); // index 0 is an empty block
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, index);
             }
             break;
 
         case insertContentButtonTypes.Image:
-            callback = (event) => {
+            callback = event => {
                 const input = document.createElement("input");
                 input.type = "file";
                 input.setAttribute("multiple", "");
@@ -851,6 +900,26 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
                     }
                 });
                 input.click();
+            };
+            break;
+
+        case insertContentButtonTypes.Youtube:
+            callback = event => {
+                document.getElementById("youtube_url").value = "";
+                youtubeUrlDialog.showModal();
+                youtubeUrlDialog.onsubmit = async event => {
+                    const contentBlockWrapper = getContentBlockWrapper(button);
+                    const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                    const contentBlockWrapperNew = await insertNewContentBlockWrapper(contentObjectTypes.Youtube, contentTextTypes.Text, index);
+                    
+                    const contentObject = getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-object");
+                    contentObject.children[0].src = "https://www.youtube.com/embed/" + document.getElementById("youtube_url").value.split("=")[1];
+
+                    await sendEditRequest(noteEditTypes.ContentObject, {
+                        contentBlockId: contentBlockWrapperNew.id,
+                        content: contentObject.innerHTML,
+                    });
+                };
             };
             break;
     }

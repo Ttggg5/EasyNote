@@ -78,6 +78,17 @@
     </svg>
 </div>
 
+<dialog id="youtube_url_dialog">
+    <form method="dialog">
+        <a><i class="bi bi-youtube"></i>Youtube embed</a>
+        <input type="text" id="youtube_url" class="form-control" placeholder="ex: https://www.youtube.com/watch?v=OIuG1bBkfs0" required />
+        <div>
+            <button type="submit"><i class="bi bi-check-square-fill"></i>Confirm</button>
+            <button type="button" onclick="youtubeUrlDialog.close();"><i class="bi bi-x-square-fill"></i>Cancel</button>
+        </div>
+    </form>
+</dialog>
+
 <div id="main">
     <input id="title" placeholder="Untitled"/>
     <div id="note">

@@ -403,24 +403,33 @@ namespace EasyNote.Controllers
                 HtmlDocument htmlDocument = new HtmlDocument();
                 string notePath = GetNotePath(noteEditDTO.UserId, noteEditDTO.NoteId);
                 htmlDocument.Load(notePath);
-                switch (Enum.Parse(typeof(NoteEditType), noteEditDTO.EditType))
+                switch (Enum.Parse(typeof(NoteEditTypes), noteEditDTO.EditType))
                 {
-                    case NoteEditType.Name:
+                    case NoteEditTypes.Name:
                         note.NoteName = noteEditDTO.NoteName;
                         break;
 
-                    case NoteEditType.Content:
-                        HtmlNode content= GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content");
-                        if (content == null)
+                    case NoteEditTypes.ContentObject:
+                        HtmlNode contentObject = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-object");
+                        if (contentObject == null)
+                            throw new Exception();
+
+                        contentObject.InnerHtml = noteEditDTO.Content;
+                        htmlDocument.Save(notePath);
+                        break;
+
+                    case NoteEditTypes.ContentText:
+                        HtmlNode contentText= GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-text");
+                        if (contentText == null)
                             throw new Exception();
 
                         HtmlDocument contentHD = new HtmlDocument();
                         contentHD.LoadHtml(noteEditDTO.Content);
-                        htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId).ReplaceChild(contentHD.DocumentNode, content);
+                        contentText.ParentNode.ReplaceChild(contentHD.DocumentNode, contentText);
                         htmlDocument.Save(notePath);
                         break;
 
-                    case NoteEditType.AddContentBlock:
+                    case NoteEditTypes.AddContentBlock:
                         if (!noteEditDTO.ContentBlockId.StartsWith("CB"))
                             throw new Exception();
 
@@ -429,15 +438,15 @@ namespace EasyNote.Controllers
                         htmlDocument.Save(notePath);
                         break;
 
-                    case NoteEditType.DeleteContentBlock:
+                    case NoteEditTypes.DeleteContentBlock:
                         contentBlock = htmlDocument.GetElementbyId(noteEditDTO.ContentBlockId);
                         if (contentBlock == null)
                             throw new Exception();
 
-                        HtmlNode contentObject = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-object");
-                        if (contentObject != null && contentObject.GetAttributeValue("data-object-type", "").Equals(Enum.GetName(ContentObjectTypes.Image)))
+                        HtmlNode tmp = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-object");
+                        if (tmp != null && tmp.GetAttributeValue("data-object-type", "").Equals(Enum.GetName(ContentObjectTypes.Image)))
                         {
-                            HtmlNode imageNode = contentObject.FirstChild;
+                            HtmlNode imageNode = tmp.FirstChild;
                             try
                             {
                                 System.IO.File.Delete(Path.Combine(_webHostEnvironment.WebRootPath, imageNode.GetAttributeValue("src", "")));
@@ -448,11 +457,11 @@ namespace EasyNote.Controllers
                         htmlDocument.Save(notePath);
                         break;
 
-                    case NoteEditType.ContentBlockOrder:
+                    case NoteEditTypes.ContentBlockOrder:
                         HtmlNodeCollection hnc = htmlDocument.DocumentNode.ChildNodes;
-                        HtmlNode tmp = hnc[noteEditDTO.ContentBlockOldIndex];
+                        HtmlNode targetNode = hnc[noteEditDTO.ContentBlockOldIndex];
                         hnc.RemoveAt(noteEditDTO.ContentBlockOldIndex);
-                        hnc.Insert(noteEditDTO.ContentBlockNewIndex, tmp);
+                        hnc.Insert(noteEditDTO.ContentBlockNewIndex, targetNode);
                         htmlDocument.Save(notePath);
                         break;
                 }
@@ -516,6 +525,16 @@ namespace EasyNote.Controllers
                     image.SetAttributeValue("width", "300");
                     image.SetAttributeValue("draggable", "false");
                     contentObject.AppendChild(image);
+                    break;
+
+                case ContentObjectTypes.Youtube:
+                    HtmlNode youtubeFrame = document.CreateElement("iframe");
+                    youtubeFrame.AddClass("yooutube_embed");
+                    youtubeFrame.SetAttributeValue("width", "500");
+                    youtubeFrame.SetAttributeValue("height", "300");
+                    youtubeFrame.SetAttributeValue("allowfullscreen", "");
+                    youtubeFrame.SetAttributeValue("picture-in-picture", "");
+                    contentObject.AppendChild(youtubeFrame);
                     break;
             }
 
@@ -613,7 +632,7 @@ namespace EasyNote.Controllers
                 // save image file
                 string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
                 string noteFolderPath = Directory.GetParent(GetNotePath(userId, fileDTO.NoteId)).FullName;
-                string fileName = $"F{DateTime.Now.Ticks.ToString()}.{fileDTO.File.FileName}";
+                string fileName = $"F{DateTime.Now.Ticks.ToString()}.{fileDTO.File.FileName.Split(".").Last()}";
                 string filePath = Path.Combine(noteFolderPath, fileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
