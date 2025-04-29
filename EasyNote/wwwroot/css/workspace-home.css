@@ -1,0 +1,56 @@
+﻿#main {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+h1, h2 {
+    font-family: "Noto Sans TC", sans-serif;
+    font-weight: 900;
+    user-select: none;
+}
+
+h2 {
+    margin-top: 100px;
+}
+
+#recent_edit {
+    display: flex;
+    margin-top: 20px;
+}
+
+    #recent_edit > a{
+        font-weight: bold;
+        color: gray;
+    }
+
+.note-block {
+    display: flex;
+    flex-direction: column;
+    background: var(--main-color);
+    border-radius: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 10px;
+}
+
+    .note-block span:first-child {
+        color: white;
+        font-weight: bold;
+        margin-bottom: 10px;
+        overflow-x: clip;
+    }
+
+    .note-block img {
+        width: 200px;
+        height: 200px;
+        border-radius: 10px;
+    }
+
+    .note-block span:last-child {
+        font-size: 12px;
+        color: white;
+        margin-top: 10px;
+        align-self: end;
+    }

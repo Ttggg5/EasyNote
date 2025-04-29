@@ -255,6 +255,18 @@ namespace EasyNote.Controllers
             });
         }
 
+        public IActionResult Calendar()
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            return View("Calendar", new AllNotesDTO()
+            {
+                SelectedNoteId = "",
+                Notes = GetAllNotes(),
+            });
+        }
+
         public IActionResult ShowProfileImage(string userId)
         {
             byte[]? img = (from a in _easyNoteContext.Users
@@ -266,10 +278,15 @@ namespace EasyNote.Controllers
             return File("~/assets/profile_icon.png", "image/png");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>A list of Note, null if no note found</returns>
         private List<Note?> GetAllNotes()
         {
             string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
             List<Note?> notes = (from n in _easyNoteContext.Notes where n.UserId == userId select n).DefaultIfEmpty().ToList();
+            if (notes.First() == null) return null;
             return notes;
         }
 
@@ -544,7 +561,20 @@ namespace EasyNote.Controllers
                     content.RemoveChild(contentText);
                     break;
 
+                case ContentTextTypes.Heading1:
+                    contentText.SetAttributeValue("style", "font-size: 2em;");
+                    break;
+
+                case ContentTextTypes.Heading2:
+                    contentText.SetAttributeValue("style", "font-size: 1.5em;");
+                    break;
+
+                case ContentTextTypes.Heading3:
+                    contentText.SetAttributeValue("style", "font-size: 1.17em;");
+                    break;
+
                 case ContentTextTypes.Text:
+                    contentText.SetAttributeValue("style", "font-size: 16px;");
                     break;
 
                 case ContentTextTypes.BulletList:

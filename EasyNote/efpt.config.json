@@ -19,6 +19,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Calendar]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Notes]",
          "ObjectType": 0
       },

@@ -15,6 +15,8 @@ public partial class EasyNoteContext : DbContext
 
     public virtual DbSet<Administrator> Administrators { get; set; }
 
+    public virtual DbSet<Calendar> Calendars { get; set; }
+
     public virtual DbSet<Note> Notes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -36,6 +38,31 @@ public partial class EasyNoteContext : DbContext
                 .IsRequired()
                 .HasMaxLength(30)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Calendar>(entity =>
+        {
+            entity.HasKey(e => e.CreateDate);
+
+            entity.ToTable("Calendar");
+
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
+            entity.Property(e => e.EventContent).HasMaxLength(300);
+            entity.Property(e => e.EventEndTime).HasColumnType("datetime");
+            entity.Property(e => e.EventId)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.EventName)
+                .IsRequired()
+                .HasMaxLength(100);
+            entity.Property(e => e.EventStartTime).HasColumnType("datetime");
+            entity.Property(e => e.UserId)
+                .IsRequired()
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .IsFixedLength();
         });
 
         modelBuilder.Entity<Note>(entity =>

@@ -23,7 +23,7 @@
             <img src="~/assets/easy-note-icon.jpg"/>
             <div>EasyNote</div>
         </div>
-        
+
         <div>
             <ul id="profile-block-dropdown-items">
                 <li><i class="bi bi-person"></i>Profile</li>
@@ -54,24 +54,25 @@
                 <ul id="note_list">
                     <!--example: "<li><a href="#">note 1</a></li>"-->
                     @{
-                        foreach (Note note in Model.Notes)
+                        if (Model.Notes != null)
                         {
-                            if (note == null)
-                                continue;
-                            <li>
-                                <a id="@note.NoteId" href="/Workspace?noteId=@note.NoteId" draggable="false">@note.NoteName</a>
-                                
-                                <div class="note-nav-options">
-                                    <i class="bi bi-pencil-square" title="Rename" onclick="renameNote('@id', '@note.NoteId', '@note.NoteName');"></i>
-                                    <i class="bi bi-trash-fill" title="Delete" onclick="deleteNote('@note.NoteId', '@note.NoteName');"></i>
-                                </div>
-                            </li>
+                            foreach (Note note in Model.Notes)
+                            {
+                                <li>
+                                    <a id="@note.NoteId" href="/Workspace?noteId=@note.NoteId" draggable="false">@note.NoteName</a>
+
+                                    <div class="note-nav-options">
+                                        <i class="bi bi-pencil-square" title="Rename" onclick="renameNote('@id', '@note.NoteId', '@note.NoteName');"></i>
+                                        <i class="bi bi-trash-fill" title="Delete" onclick="deleteNote('@note.NoteId', '@note.NoteName');"></i>
+                                    </div>
+                                </li>
+                            }
                         }
                     }
                 </ul>
             </div>
 
-            <a class="clander"><img src="~/assets/calendar-days-solid.svg"/>Clander</a>
+            <a class="clander" href="/Calendar"><img src="~/assets/calendar-days-solid.svg" />Calendar</a>
         </nav>
 
         <main>

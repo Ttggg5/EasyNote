@@ -49,7 +49,7 @@ observerOptions = {
 
 const youtubeUrlDialog = document.getElementById("youtube_url_dialog");
 const note = document.getElementById("note");
-const contextmenu = document.getElementById("contextmenu_page");
+const contextmenu = document.getElementById("contextmenu");
 const contentBlockOptions = document.getElementById("content_block_options");
 const contentImageResizer = document.getElementById("content_image_resizer");
 
@@ -59,68 +59,6 @@ var editing = false;
 var sendContentTextRequestTimerId = -1;
 
 var previousMouseX = -1;
-
-rangy.init();
-
-window.addEventListener("dragenter", event => {
-    event.preventDefault();
-});
-
-window.addEventListener("dragover", event => {
-    event.preventDefault();
-});
-
-window.addEventListener("drop", event => {
-    event.preventDefault();
-});
-
-window.addEventListener("paste", event => {
-    // cancel paste
-    event.preventDefault();
-
-    // get text representation of clipboard
-    var text = (event.originalEvent || event).clipboardData.getData('text/plain');
-
-    // insert text manually
-    document.execCommand("insertHTML", false, text);
-});
-
-document.getElementById("main").addEventListener("mousedown", event => unFocusContentBlock());
-document.getElementById("main").addEventListener("scroll", event => {
-    const selection = window.getSelection();
-    if (selection) {
-        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            showContextmenu(rect);
-            return;
-        }
-    }
-
-    hideContextmenu();
-    document.getElementById("text_color_dropdown").style.display = "none";
-
-    if (contentBlockOptions.style.display != "none" && contentBlockOptions.dataset.targetId != "")
-        showContentBlockOptions(getContentBlockWrapperChild(contentBlockOptions.dataset.targetId, "option-block"));
-    else
-        hideContentBlockOptions();
-});
-document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
-document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
-document.addEventListener("mouseup", event => {
-    const selection = window.getSelection();
-    if (selection) {
-        if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            showContextmenu(rect);
-            return;
-        }
-    }
-
-    hideContextmenu();
-    document.getElementById("text_color_dropdown").style.display = "none";
-});
 
 // send request when user is not editing if user is editing wait at most 500ms
 async function sendContentTextRequestTimerHandler() {
@@ -387,6 +325,68 @@ function getContentBlockIndex(contentBlockId) {
 }
 
 function initNote() {
+    rangy.init();
+
+    window.addEventListener("dragenter", event => {
+        event.preventDefault();
+    });
+
+    window.addEventListener("dragover", event => {
+        event.preventDefault();
+    });
+
+    window.addEventListener("drop", event => {
+        event.preventDefault();
+    });
+
+    window.addEventListener("paste", event => {
+        // cancel paste
+        event.preventDefault();
+
+        // get text representation of clipboard
+        var text = (event.originalEvent || event).clipboardData.getData('text/plain');
+
+        // insert text manually
+        document.execCommand("insertHTML", false, text);
+    });
+
+    document.getElementById("main").addEventListener("mousedown", event => unFocusContentBlock());
+    document.getElementById("main").addEventListener("scroll", event => {
+        const selection = window.getSelection();
+        if (selection) {
+            if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                showContextmenu(rect);
+                return;
+            }
+        }
+
+        hideContextmenu();
+        document.getElementById("text_color_dropdown").style.display = "none";
+
+        if (contentBlockOptions.style.display != "none" && contentBlockOptions.dataset.targetId != "")
+            showContentBlockOptions(getContentBlockWrapperChild(contentBlockOptions.dataset.targetId, "option-block"));
+        else
+            hideContentBlockOptions();
+    });
+    document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
+    document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
+    document.addEventListener("mouseup", event => {
+        const selection = window.getSelection();
+        if (selection) {
+            if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                showContextmenu(rect);
+                return;
+            }
+        }
+
+        hideContextmenu();
+        document.getElementById("text_color_dropdown").style.display = "none";
+    });
+
     // init Sortable
     Sortable.create(note, {
         disabled: false, // Disables the sortable if set to true.
@@ -693,7 +693,20 @@ async function newContentBlockWrapper(contentObjectType, contentTextType) {
             contentText.remove();
             break;
 
+        case contentTextTypes.Heading1:
+            contentText.style.fontSize = "2em";
+            break;
+
+        case contentTextTypes.Heading2:
+            contentText.style.fontSize = "1.5em";
+            break;
+
+        case contentTextTypes.Heading3:
+            contentText.style.fontSize = "1.17em";
+            break;
+
         case contentTextTypes.Text:
+            contentText.style.fontSize = "16px";
             break;
 
         case contentTextTypes.BulletList:
@@ -797,15 +810,15 @@ function createContentBlockInsertDropdown() {
     contentBlockInsertDropdownItems.classList.add("content-block-insert-dropdown-items");
 
     // create new heading1 contentBlock button
-    const newContentBlockHeading1Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 1", "bi bi-type-h1")
+    const newContentBlockHeading1Button = createNewContentBlockButton(insertContentButtonTypes.Heading1, "Heading 1", "bi bi-type-h1")
     contentBlockInsertDropdownItems.appendChild(newContentBlockHeading1Button);
 
     // create new heading2 contentBlock button
-    const newContentBlockHeading2Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 2", "bi bi-type-h2")
+    const newContentBlockHeading2Button = createNewContentBlockButton(insertContentButtonTypes.Heading2, "Heading 2", "bi bi-type-h2")
     contentBlockInsertDropdownItems.appendChild(newContentBlockHeading2Button);
 
     // create new heading3 contentBlock button
-    const newContentBlockHeading3Button = createNewContentBlockButton(insertContentButtonTypes.Text, "Heading 3", "bi bi-type-h3")
+    const newContentBlockHeading3Button = createNewContentBlockButton(insertContentButtonTypes.Heading3, "Heading 3", "bi bi-type-h3")
     contentBlockInsertDropdownItems.appendChild(newContentBlockHeading3Button);
 
     // create new text contentBlock button
