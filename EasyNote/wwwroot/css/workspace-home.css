@@ -33,7 +33,14 @@ h2 {
     margin-left: 10px;
     margin-right: 10px;
     padding: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    text-decoration: none;
+    transition: 0.5s;
 }
+
+    .note-block:hover {
+        background: var(--main-color-hover);
+    }
 
     .note-block span:first-child {
         color: white;
@@ -54,3 +61,7 @@ h2 {
         margin-top: 10px;
         align-self: end;
     }
+
+        .note-block span:last-child i {
+            margin-right: 5px;
+        }

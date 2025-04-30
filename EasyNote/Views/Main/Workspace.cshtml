@@ -8,11 +8,6 @@
     string selectedNoteId = Model.SelectedNoteId;
 }
 
-<!--title font-->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet">
-
 @if (Model.SelectedNoteId != null)
 {
     <link rel="stylesheet" href="~/css/text-style.css" />
@@ -121,14 +116,37 @@
             @{
                 if (Model.Notes != null)
                 {
-                    Model.Notes.Sort((x, y) => -x.LastEditDate.CompareTo(y.LastEditDate));
-                    foreach (Note note in Model.Notes)
+                    List<Note> notesSorted = new List<Note>();
+                    notesSorted.AddRange(Model.Notes);
+                    notesSorted.Sort((x, y) => -x.LastEditDate.CompareTo(y.LastEditDate));
+                    foreach (Note note in notesSorted)
                     {
-                        <div class="note-block">
+                        <a href="/workspace?noteId=@note.NoteId" class="note-block">
                             <span>@note.NoteName</span>
                             <img />
-                            <span>Last edit: @note.LastEditDate</span>
-                        </div>
+                            <span>
+                                <i class="bi bi-clock-history"></i>
+                                @{
+                                    TimeSpan timeSpan = DateTime.Now - note.LastEditDate;
+                                    if (timeSpan.TotalDays > 1)
+                                    {
+                                        <span>@timeSpan.TotalDays.ToString("0") day(s) ago</span>
+                                    }
+                                    else if (timeSpan.TotalHours > 1)
+                                    {
+                                        <span>@timeSpan.TotalHours.ToString("0") hour(s) ago</span>
+                                    }
+                                    else if (timeSpan.TotalMinutes > 1)
+                                    {
+                                        <span>@timeSpan.TotalMinutes.ToString("0") min(s) ago</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@timeSpan.TotalSeconds.ToString("0") sec(s) ago</span>
+                                    }
+                                }
+                            </span>
+                        </a>
                     }
 
                 }
