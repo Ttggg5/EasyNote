@@ -1,4 +1,53 @@
-﻿#calendar {
+﻿:root {
+    --month-text-color: #636363;
+    --year-text-color: #5b9a9e;
+    --calendar-color: #cdf1f8;
+    --calendar-hover-color: #b3d0d5;
+}
+
+#scroll_selector_dialog {
+    overflow-y: clip;
+    width: 300px;
+    height: 210px;
+    border: none;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    padding: 0;
+}
+
+    #scroll_selector_dialog[open] {
+        animation: dialog-show 0.3s forwards;
+    }
+
+    #scroll_selector_dialog.close {
+        animation: dialog-hide 0.3s forwards;
+    }
+
+    #scroll_selector_dialog:focus {
+        outline: none;
+    }
+
+@keyframes dialog-show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 100%;
+    }
+}
+
+@keyframes dialog-hide {
+    0% {
+        opacity: 100%;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+#calendar {
     display: flex;
     padding: 20px;
     width: 100%;
@@ -14,11 +63,24 @@
 #month, #year {
     padding: 10px;
     margin: 5px 10px 40px 10px;
+    border-radius: 10px;
     font-family: "Noto Sans TC", sans-serif;
     font-weight: 900;
     font-size: 40px;
     user-select: none;
     cursor: pointer;
+}
+
+    #month:hover, #year:hover {
+        background: #d4d4d4;
+    }
+
+#month {
+    color: var(--month-text-color);
+}
+
+#year {
+    color: var(--year-text-color);
 }
 
 #calendar_week_names {
@@ -32,8 +94,43 @@
         text-align: center;
         user-select: none;
         font-weight: bold;
+        padding: 10px 0;
+        margin: 0 10px;
+        border-radius: 10px;
+        background: var(--calendar-hover-color);
+        color: #fff;
     }
 
 #calendar_days {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
 
+.day-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 10px;
+    transition: 0.3s;
+    margin: 10px;
+    border-radius: 10px;
+    background: var(--calendar-color);
+    animation: day-block-show 0.6s forwards;
+}
+
+    .day-block:hover {
+        background: var(--calendar-hover-color);
+    }
+
+@keyframes day-block-show {
+    0% {
+        opacity: 0;
+        transform: scale(0, 0);
+    }
+
+    100% {
+        opacity: 100%;
+        transform: scale(100%, 100%);
+    }
 }
