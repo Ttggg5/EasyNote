@@ -52,43 +52,64 @@ function newNote(url, id) {
         })
 }
 
-function renameNote(userId, noteId, noteName) {
-    var result = prompt("Rename", noteName);
-    if (result != null) {
-        if (result == "") {
-            alert("Note name can not be empty!");
-            return;
+function renameNote(userId, noteId) {
+    const noteLink = document.getElementById(noteId);
+    const renameInput = document.createElement("input");
+
+    renameInput.type = "text";
+    renameInput.id = "renameInput";
+    renameInput.value = noteLink.innerText;
+
+    // show input and hide original link
+    noteLink.after(renameInput);
+    renameInput.focus();
+    noteLink.style.display = "none";
+
+    const renameRequest = () => {
+        noteLink.style.display = "block";
+        if (renameInput.value !== "" && document.getElementById(noteId).innerText !== renameInput.value) {
+            fetch("/Main/EditNote", {
+                method: "POST",
+                body: JSON.stringify({
+                    UserId: userId,
+                    NoteId: noteId,
+                    EditType: "Name",
+                    NoteName: renameInput.value,
+                    ContentBlockId: "",
+                    Content: "",
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            })
+                .then((response) => response.json())
+                .then((json) => {
+                    // apply new name in note list
+                    document.getElementById(json["noteId"]).innerText = renameInput.value;
+
+                    // apply new name in title input if current page is showing the same note
+                    var urlParameter = new URL(window.location.href).searchParams.get("noteId");
+                    if (urlParameter != null && urlParameter == json["noteId"])
+                        document.getElementById("title").value = renameInput.value
+                })
         }
 
-        fetch("/Main/EditNote", {
-            method: "POST",
-            body: JSON.stringify({
-                UserId: userId,
-                NoteId: noteId,
-                EditType: "Name",
-                NoteName: result,
-                ContentBlockId: "",
-                Content: "",
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-            .then((response) => response.json())
-            .then((json) => {
-                // apply new name in note list
-                document.getElementById(json["noteId"]).innerHTML = result;
-
-                // apply new name in title input if current page is showing the same note
-                var urlParameter = new URL(window.location.href).searchParams.get("noteId");
-                if (urlParameter != null && urlParameter == json["noteId"])
-                    document.getElementById("title").value = result
-            })
+        renameInput.remove();
     }
+
+    renameInput.addEventListener("focusout", renameRequest);
+
+    renameInput.addEventListener("keypress", event => {
+        if (event.key === "Enter") {
+            renameInput.removeEventListener("focusout", renameRequest);
+            renameRequest();
+        }
+    });
 }
 
-function deleteNote(noteId, noteName) {
-    if (confirm("Are you sure you want to delete \"" + noteName + "\"")) {
+function deleteNote(noteId) {
+    const noteLink = document.getElementById(noteId);
+    if (confirm("Are you sure you want to delete \"" + noteLink.innerText + "\"")) {
         fetch("/DeleteNote", {
             method: "POST",
             body: JSON.stringify(noteId),

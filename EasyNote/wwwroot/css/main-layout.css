@@ -366,3 +366,15 @@ main {
     padding-left: 200px;
     z-index: 0;
 }
+
+#renameInput {
+    border: none;
+    background: #ffffff00;
+    border-bottom: 1px solid #fff;
+    color: #fff;
+    padding: 2px 0;
+}
+
+    #renameInput:focus {
+        outline: none;
+    }
