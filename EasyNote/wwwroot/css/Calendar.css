@@ -1,8 +1,9 @@
 ﻿:root {
     --month-text-color: #636363;
     --year-text-color: #5b9a9e;
-    --calendar-color: #cdf1f8;
+    --calendar-color: #ffffff;
     --calendar-hover-color: #b3d0d5;
+    --event-tag-color: #ff9898;
 }
 
 #scroll_selector_dialog {
@@ -53,6 +54,7 @@
     width: 100%;
     height: 100%;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 #month_year_container {
@@ -111,12 +113,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 30px 10px;
+    padding: 20px 10px;
     transition: 0.3s;
     margin: 10px;
     border-radius: 10px;
     background: var(--calendar-color);
-    animation: day-block-show 0.6s forwards;
+    overflow: clip clip;
+    animation: day-block-show 0.3s forwards;
+    user-select: none;
 }
 
     .day-block:hover {
@@ -133,4 +137,50 @@
         opacity: 100%;
         transform: scale(100%, 100%);
     }
+}
+
+.event-tag {
+    border-radius: 50px;
+    width: 10px;
+    height: 10px;
+    margin-top: 10px;
+    transition: 0.3s
+}
+
+    .event-tag.show {
+        background: var(--event-tag-color);
+    }
+
+#day_block_dialog {
+    padding: 0;
+    border: none;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    margin: 0;
+    height: 50%;
+    width: 50%;
+    border-radius: 10px;
+}
+
+    #day_block_dialog:focus {
+        outline: none;
+    }
+
+    #day_block_dialog > div {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+    }
+
+#day_block_dialog_date {
+    font-weight: bold;
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+    #day_block_dialog_date.show {
+        opacity: 100%;
+    }
+
+#event_container {
+    
 }

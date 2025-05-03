@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="DTOs\DateDTO.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="efpt.config.json.user" />
     <None Include="wwwroot\css\main-layout.css" />
   </ItemGroup>

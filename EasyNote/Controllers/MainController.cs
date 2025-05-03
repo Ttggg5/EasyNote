@@ -240,6 +240,12 @@ namespace EasyNote.Controllers
             return id;
         }
 
+        public IActionResult Logout()
+        {
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Redirect("/");
+        }
+
         [HttpHead]
         [HttpGet]
         public IActionResult Workspace(string noteId)
@@ -251,18 +257,6 @@ namespace EasyNote.Controllers
             return View("Workspace", new AllNotesDTO()
             {
                 SelectedNoteId = noteId,
-                Notes = GetAllNotes(),
-            });
-        }
-
-        public IActionResult Calendar()
-        {
-            if (!User.Identity.IsAuthenticated)
-                return Redirect("/");
-
-            return View("Calendar", new AllNotesDTO()
-            {
-                SelectedNoteId = "",
                 Notes = GetAllNotes(),
             });
         }
@@ -698,10 +692,55 @@ namespace EasyNote.Controllers
             }
         }
 
-        public IActionResult Logout()
+        // ------------------------------------------Calendar------------------------------------------
+        public IActionResult Calendar()
         {
-            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Redirect("/");
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            return View("Calendar", new AllNotesDTO()
+            {
+                SelectedNoteId = "",
+                Notes = GetAllNotes(),
+            });
+        }
+
+        [HttpPost]
+        public IActionResult AllEventDateInMonth([FromBody] string date)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                DateTime dateTime = DateTime.ParseExact(date, "yyyy/MM/dd HH:mm:ss:fff", System.Globalization.CultureInfo.InvariantCulture);
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                List<Calendar?> calendars = (from c in _easyNoteContext.Calendars 
+                                             where c.UserId == userId && 
+                                             ((c.EventStartTime <= dateTime && c.EventEndTime >= dateTime) || (c.EventStartTime >= dateTime && c.EventStartTime.Month == dateTime.Month))
+                                             select c).DefaultIfEmpty().ToList();
+
+                List<DateTime> dateTimes = new List<DateTime>();
+                calendars.ForEach((calendar) =>
+                {
+                    DateTime tmp = new DateTime(calendar.EventStartTime.Year, calendar.EventStartTime.Month, calendar.EventStartTime.Day);
+                    for (int i = 0; i <= (calendar.EventEndTime - calendar.EventStartTime).Days; i++)
+                    {
+                        tmp = tmp.AddDays(i);
+                        if (tmp.Year == calendar.EventStartTime.Year && tmp.Month == calendar.EventStartTime.Month)
+                        {
+                            if(dateTimes.FindIndex(d => d.Day == tmp.Day) == -1)
+                                dateTimes.Add(tmp);
+                        }
+                        
+                    }
+                });
+                return Json(dateTimes);
+            }
+            catch(Exception ex)
+            {
+                return Json(null);
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
