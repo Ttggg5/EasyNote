@@ -56,6 +56,7 @@
     height: 100%;
     flex-direction: column;
     overflow-y: auto;
+    align-items: center;
 }
 
 #month_year_container {
@@ -89,6 +90,7 @@
 #calendar_week_names {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    max-width: 1000px;
     width: 100%;
     height: auto;
 }
@@ -108,6 +110,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+    max-width: 1000px;
+    width: 100%;
 }
 
 .day-block {
@@ -164,6 +168,8 @@
     height: 70%;
     width: 50%;
     border-radius: 10px;
+    max-width: 800px;
+    min-width: 400px;
 }
 
     #day_block_dialog:focus {
