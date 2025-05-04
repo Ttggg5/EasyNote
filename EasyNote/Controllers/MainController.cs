@@ -706,7 +706,7 @@ namespace EasyNote.Controllers
         }
 
         [HttpPost]
-        public IActionResult AllEventDateInMonth([FromBody] string date)
+        public IActionResult AllEventDatesInMonth([FromBody] string date)
         {
             if (!User.Identity.IsAuthenticated)
                 return Redirect("/");
@@ -738,6 +738,37 @@ namespace EasyNote.Controllers
                 return Json(dateTimes);
             }
             catch(Exception ex)
+            {
+                return Json(null);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult AllEventsInDay([FromBody] string date)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                DateTime dateTimeDayStart = DateTime.ParseExact(date, "yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime dateTimeDayEnd = DateTime.ParseExact(date, "yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture);
+                dateTimeDayEnd = dateTimeDayEnd.AddDays(1);
+
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                List<CalendarEventDTO?> calendarEvents = (from c in _easyNoteContext.Calendars
+                                                          where c.UserId == userId && c.EventStartTime <= dateTimeDayEnd && c.EventEndTime >= dateTimeDayStart
+                                                          select new CalendarEventDTO
+                                                          {
+                                                              EventName = c.EventName,
+                                                              EventContent = c.EventContent,
+                                                              EventStartTime = c.EventStartTime,
+                                                              EventEndTime = c.EventEndTime,
+                                                          }).DefaultIfEmpty().ToList();
+
+                return Json(calendarEvents);
+            }
+            catch (Exception ex)
             {
                 return Json(null);
             }

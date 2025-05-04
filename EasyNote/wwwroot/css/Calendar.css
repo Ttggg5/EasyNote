@@ -1,7 +1,7 @@
 ﻿:root {
     --month-text-color: #636363;
     --year-text-color: #5b9a9e;
-    --calendar-color: #ffffff;
+    --calendar-color: #548e9a;
     --calendar-hover-color: #b3d0d5;
     --event-tag-color: #ff9898;
 }
@@ -99,7 +99,7 @@
         padding: 10px 0;
         margin: 0 10px;
         border-radius: 10px;
-        background: var(--calendar-hover-color);
+        background: var(--calendar-color);
         color: #fff;
     }
 
@@ -113,14 +113,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 10px;
+    padding: 15px 10px;
     transition: 0.3s;
-    margin: 10px;
+    margin: 20px;
     border-radius: 10px;
-    background: var(--calendar-color);
+    font-weight: bold;
     overflow: clip clip;
     animation: day-block-show 0.3s forwards;
     user-select: none;
+    width: 80%;
+    align-self: center;
+    justify-self: center;
+    font-size: 20px;
 }
 
     .day-block:hover {
@@ -141,9 +145,9 @@
 
 .event-tag {
     border-radius: 50px;
-    width: 10px;
-    height: 10px;
-    margin-top: 10px;
+    width: 7px;
+    height: 7px;
+    margin-top: 5px;
     transition: 0.3s
 }
 
@@ -156,7 +160,7 @@
     border: none;
     filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     margin: 0;
-    height: 50%;
+    height: 70%;
     width: 50%;
     border-radius: 10px;
 }
@@ -168,19 +172,112 @@
     #day_block_dialog > div {
         width: 100%;
         height: 100%;
-        padding: 10px;
     }
 
 #day_block_dialog_date {
+    display: flex;
+    justify-content: space-between;
+    background: var(--calendar-color);
+    padding: 10px 20px;
     font-weight: bold;
-    opacity: 0;
+    color: #fff;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
+    transform: scaleY(0);
+    transform-origin: top;
     transition: all 0.3s;
 }
 
     #day_block_dialog_date.show {
-        opacity: 100%;
+        transform: scaleY(100%);
     }
 
-#event_container {
-    
+        #day_block_dialog_date.show + #new_event_btn {
+            opacity: 100%;
+        }
+
+            #day_block_dialog_date.show + #new_event_btn + #day_block_dialog_event_container .event {
+                opacity: 100%;
+            }
+
+    #day_block_dialog_date i {
+        font-size: 45px;
+    }
+
+    #day_block_dialog_date div {
+        display: flex;
+        flex-direction: column;
+    }
+
+        #day_block_dialog_date div span:first-child {
+            font-weight: bold;
+            font-size: 25px;
+            align-self: end;
+            user-select: none;
+        }
+
+        #day_block_dialog_date div span:last-child {
+            font-weight: bold;
+            font-size: 20px;
+            align-self: end;
+            user-select: none;
+        }
+
+#new_event_btn {
+    background: #fff0;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    margin: 10px;
+    font-weight: bold;
+    padding: 2px 10px;
+    opacity: 0;
+    transition: all 0.3s;
 }
+
+    #new_event_btn:hover {
+        background: #cbcbcb;
+    }
+
+    #new_event_btn > i {
+        color: gray;
+        margin-right: 5px;
+    }
+
+#day_block_dialog_event_container {
+
+}
+
+.event {
+    display: flex;
+    padding: 5px 10px;
+    margin: 10px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: all 0.5s;
+}
+
+    .event:hover {
+        background: #cbcbcb;
+    }
+
+    .event > div:first-child {
+        margin: 5px;
+        background: var(--event-tag-color);
+        width: 5px;
+        border-radius: 50px;
+    }
+
+    .event > div:last-child {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+        .event > div:last-child > div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .event > div:last-child > span {
+            padding: 5px;
+        }

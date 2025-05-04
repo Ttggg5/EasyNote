@@ -79,9 +79,11 @@ yearDiv.innerText = curSelectedYear.toString();
 refreshCalendar();
 
 function refreshCalendar() {
-    fetch("/AllEventDateInMonth", {
+    fetch("/AllEventDatesInMonth", {
         method: "POST",
-        body: JSON.stringify(curSelectedYear + "/" + ((curSelectedMonth + 1) > 9 ? "" : "0") + (curSelectedMonth + 1) + "/01 00:00:00:000"), // format: yyyy/mm/dd hh:mm:ss:fff
+        body: JSON.stringify(
+            curSelectedYear + "/" + ((curSelectedMonth + 1) > 9 ? "" : "0") + (curSelectedMonth + 1) + "/01 00:00:00:000"
+        ), // format: yyyy/mm/dd hh:mm:ss:fff
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
@@ -127,6 +129,12 @@ function createDayBlock(date) {
     dayBlock.addEventListener("click", event => {
         dayBlockDialog.dataset.targetId = dayBlock.id;
 
+        getCalendarEventsInDay(date)
+            .then(calendarEventList => {
+                if (calendarEventList != null) 
+                    refreshDayBlockDialogEventContainer(calendarEventList);
+            });
+
         // move dayBlockDialog to dayBlock's position
         const dayBlockRect = dayBlock.getBoundingClientRect();
         dayBlockDialog.style.transition = "";
@@ -148,7 +156,8 @@ function createDayBlock(date) {
             setTimeout(() => {
                 // show date
                 const dayBlockDialogDate = document.getElementById("day_block_dialog_date");
-                dayBlockDialogDate.innerText = dayBlock.dataset.year + "-" + dayBlock.dataset.month + "-" + dayBlock.dataset.day;
+                dayBlockDialogDate.children[1].children[0].innerText = dayBlock.dataset.year;
+                dayBlockDialogDate.children[1].children[1].innerText = dayBlock.dataset.month + "-" + dayBlock.dataset.day;
                 dayBlockDialogDate.classList.add("show");
             }, 300);
         }, 50);
@@ -159,4 +168,46 @@ function createDayBlock(date) {
     dayBlock.appendChild(eventTag);
 
     return dayBlock;
+}
+
+function getCalendarEventsInDay(date) {
+    return new Promise((resolve, reject) => {
+        fetch("/AllEventsInDay", {
+            method: "POST",
+            body: JSON.stringify(
+                date.getFullYear() + "/" + ((date.getMonth() + 1) > 9 ? "" : "0") + (date.getMonth() + 1) + "/" + (date.getDate() > 9 ? "" : "0") + date.getDate()
+            ), // format: yyyy/mm/dd
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((jsonList) => {
+                resolve(jsonList);
+            });
+    })
+}
+
+function refreshDayBlockDialogEventContainer(calendarEventList) {
+    const eventContainer = document.getElementById("day_block_dialog_event_container");
+    eventContainer.innerHTML = "";
+
+    for (const calendarEvent of calendarEventList) {
+        const event = document.createElement("div");
+        event.classList.add("event");
+
+        const eventTag = document.createElement("div");
+        event.appendChild(eventTag);
+
+        const titleContainer = document.createElement("div");
+        const startDate = new Date(calendarEvent.eventStartTime);
+        const endDate = new Date(calendarEvent.eventEndTime);
+        titleContainer.innerHTML = "<div>" +
+                                       "<span>" + calendarEvent.eventName + "</span><span>" + startDate.toLocaleString() + " ~ " + endDate.toLocaleString() + "</span>" +
+                                   "</div>" +
+                                   "<span>" + calendarEvent.eventContent + "</span>";
+        event.appendChild(titleContainer);
+
+        eventContainer.appendChild(event);
+    }
 }
