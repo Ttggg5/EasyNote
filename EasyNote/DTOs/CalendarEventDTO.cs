@@ -2,6 +2,8 @@
 {
     public class CalendarEventDTO
     {
+        public string EventId { get; set; }
+
         public string EventName { get; set; }
 
         public string EventContent { get; set; }

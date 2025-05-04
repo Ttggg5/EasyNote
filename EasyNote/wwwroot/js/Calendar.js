@@ -5,6 +5,7 @@ const allYears = [];
 for (let i = today.getFullYear() - 80; i <= today.getFullYear() + 20; i++) {
     allYears.push(i);
 }
+const weekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
 const scrollSelectorDialog = document.getElementById("scroll_selector_dialog");
 scrollSelectorDialog.addEventListener("click", event => {
@@ -124,6 +125,7 @@ function createDayBlock(date) {
     dayBlock.dataset.day = date.getDate();
     dayBlock.dataset.month = date.getMonth() + 1; // Date object's month start with 0
     dayBlock.dataset.year = date.getFullYear();
+    dayBlock.dataset.week = date.getDay();
     dayBlock.innerText = date.getDate();
     dayBlock.classList.add("day-block");
     dayBlock.addEventListener("click", event => {
@@ -131,8 +133,7 @@ function createDayBlock(date) {
 
         getCalendarEventsInDay(date)
             .then(calendarEventList => {
-                if (calendarEventList != null) 
-                    refreshDayBlockDialogEventContainer(calendarEventList);
+                refreshDayBlockDialogEventContainer(calendarEventList);
             });
 
         // move dayBlockDialog to dayBlock's position
@@ -156,6 +157,8 @@ function createDayBlock(date) {
             setTimeout(() => {
                 // show date
                 const dayBlockDialogDate = document.getElementById("day_block_dialog_date");
+                dayBlockDialogDate.children[0].children[1].innerText = weekNames[Number(dayBlock.dataset.week)];
+
                 dayBlockDialogDate.children[1].children[0].innerText = dayBlock.dataset.year;
                 dayBlockDialogDate.children[1].children[1].innerText = dayBlock.dataset.month + "-" + dayBlock.dataset.day;
                 dayBlockDialogDate.classList.add("show");
@@ -192,22 +195,66 @@ function refreshDayBlockDialogEventContainer(calendarEventList) {
     const eventContainer = document.getElementById("day_block_dialog_event_container");
     eventContainer.innerHTML = "";
 
+    if (calendarEventList === null)
+        return;
+
     for (const calendarEvent of calendarEventList) {
-        const event = document.createElement("div");
-        event.classList.add("event");
+        const eventDiv = document.createElement("div");
+        eventDiv.id = calendarEvent.eventId;
+        eventDiv.classList.add("event");
+        eventDiv.addEventListener("click", event => {
+            if (eventDiv.classList.contains("open"))
+                eventDiv.classList.remove("open");
+            else
+                eventDiv.classList.add("open");
+        });
 
         const eventTag = document.createElement("div");
-        event.appendChild(eventTag);
+        let randNumberR = new Math.seedrandom(calendarEvent.eventId).quick() * 200 + 30;
+        let randNumberG = new Math.seedrandom(calendarEvent.eventName).quick() * 200 + 30;
+        let randNumberB = new Math.seedrandom(calendarEvent.eventContent).quick() * 200 + 30;
+        eventTag.style.background = "rgb(" + randNumberR + "," + randNumberG + "," + randNumberB + ")";
+        eventDiv.appendChild(eventTag);
 
-        const titleContainer = document.createElement("div");
+        const titleContentContainer = document.createElement("div");
         const startDate = new Date(calendarEvent.eventStartTime);
         const endDate = new Date(calendarEvent.eventEndTime);
-        titleContainer.innerHTML = "<div>" +
-                                       "<span>" + calendarEvent.eventName + "</span><span>" + startDate.toLocaleString() + " ~ " + endDate.toLocaleString() + "</span>" +
-                                   "</div>" +
-                                   "<span>" + calendarEvent.eventContent + "</span>";
-        event.appendChild(titleContainer);
+        
+        const eventTtile = document.createElement("div");
+        eventTtile.classList.add("event-title");
+        eventTtile.innerHTML = "<span>" + calendarEvent.eventName + "</span><span>" + startDate.toLocaleString() + " ~ " + endDate.toLocaleString() + "</span>";
+        titleContentContainer.appendChild(eventTtile)
 
-        eventContainer.appendChild(event);
+        const eventContent = document.createElement("span");
+        eventContent.classList.add("event-content");
+        eventContent.innerText = calendarEvent.eventContent;
+        titleContentContainer.appendChild(eventContent)
+
+        eventDiv.appendChild(titleContentContainer);
+
+        const toolButtonContainer = document.createElement("div");
+        toolButtonContainer.classList.add("tool-button-container");
+
+        const editButton = document.createElement("button");
+        editButton.classList.add("edit-button");
+        editButton.title = "Edit";
+        editButton.innerHTML = "<i class=\"bi bi-pencil-fill\"></i>"
+        editButton.addEventListener("click", event => {
+
+        });
+        toolButtonContainer.appendChild(editButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("delete-button");
+        deleteButton.title = "Delete";
+        deleteButton.innerHTML = "<i class=\"bi bi-trash-fill\"></i>"
+        deleteButton.addEventListener("click", event => {
+
+        });
+        toolButtonContainer.appendChild(deleteButton);
+
+        eventDiv.appendChild(toolButtonContainer);
+
+        eventContainer.appendChild(eventDiv);
     }
 }

@@ -4,6 +4,7 @@
     --calendar-color: #548e9a;
     --calendar-hover-color: #b3d0d5;
     --event-tag-color: #ff9898;
+    --white-background-hover-color: #cbcbcb;
 }
 
 #scroll_selector_dialog {
@@ -195,27 +196,46 @@
             opacity: 100%;
         }
 
+        #day_block_dialog_date.show div:first-child span {
+            transition-delay: 0.3s;
+            transform: scaleX(100%) translateX(0);
+        }
+
             #day_block_dialog_date.show + #new_event_btn + #day_block_dialog_event_container .event {
                 opacity: 100%;
             }
 
-    #day_block_dialog_date i {
-        font-size: 45px;
+    #day_block_dialog_date > div:first-child {
+        display: flex;
+        align-items: center;
     }
 
-    #day_block_dialog_date div {
+        #day_block_dialog_date div:first-child i {
+            font-size: 45px;
+        }
+
+        #day_block_dialog_date div:first-child span {
+            font-size: 40px;
+            margin-left: 10px;
+            user-select: none;
+            transform-origin: left;
+            transform: scaleX(0) translateX(-10px);
+            transition: all 0.3s;
+        }
+
+    #day_block_dialog_date > div:last-child {
         display: flex;
         flex-direction: column;
     }
 
-        #day_block_dialog_date div span:first-child {
+        #day_block_dialog_date > div:last-child span:first-child {
             font-weight: bold;
             font-size: 25px;
             align-self: end;
             user-select: none;
         }
 
-        #day_block_dialog_date div span:last-child {
+        #day_block_dialog_date > div:last-child span:last-child {
             font-weight: bold;
             font-size: 20px;
             align-self: end;
@@ -235,7 +255,7 @@
 }
 
     #new_event_btn:hover {
-        background: #cbcbcb;
+        background: var(--white-background-hover-color);
     }
 
     #new_event_btn > i {
@@ -257,27 +277,87 @@
 }
 
     .event:hover {
-        background: #cbcbcb;
+        background: var(--white-background-hover-color);
+    }
+
+        .event:hover .tool-button-container button {
+            opacity: 100%;
+            visibility: visible;
+        }
+
+    .event.open > div:nth-child(2) > .event-content {
+        padding: 5px;
+        visibility: visible;
+        opacity: 100%;
+        height: auto;
+    }
+
+    .event.open .tool-button-container {
+        align-items: start;
     }
 
     .event > div:first-child {
         margin: 5px;
-        background: var(--event-tag-color);
         width: 5px;
         border-radius: 50px;
+        transition: all 0.3s;
     }
 
-    .event > div:last-child {
+    .event > div:nth-child(2) {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        transition: all 0.3s;
     }
 
-        .event > div:last-child > div {
-            display: flex;
-            justify-content: space-between;
+.tool-button-container {
+    display: flex;
+    align-items: center;
+}
+
+    .tool-button-container button {
+        margin: 3px;
+        border: none;
+        background: #ffffff00;
+        border-radius: 5px;
+        outline: none;
+        padding: 5px 10px;
+        opacity: 0;
+        visibility: collapse;
+        transition: all 0.3s;
+    }
+
+        .tool-button-container button:hover {
+            background: #41414160;
         }
 
-        .event > div:last-child > span {
-            padding: 5px;
-        }
+.edit-button {
+    color: gray;
+}
+
+.delete-button {
+    color: indianred;
+}
+
+.event-title {
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+    .event-title > span:first-child {
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .event-title > span:last-child {
+        font-size: 12px;
+        color: gray;
+    }
+
+.event-content {
+    visibility: collapse;
+    opacity: 0;
+    height: 0;
+    transition: all 0.3s;
+}

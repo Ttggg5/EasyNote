@@ -760,6 +760,7 @@ namespace EasyNote.Controllers
                                                           where c.UserId == userId && c.EventStartTime <= dateTimeDayEnd && c.EventEndTime >= dateTimeDayStart
                                                           select new CalendarEventDTO
                                                           {
+                                                              EventId = c.EventId,
                                                               EventName = c.EventName,
                                                               EventContent = c.EventContent,
                                                               EventStartTime = c.EventStartTime,
