@@ -30,6 +30,31 @@
     </div>
 </dialog>
 
+<dialog id="new_edit_event_dialog" data-target-id="">
+    <form method="dialog">
+        <input id="event_title_input" name="title" type="text" maxlength="50" placeholder="Title" required />
+        <div>
+            <input id="event_start_date_input" name="start_date" type="datetime-local" required />
+            <input id="event_end_date_input" name="end_date" type="datetime-local" required />
+        </div>
+        <input id="event_content_input" name="content" type="text" maxlength="150" placeholder="Content" />
+
+        <div>
+            <button type="button" onclick="document.getElementById('new_edit_event_dialog').close();">Cancel</button>
+            <button id="new_event_submit_button" type="submit" data-submit-type="new">New</button>
+            <button id="edit_event_submit_button" type="submit" data-submit-type="edit">Edit</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="delete_event_dialog" data-target-id="">
+    <span>Sure want to delete this event</span>
+    <form method="dialog">
+        <button type="button" onclick="document.getElementById('delete_event_dialog').close();">Cancel</button>
+        <button type="submit">Delete</button>
+    </form>
+</dialog>
+
 <div id="calendar">
     <div id="month_year_container">
         <div id="month"></div>

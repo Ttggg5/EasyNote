@@ -316,6 +316,13 @@
         transition: all 0.3s;
     }
 
+    .event.delete {
+        background: var(--white-background-hover-color);
+        transform: translateX(-100%);
+        opacity: 0;
+        visibility: collapse;
+    }
+
 .tool-button-container {
     display: flex;
     align-items: center;
@@ -366,4 +373,20 @@
     opacity: 0;
     height: 0;
     transition: all 0.3s;
+}
+
+#new_edit_event_dialog {
+
+}
+
+    #new_edit_event_dialog.new #edit_event_submit_button {
+        display: none;
+    }
+
+    #new_edit_event_dialog.edit #new_event_submit_button {
+        display: none;
+    }
+
+#delete_event_dialog {
+
 }

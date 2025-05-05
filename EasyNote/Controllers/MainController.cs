@@ -36,7 +36,7 @@ namespace EasyNote.Controllers
 
         public IActionResult Index()
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
                 return Redirect("/Workspace");
             return View();
         }
@@ -242,6 +242,9 @@ namespace EasyNote.Controllers
 
         public IActionResult Logout()
         {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Redirect("/");
         }
@@ -250,7 +253,7 @@ namespace EasyNote.Controllers
         [HttpGet]
         public IActionResult Workspace(string noteId)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
 
@@ -292,7 +295,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> NewNote([FromBody] string userId)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Json(new NoteStatusDTO()
                 {
                     IsSuccessed = false,
@@ -350,7 +353,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public IActionResult GetNote([FromBody] string noteId)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
             string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
@@ -395,7 +398,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> EditNote([FromBody] NoteEditDTO noteEditDTO)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
             try
@@ -585,7 +588,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteNote([FromBody] string noteId)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Json(new NoteStatusDTO()
                 {
                     IsSuccessed = false,
@@ -627,7 +630,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFile([FromForm] FileDTO fileDTO)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Json(new UploadStatusDTO()
                 {
                     IsSuccessed = false,
@@ -695,7 +698,7 @@ namespace EasyNote.Controllers
         // ------------------------------------------Calendar------------------------------------------
         public IActionResult Calendar()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
             return View("Calendar", new AllNotesDTO()
@@ -708,7 +711,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public IActionResult AllEventDatesInMonth([FromBody] string date)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
             try
@@ -746,7 +749,7 @@ namespace EasyNote.Controllers
         [HttpPost]
         public IActionResult AllEventsInDay([FromBody] string date)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
 
             try
@@ -770,6 +773,103 @@ namespace EasyNote.Controllers
                 return Json(calendarEvents);
             }
             catch (Exception ex)
+            {
+                return Json(null);
+            }
+        }
+
+        private string GetNewEventId(string userId)
+        {
+            string? id = (from c in _easyNoteContext.Calendars where c.UserId == userId orderby c.EventId select c.EventId).LastOrDefault();
+            if (id == null)
+                id = "E000000001";
+            else
+            {
+                int num = Convert.ToInt32(id.Substring(1, id.Length - 1)) + 1;
+                id = "E" + num.ToString("000000000");
+            }
+            return id;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> NewEvent([FromBody] Calendar calendar)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                calendar.UserId = userId;
+                calendar.EventId = GetNewEventId(userId);
+                calendar.CreateDate = DateTime.Now;
+
+                _easyNoteContext.Calendars.Add(calendar);
+                await _easyNoteContext.SaveChangesAsync();
+
+                Dictionary<string, bool> respon = new Dictionary<string, bool>();
+                respon.Add("isSuccessed", true);
+                return Json(respon);
+            }
+            catch(Exception ex)
+            {
+                return Json(null);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditEvent([FromBody] Calendar calendar)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                Calendar? cal = (from c in _easyNoteContext.Calendars
+                                 where c.UserId == userId && c.EventId == calendar.EventId
+                                 select c).FirstOrDefault();
+                if (cal == null)
+                    throw new Exception("Event not found!");
+
+                cal.EventName = calendar.EventName;
+                cal.EventContent = calendar.EventContent;
+                cal.EventStartTime = calendar.EventStartTime;
+                cal.EventEndTime = calendar.EventEndTime;
+
+                _easyNoteContext.Calendars.Update(cal);
+                await _easyNoteContext.SaveChangesAsync();
+
+                Dictionary<string, bool> respon = new Dictionary<string, bool>();
+                respon.Add("isSuccessed", true);
+                return Json(respon);
+            }
+            catch (Exception ex)
+            {
+                return Json(null);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteEvent([FromBody] string eventId)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                Calendar? calendar = (from e in _easyNoteContext.Calendars
+                                      where e.UserId == userId && e.EventId == eventId
+                                      select e).FirstOrDefault();
+                _easyNoteContext.Calendars.Remove(calendar);
+                await _easyNoteContext.SaveChangesAsync();
+
+                Dictionary<string, bool> respon = new Dictionary<string, bool>();
+                respon.Add("isSuccessed", true);
+                return Json(respon);
+            }
+            catch(Exception ex)
             {
                 return Json(null);
             }
