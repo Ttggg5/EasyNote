@@ -7,64 +7,6 @@ for (let i = today.getFullYear() - 80; i <= today.getFullYear() + 20; i++) {
 }
 const weekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
-const newEditEventDialog = document.getElementById("new_edit_event_dialog");
-newEditEventDialog.addEventListener("submit", event => {
-    const formData = new FormData(event.target);
-
-    if (event.submitter.dataset.submitType === "new") {
-        fetch("/NewEvent", {
-            method: "POST",
-            body: JSON.stringify({
-                EventName: formData.get("title"),
-                EventContent: formData.get("content"),
-                EventStartTime: formData.get("start_date"),
-                EventEndTime: formData.get("end_date"),
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-            .then((response) => response.json())
-            .then((json) => {
-
-            });
-    }
-    else {
-        fetch("/EditEvent", {
-            method: "POST",
-            body: JSON.stringify({
-                EventId: newEditEventDialog.dataset.targetId,
-                EventName: formData.get("title"),
-                EventContent: formData.get("content"),
-                EventStartTime: formData.get("start_date"),
-                EventEndTime: formData.get("end_date"),
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-            .then((response) => response.json())
-            .then((json) => {
-
-            });
-    }
-});
-
-const newEventButton = document.getElementById("new_event_btn");
-newEventButton.addEventListener("click", event => {
-    if (newEditEventDialog.classList.contains("edit"))
-        newEditEventDialog.classList.remove("edit");
-
-    newEditEventDialog.classList.add("new");
-    newEditEventDialog.showModal();
-});
-
-const deleteEventDialog = document.getElementById("delete_event_dialog");
-deleteEventDialog.addEventListener("submit", event => {
-    deleteEvent(deleteEventDialog.dataset.targetId);
-    deleteEventDialog.dataset.targetId = "";
-});
-
 const scrollSelectorDialog = document.getElementById("scroll_selector_dialog");
 scrollSelectorDialog.addEventListener("click", event => {
     if (event.target === scrollSelectorDialog) {
@@ -105,6 +47,74 @@ dayBlockDialog.addEventListener("click", event => {
     }
 });
 
+const newEditEventDialog = document.getElementById("new_edit_event_dialog");
+newEditEventDialog.addEventListener("submit", event => {
+    const formData = new FormData(event.target);
+
+    if (event.submitter.dataset.submitType === "new") {
+        fetch("/NewEvent", {
+            method: "POST",
+            body: JSON.stringify({
+                EventName: formData.get("title"),
+                EventContent: formData.get("content"),
+                EventStartTime: formData.get("start_date"),
+                EventEndTime: formData.get("end_date"),
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                refreshDayBlockDialogEventContainer(new Date(Number(dayBlockDialog.dataset.targetId)));
+                refreshCalendar();
+            });
+    }
+    else {
+        fetch("/EditEvent", {
+            method: "POST",
+            body: JSON.stringify({
+                EventId: newEditEventDialog.dataset.targetId,
+                EventName: formData.get("title"),
+                EventContent: formData.get("content"),
+                EventStartTime: formData.get("start_date"),
+                EventEndTime: formData.get("end_date"),
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                refreshDayBlockDialogEventContainer(new Date(Number(dayBlockDialog.dataset.targetId)));
+                refreshCalendar();
+            });
+    }
+});
+
+const newEventButton = document.getElementById("new_event_btn");
+newEventButton.addEventListener("click", event => {
+    if (newEditEventDialog.classList.contains("edit"))
+        newEditEventDialog.classList.remove("edit");
+
+    newEditEventDialog.classList.add("new");
+
+    const targetDayBlock = document.getElementById(dayBlockDialog.dataset.targetId);
+
+    document.getElementById("event_title_input").value = "";
+    setDateTimeInput("event_start_date_input", new Date(Number(targetDayBlock.dataset.year), Number(targetDayBlock.dataset.month) - 1, Number(targetDayBlock.dataset.day), 8));
+    setDateTimeInput("event_end_date_input", new Date(Number(targetDayBlock.dataset.year), Number(targetDayBlock.dataset.month) - 1, Number(targetDayBlock.dataset.day), 9));
+    document.getElementById("event_content_textarea").value = "";
+
+    newEditEventDialog.showModal();
+});
+
+const deleteEventDialog = document.getElementById("delete_event_dialog");
+deleteEventDialog.addEventListener("submit", event => {
+    deleteEvent(deleteEventDialog.dataset.targetId);
+    deleteEventDialog.dataset.targetId = "";
+});
+
 const monthDiv = document.getElementById("month");
 monthDiv.addEventListener("click", event => {
     scrollSelectorDialog.appendChild(scrollSelector.create(allmonths));
@@ -134,6 +144,12 @@ let curSelectedYear = today.getFullYear();
 
 monthDiv.innerText = allmonths[curSelectedMonth];
 yearDiv.innerText = curSelectedYear.toString();
+
+const startDatetime = document.getElementById("event_start_date_input");
+startDatetime.addEventListener("change", event => {
+    document.getElementById("event_end_date_input").setAttribute("min", startDatetime.value);
+    document.getElementById("event_end_date_input").value = startDatetime.value;
+});
 
 refreshCalendar();
 
@@ -194,16 +210,7 @@ function createDayBlock(date) {
     dayBlock.addEventListener("click", event => {
         dayBlockDialog.dataset.targetId = dayBlock.id;
 
-        const tmp = new Date(date)
-        tmp.setHours(8);
-        setDateTimeInput("event_start_date_input", tmp);
-        tmp.setHours(9);
-        setDateTimeInput("event_end_date_input", tmp);
-
-        getCalendarEventsInDay(date)
-            .then(calendarEventList => {
-                refreshDayBlockDialogEventContainer(calendarEventList);
-            });
+        refreshDayBlockDialogEventContainer(date);
 
         // move dayBlockDialog to dayBlock's position
         const dayBlockRect = dayBlock.getBoundingClientRect();
@@ -260,84 +267,92 @@ function getCalendarEventsInDay(date) {
     })
 }
 
-function refreshDayBlockDialogEventContainer(calendarEventList) {
+function refreshDayBlockDialogEventContainer(date) {
     const eventContainer = document.getElementById("day_block_dialog_event_container");
     eventContainer.innerHTML = "";
 
-    if (calendarEventList === null)
-        return;
+    getCalendarEventsInDay(date)
+        .then(calendarEventList => {
+            if (calendarEventList === null)
+                return;
 
-    for (const calendarEvent of calendarEventList) {
-        const eventDiv = document.createElement("div");
-        eventDiv.id = calendarEvent.eventId;
-        eventDiv.classList.add("event");
-        eventDiv.addEventListener("click", event => {
-            if (eventDiv.classList.contains("open"))
-                eventDiv.classList.remove("open");
-            else
-                eventDiv.classList.add("open");
-        });
+            for (const calendarEvent of calendarEventList) {
+                const eventDiv = document.createElement("div");
+                eventDiv.id = calendarEvent.eventId;
+                eventDiv.classList.add("event");
+                eventDiv.addEventListener("click", event => {
+                    // prevent open when click the button
+                    if (event.target.localName === "i" || event.target.localName === "button")
+                        return;
 
-        const eventTag = document.createElement("div");
-        let randNumberR = new Math.seedrandom(calendarEvent.eventId).quick() * 200 + 30;
-        let randNumberG = new Math.seedrandom(calendarEvent.eventName).quick() * 200 + 30;
-        let randNumberB = new Math.seedrandom(calendarEvent.eventContent).quick() * 200 + 30;
-        eventTag.style.background = "rgb(" + randNumberR + "," + randNumberG + "," + randNumberB + ")";
-        eventDiv.appendChild(eventTag);
+                    if (eventDiv.classList.contains("open"))
+                        eventDiv.classList.remove("open");
+                    else
+                        eventDiv.classList.add("open");
+                });
 
-        const titleContentContainer = document.createElement("div");
-        const startDate = new Date(calendarEvent.eventStartTime);
-        const endDate = new Date(calendarEvent.eventEndTime);
+                const eventTag = document.createElement("div");
+                let randNumberR = new Math.seedrandom(calendarEvent.eventId).quick() * 200 + 30;
+                let randNumberG = new Math.seedrandom(calendarEvent.eventName).quick() * 200 + 30;
+                let randNumberB = new Math.seedrandom(calendarEvent.eventContent).quick() * 200 + 30;
+                eventTag.style.background = "rgb(" + randNumberR + "," + randNumberG + "," + randNumberB + ")";
+                eventDiv.appendChild(eventTag);
+
+                const titleContentContainer = document.createElement("div");
+                const startDate = new Date(calendarEvent.eventStartTime);
+                const endDate = new Date(calendarEvent.eventEndTime);
         
-        const eventTtile = document.createElement("div");
-        eventTtile.classList.add("event-title");
-        eventTtile.innerHTML = "<span>" + calendarEvent.eventName + "</span><span>" + startDate.toLocaleString() + " ~ " + endDate.toLocaleString() + "</span>";
-        titleContentContainer.appendChild(eventTtile)
+                const eventTtile = document.createElement("div");
+                eventTtile.classList.add("event-title");
+                eventTtile.innerHTML = "<span>" + calendarEvent.eventName + "</span><span>" + startDate.toLocaleString() + " ~ " + endDate.toLocaleString() + "</span>";
+                titleContentContainer.appendChild(eventTtile)
 
-        const eventContent = document.createElement("span");
-        eventContent.classList.add("event-content");
-        eventContent.innerText = calendarEvent.eventContent;
-        titleContentContainer.appendChild(eventContent)
+                const eventContent = document.createElement("span");
+                eventContent.classList.add("event-content");
+                eventContent.innerText = calendarEvent.eventContent;
+                titleContentContainer.appendChild(eventContent)
 
-        eventDiv.appendChild(titleContentContainer);
+                eventDiv.appendChild(titleContentContainer);
 
-        const toolButtonContainer = document.createElement("div");
-        toolButtonContainer.classList.add("tool-button-container");
+                const toolButtonContainer = document.createElement("div");
+                toolButtonContainer.classList.add("tool-button-container");
 
-        const editButton = document.createElement("button");
-        editButton.classList.add("edit-button");
-        editButton.title = "Edit";
-        editButton.innerHTML = "<i class=\"bi bi-pencil-fill\"></i>"
-        editButton.addEventListener("click", event => {
-            if (newEditEventDialog.classList.contains("new"))
-                newEditEventDialog.classList.remove("new");
+                const editButton = document.createElement("button");
+                editButton.classList.add("edit-button");
+                editButton.title = "Edit";
+                editButton.innerHTML = "<i class=\"bi bi-pencil-fill\"></i>"
+                editButton.addEventListener("click", event => {
+                    if (newEditEventDialog.classList.contains("new"))
+                        newEditEventDialog.classList.remove("new");
 
-            newEditEventDialog.classList.add("edit");
-            newEditEventDialog.dataset.targetId = calendarEvent.eventId;
+                    newEditEventDialog.classList.add("edit");
+                    newEditEventDialog.dataset.targetId = calendarEvent.eventId;
 
-            document.getElementById("event_title_input").value = calendarEvent.eventName;
-            setDateTimeInput("event_start_date_input", new Date(startDate));
-            setDateTimeInput("event_end_date_input", new Date(endDate));
-            document.getElementById("event_content_input").value = calendarEvent.eventContent;
+                    document.getElementById("event_title_input").value = calendarEvent.eventName;
+                    setDateTimeInput("event_start_date_input", new Date(startDate));
+                    setDateTimeInput("event_end_date_input", new Date(endDate));
+                    document.getElementById("event_content_textarea").value = calendarEvent.eventContent;
 
-            newEditEventDialog.showModal();
+                    newEditEventDialog.showModal();
+                });
+                toolButtonContainer.appendChild(editButton);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.classList.add("delete-button");
+                deleteButton.title = "Delete";
+                deleteButton.innerHTML = "<i class=\"bi bi-trash-fill\"></i>"
+                deleteButton.addEventListener("click", event => {
+                    deleteEventDialog.dataset.targetId = calendarEvent.eventId;
+                    deleteEventDialog.showModal();
+                });
+                toolButtonContainer.appendChild(deleteButton);
+
+                eventDiv.appendChild(toolButtonContainer);
+
+                eventContainer.appendChild(eventDiv);
+            }
         });
-        toolButtonContainer.appendChild(editButton);
 
-        const deleteButton = document.createElement("button");
-        deleteButton.classList.add("delete-button");
-        deleteButton.title = "Delete";
-        deleteButton.innerHTML = "<i class=\"bi bi-trash-fill\"></i>"
-        deleteButton.addEventListener("click", event => {
-            deleteEventDialog.dataset.targetId = calendarEvent.eventId;
-            deleteEventDialog.showModal();
-        });
-        toolButtonContainer.appendChild(deleteButton);
-
-        eventDiv.appendChild(toolButtonContainer);
-
-        eventContainer.appendChild(eventDiv);
-    }
 }
 
 function deleteEvent(eventId) {
@@ -350,7 +365,7 @@ function deleteEvent(eventId) {
     })
         .then((response) => response.json())
         .then((json) => {
-            
+            refreshCalendar();
         });
     
     const eventDiv = document.getElementById(eventId);

@@ -1,9 +1,9 @@
 ﻿:root {
     --month-text-color: #636363;
     --year-text-color: #5b9a9e;
-    --calendar-color: #548e9a;
-    --calendar-hover-color: #b3d0d5;
-    --event-tag-color: #ff9898;
+    --calendar-color: #4f4f4f;
+    --calendar-hover-color: #d4d4d4;
+    --event-tag-color: #5b9a9e;
     --white-background-hover-color: #cbcbcb;
 }
 
@@ -76,7 +76,7 @@
 }
 
     #month:hover, #year:hover {
-        background: #d4d4d4;
+        background: var(--calendar-hover-color);
     }
 
 #month {
@@ -295,8 +295,9 @@
     .event.open > div:nth-child(2) > .event-content {
         padding: 5px;
         visibility: visible;
-        opacity: 100%;
         height: auto;
+        transform: scaleY(100%);
+        transition: all 0.5s;
     }
 
     .event.open .tool-button-container {
@@ -371,14 +372,79 @@
 
 .event-content {
     visibility: collapse;
-    opacity: 0;
     height: 0;
     transition: all 0.3s;
+    transform-origin: top;
+    transform: scaleY(0);
 }
 
 #new_edit_event_dialog {
-
+    border: none;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
 }
+
+    #new_edit_event_dialog[open] {
+        animation: dialog-show 0.3s forwards;
+    }
+            #new_edit_event_dialog form input:focus {
+                outline: none;
+            }
+
+        #new_edit_event_dialog form #event_title_input {
+            border: none;
+            border-bottom: 1px solid gray;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+            #new_edit_event_dialog form #event_title_input:focus {
+                border-bottom: 1px solid #000;
+            }
+
+        #new_edit_event_dialog form > div:nth-child(2) {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+            #new_edit_event_dialog form > div:nth-child(2) input {
+                border-radius: 50px;
+                padding: 0 5px;
+                border: 1px solid #000;
+            }
+
+            #new_edit_event_dialog form > div:nth-child(2) i {
+                font-size: 20px;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+
+        #new_edit_event_dialog form #event_content_textarea {
+            width: 100%;
+            resize: none;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            padding: 5px 10px;
+        }
+
+        #new_edit_event_dialog form > div:nth-child(4) {
+            display: flex;
+            justify-content: space-between;
+        }
+
+            #new_edit_event_dialog form > div:nth-child(4) button {
+                border: none;
+                background: var(--calendar-color);
+                color: white;
+                font-weight: bold;
+                border-radius: 50px;
+                padding: 2px 15px;
+                user-select: none;
+            }
+
+                #new_edit_event_dialog form > div:nth-child(4) button:hover {
+                    background: var(--calendar-hover-color);
+                }
 
     #new_edit_event_dialog.new #edit_event_submit_button {
         display: none;
@@ -389,5 +455,31 @@
     }
 
 #delete_event_dialog {
-
+    border: none;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
 }
+
+    #delete_event_dialog form div {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+        #delete_event_dialog form div button {
+            border: none;
+            background: var(--calendar-color);
+            color: white;
+            font-weight: bold;
+            border-radius: 50px;
+            padding: 2px 15px;
+            user-select: none;
+        }
+
+        #delete_event_dialog form div button:last-child {
+            background: indianred;
+        }
+
+            #delete_event_dialog form div button:hover {
+                background: var(--calendar-hover-color);
+            }

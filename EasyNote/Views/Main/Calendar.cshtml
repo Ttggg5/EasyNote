@@ -32,12 +32,15 @@
 
 <dialog id="new_edit_event_dialog" data-target-id="">
     <form method="dialog">
-        <input id="event_title_input" name="title" type="text" maxlength="50" placeholder="Title" required />
+        <input id="event_title_input" name="title" type="text" maxlength="50" placeholder="Title(Max length: 50)" required />
+
         <div>
-            <input id="event_start_date_input" name="start_date" type="datetime-local" required />
+            <input id="event_start_date_input" name="start_date" type="datetime-local" required min="1900-01-01T00:00" />
+            <i class="bi bi-arrow-right"></i>
             <input id="event_end_date_input" name="end_date" type="datetime-local" required />
         </div>
-        <input id="event_content_input" name="content" type="text" maxlength="150" placeholder="Content" />
+
+        <textarea id="event_content_textarea" name="content" type="text" maxlength="150" placeholder="Content(Max length: 150)" rows="10"></textarea>
 
         <div>
             <button type="button" onclick="document.getElementById('new_edit_event_dialog').close();">Cancel</button>
@@ -48,10 +51,13 @@
 </dialog>
 
 <dialog id="delete_event_dialog" data-target-id="">
-    <span>Sure want to delete this event</span>
     <form method="dialog">
-        <button type="button" onclick="document.getElementById('delete_event_dialog').close();">Cancel</button>
-        <button type="submit">Delete</button>
+        <span>Sure want to delete this event</span>
+
+        <div>
+            <button type="button" onclick="document.getElementById('delete_event_dialog').close();">Cancel</button>
+            <button type="submit">Delete</button>
+        </div>
     </form>
 </dialog>
 

@@ -728,26 +728,27 @@ namespace EasyNote.Controllers
 
             try
             {
-                DateTime dateTime = DateTime.ParseExact(date, "yyyy/MM/dd HH:mm:ss:fff", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime dateTimeMonthStart = DateTime.ParseExact(date, "yyyy/MM/dd HH:mm:ss:fff", System.Globalization.CultureInfo.InvariantCulture);
+                DateTime dateTimeMonthEnd = dateTimeMonthStart.AddMonths(1);
                 string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
                 List<Calendar?> calendars = (from c in _easyNoteContext.Calendars 
                                              where c.UserId == userId && 
-                                             ((c.EventStartTime <= dateTime && c.EventEndTime >= dateTime) || (c.EventStartTime >= dateTime && c.EventStartTime.Month == dateTime.Month))
+                                             ((c.EventStartTime <= dateTimeMonthStart && c.EventEndTime >= dateTimeMonthStart) || 
+                                             (c.EventStartTime >= dateTimeMonthStart && c.EventStartTime < dateTimeMonthEnd))
                                              select c).DefaultIfEmpty().ToList();
 
                 List<DateTime> dateTimes = new List<DateTime>();
                 calendars.ForEach((calendar) =>
                 {
-                    DateTime tmp = new DateTime(calendar.EventStartTime.Year, calendar.EventStartTime.Month, calendar.EventStartTime.Day);
-                    for (int i = 0; i <= (calendar.EventEndTime - calendar.EventStartTime).Days; i++)
+                    DateTime startTime = new DateTime(calendar.EventStartTime.Year, calendar.EventStartTime.Month, calendar.EventStartTime.Day);
+                    if (startTime < dateTimeMonthStart)
+                        startTime = startTime.AddDays((dateTimeMonthStart - startTime).Days);
+
+                    DateTime endTime = calendar.EventEndTime > dateTimeMonthEnd ? dateTimeMonthEnd : calendar.EventEndTime;
+                    for (; startTime < endTime; startTime = startTime.AddDays(1))
                     {
-                        tmp = tmp.AddDays(i);
-                        if (tmp.Year == calendar.EventStartTime.Year && tmp.Month == calendar.EventStartTime.Month)
-                        {
-                            if(dateTimes.FindIndex(d => d.Day == tmp.Day) == -1)
-                                dateTimes.Add(tmp);
-                        }
-                        
+                        if(dateTimes.FindIndex(d => d.Day == startTime.Day) == -1)
+                            dateTimes.Add(startTime);
                     }
                 });
                 return Json(dateTimes);
