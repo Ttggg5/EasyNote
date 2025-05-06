@@ -423,6 +423,18 @@ namespace EasyNote.Controllers
                         note.NoteName = noteEditDTO.NoteName;
                         break;
 
+                    case NoteEditTypes.ContentAttribute:
+                        HtmlNode content = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content");
+                        if (content == null)
+                            throw new Exception();
+
+                        string attributeName = noteEditDTO.Content.Split("=")[0];
+                        string attributeValue = noteEditDTO.Content.Split("=")[1].Replace("\"", "");
+
+                        content.SetAttributeValue(attributeName, attributeValue);
+                        htmlDocument.Save(notePath);
+                        break;
+
                     case NoteEditTypes.ContentObject:
                         HtmlNode contentObject = GetContentBlockChildNode(htmlDocument, noteEditDTO.ContentBlockId, "content-object");
                         if (contentObject == null)

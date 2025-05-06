@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyNote.Migrations
 {
     [DbContext(typeof(EasyNoteContext))]
-    [Migration("20250324084929_InitialCreate")]
+    [Migration("20250506075345_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -51,6 +51,77 @@ namespace EasyNote.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Administrators");
+                });
+
+            modelBuilder.Entity("EasyNote.Models.Calendar", b =>
+                {
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("EventContent")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("EventEndTime")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("char(10)")
+                        .IsFixedLength();
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("EventStartTime")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("char(10)")
+                        .IsFixedLength();
+
+                    b.HasKey("CreateDate");
+
+                    b.ToTable("Calendar", (string)null);
+                });
+
+            modelBuilder.Entity("EasyNote.Models.Note", b =>
+                {
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("LastEditDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("NoteId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("char(10)")
+                        .IsFixedLength();
+
+                    b.Property<string>("NoteName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("char(10)")
+                        .IsFixedLength();
+
+                    b.HasKey("CreateDate");
+
+                    b.ToTable("Notes");
                 });
 
             modelBuilder.Entity("EasyNote.Models.User", b =>

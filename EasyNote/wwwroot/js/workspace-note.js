@@ -31,6 +31,7 @@ const insertContentButtonTypes = {
 
 const noteEditTypes = {
     Name: "Name",
+    ContentAttribute: "ContentAttribute",
     ContentText: "ContentText",
     ContentObject: "ContentObject",
     AddContentBlock: "AddContentBlock",
@@ -153,6 +154,11 @@ function justifyContent(pos) {
                 content.style.flexDirection = "row-reverse";
                 break;
         }
+
+        sendEditRequest(noteEditTypes.ContentAttribute, {
+            contentBlockId: targetId,
+            content: "style=\"flex-direction: " + content.style.flexDirection + "; align-items: " + pos + "\"",
+        });
     }
 
     hideContentBlockOptions();
@@ -808,6 +814,13 @@ function createContentBlockInsertDropdown() {
     // create dropdown items
     const contentBlockInsertDropdownItems = document.createElement("div");
     contentBlockInsertDropdownItems.classList.add("content-block-insert-dropdown-items");
+    contentBlockInsertDropdownItems.addEventListener("wheel", event => {
+        event.preventDefault();
+        contentBlockInsertDropdownItems.scrollBy({
+            left: event.deltaY == 0 ? event.deltaX : event.deltaY,
+            behavior: 'smooth',
+        })
+    });
 
     // create new heading1 contentBlock button
     const newContentBlockHeading1Button = createNewContentBlockButton(insertContentButtonTypes.Heading1, "Heading 1", "bi bi-type-h1")

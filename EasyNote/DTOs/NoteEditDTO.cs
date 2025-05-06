@@ -3,6 +3,7 @@
     public enum NoteEditTypes
     {
         Name,
+        ContentAttribute,
         ContentObject,
         ContentText,
         AddContentBlock,
