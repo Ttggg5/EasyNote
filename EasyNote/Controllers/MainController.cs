@@ -249,21 +249,6 @@ namespace EasyNote.Controllers
             return Redirect("/");
         }
 
-        [HttpHead]
-        [HttpGet]
-        public IActionResult Workspace(string noteId)
-        {
-            if (User.Identity != null && !User.Identity.IsAuthenticated)
-                return Redirect("/");
-
-
-            return View("Workspace", new AllNotesDTO()
-            {
-                SelectedNoteId = noteId,
-                Notes = GetAllNotes(),
-            });
-        }
-
         public IActionResult ShowProfileImage(string userId)
         {
             byte[]? img = (from a in _easyNoteContext.Users
@@ -285,6 +270,21 @@ namespace EasyNote.Controllers
             List<Note?> notes = (from n in _easyNoteContext.Notes where n.UserId == userId select n).DefaultIfEmpty().ToList();
             if (notes.First() == null) return null;
             return notes;
+        }
+
+        // ------------------------------------------Workspace------------------------------------------
+        [HttpGet]
+        public IActionResult Workspace(string noteId)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+
+            return View("Workspace", new AllNotesDTO()
+            {
+                SelectedNoteId = noteId,
+                Notes = GetAllNotes(),
+            });
         }
 
         private string GetNotePath(string userId, string noteId)

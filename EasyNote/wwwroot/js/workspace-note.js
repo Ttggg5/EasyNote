@@ -379,18 +379,25 @@ function initNote() {
     document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
     document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
     document.addEventListener("mouseup", event => {
-        const selection = window.getSelection();
-        if (selection) {
-            if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                showContextmenu(rect);
-                return;
+        // small delay for selection to disappear
+        setTimeout(() => {
+            const selection = window.getSelection();
+            if (selection) {
+                if ((selection.anchorOffset != selection.focusOffset) || (selection.anchorNode != selection.focusNode)) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    showContextmenu(rect);
+                    return;
+                }
             }
-        }
 
-        hideContextmenu();
-        document.getElementById("text_color_dropdown").style.display = "none";
+            hideContextmenu();
+            document.getElementById("text_color_dropdown").style.display = "none";
+        }, 100);
+    });
+
+    document.getElementById("to_pdf_button").addEventListener("click", event => {
+        
     });
 
     // init Sortable

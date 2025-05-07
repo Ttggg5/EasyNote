@@ -85,6 +85,11 @@
             </div>
         </form>
     </dialog>
+
+    <button id="to_pdf_button">
+        <i class="bi bi-filetype-pdf"></i>
+        <span>Download</span>
+    </button>
 }
 
 <div id="main">
@@ -99,8 +104,8 @@
             setInfo('@userId', '@selectedNoteId');
             const promise = new Promise(showNote);
             promise.then(value => {
-            initNote();
-            startAutoSave();
+                initNote();
+                startAutoSave();
             });
         </script>
     }

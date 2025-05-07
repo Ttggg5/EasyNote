@@ -489,3 +489,49 @@
                 #youtube_url_dialog form div button i {
                     margin-right: 5px;
                 }
+
+#to_pdf_button {
+    display: flex;
+    position: absolute;
+    background: var(--main-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    user-select: none;
+    z-index: 20;
+    justify-content: center;
+    align-items: center;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
+    right: 0;
+    margin: 10px;
+    width: 50px;
+    height: 50px;
+    transition: all 0.5s;
+}
+
+    #to_pdf_button:hover {
+        background: var(--main-color-hover);
+        width: 140px;
+        transition: all 0.2s;
+    }
+
+        #to_pdf_button:hover span {
+            padding-right: 5px;
+            visibility: visible;
+            transform: scaleX(100%);
+            width: 100%;
+        }
+
+    #to_pdf_button i {
+        font-size: 25px;
+        padding: 0 5px;
+    }
+
+    #to_pdf_button span {
+        font-weight: bold;
+        visibility: collapse;
+        transform-origin: right;
+        transform: scaleX(0);
+        width: 0;
+        transition: all 0.2s;
+    }
