@@ -19,6 +19,10 @@
 </head>
 <body>
     <header>
+        <button id="nav_button">
+            <i class="bi bi-list"></i>
+        </button>
+
         <div class="icon" onclick="iconClicked();">
             <img src="~/assets/easy-note-icon.jpg"/>
             <div>EasyNote</div>
@@ -46,7 +50,9 @@
     </header>
 
     <div class="main-body">
-        <nav class="note-nav">
+        <nav id="note_nav" @{
+            
+        }>
             <div>
                 <button class="new-note-btn" title="New note" onclick="newNote('@(Url.Action("NewNote", "Main"))', '@(id)')"><i class="bi bi-journal-text"></i><span>New note</span></button>
                 <!--all user's note-->
@@ -75,7 +81,7 @@
             <a class="clander" href="/Calendar"><img src="~/assets/calendar-days-solid.svg" />Calendar</a>
         </nav>
 
-        <main>
+        <main id="main">
             @RenderBody()
         </main>
     </div>

@@ -5,6 +5,35 @@ const dropdownItems = document.getElementById("profile-block-dropdown-items");
 dropdownItems.style.animation = "dropdown-items-hide 0s forwards";
 dropdownItems.style.display = "unset";
 
+document.getElementById("nav_button").addEventListener("click", event => {
+    var state = "";
+    const noteNav = document.getElementById("note_nav");
+    if (noteNav.classList.contains("open")) {
+        noteNav.classList.remove("open");
+        setTimeout(() => noteNav.style.display = "none", 300);
+
+        state = "hide";
+    }
+    else {
+        noteNav.style.display = "flex";
+        setTimeout(() => noteNav.classList.add("open"), 100);
+
+        state = "show";
+    }
+
+    fetch("/SetNavState", {
+        method: "POST",
+        body: JSON.stringify(state),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
+        .then((response) => response.json())
+        .then((json) => {
+            
+        })
+});
+
 document.getElementsByClassName("main-body")[0].addEventListener("mousedown", event => {
     if (event.button == 0) { // left button
         hideDropdown();

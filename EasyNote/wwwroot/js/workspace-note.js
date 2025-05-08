@@ -376,7 +376,7 @@ function initNote() {
         else
             hideContentBlockOptions();
     });
-    document.getElementsByClassName("note-nav")[0].addEventListener("mousedown", event => unFocusContentBlock());
+    document.getElementById("note_nav").addEventListener("mousedown", event => unFocusContentBlock());
     document.getElementsByTagName("header")[0].addEventListener("mousedown", event => unFocusContentBlock());
     document.addEventListener("mouseup", event => {
         // small delay for selection to disappear

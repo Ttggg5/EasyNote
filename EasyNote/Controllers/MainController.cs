@@ -125,7 +125,7 @@ namespace EasyNote.Controllers
                         new Claim(ClaimTypes.Sid, user.Id),
                         new Claim(ClaimTypes.Email, user.Account),
                         new Claim(ClaimTypes.Name, user.Name),
-                        new Claim(ClaimTypes.Role, "User")
+                        new Claim(ClaimTypes.Role, "User"),
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -247,6 +247,28 @@ namespace EasyNote.Controllers
 
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Redirect("/");
+        }
+
+        [HttpPost]
+        public IActionResult SetNavState([FromBody]string state)
+        {
+            Dictionary<string, bool> respon = new Dictionary<string, bool>();
+
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                
+            
+                respon.Add("isSuccessed", true);
+                return Json(respon);
+            }
+            catch (Exception ex)
+            {
+                respon.Add("isSuccessed", false);
+                return Json(respon);
+            }
         }
 
         public IActionResult ShowProfileImage(string userId)
