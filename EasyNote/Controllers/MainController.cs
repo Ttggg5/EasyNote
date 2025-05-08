@@ -130,6 +130,9 @@ namespace EasyNote.Controllers
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
+                    HttpContext.Response.Cookies.Append("NoteNav", "show");
+
                     return Redirect("/Workspace");
                 }
             }
@@ -259,8 +262,11 @@ namespace EasyNote.Controllers
 
             try
             {
-                
-            
+                if (Request.Cookies.ContainsKey("NoteNav"))
+                    HttpContext.Response.Cookies.Delete("NoteNav");
+
+                HttpContext.Response.Cookies.Append("NoteNav", state);
+
                 respon.Add("isSuccessed", true);
                 return Json(respon);
             }

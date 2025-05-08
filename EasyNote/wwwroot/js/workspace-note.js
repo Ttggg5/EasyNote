@@ -356,7 +356,16 @@ function initNote() {
         document.execCommand("insertHTML", false, text);
     });
 
-    document.getElementById("main").addEventListener("mousedown", event => unFocusContentBlock());
+    document.getElementById("main").addEventListener("mousedown", event => {
+        var tmp = event.target;
+        while (tmp != null) {
+            if (tmp == contentBlockOptions)
+                return;
+            tmp = tmp.parentElement;
+        }
+
+        unFocusContentBlock();
+    });
     document.getElementById("main").addEventListener("scroll", event => {
         const selection = window.getSelection();
         if (selection) {

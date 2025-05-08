@@ -19,13 +19,15 @@
 </head>
 <body>
     <header>
-        <button id="nav_button">
-            <i class="bi bi-list"></i>
-        </button>
+        <div>
+            <button id="nav_button">
+                <i class="bi bi-list"></i>
+            </button>
 
-        <div class="icon" onclick="iconClicked();">
-            <img src="~/assets/easy-note-icon.jpg"/>
-            <div>EasyNote</div>
+            <div class="icon" onclick="iconClicked();">
+                <img src="~/assets/easy-note-icon.jpg" />
+                <div>EasyNote</div>
+            </div>
         </div>
 
         <div>
@@ -50,9 +52,7 @@
     </header>
 
     <div class="main-body">
-        <nav id="note_nav" @{
-            
-        }>
+        <nav id="note_nav">
             <div>
                 <button class="new-note-btn" title="New note" onclick="newNote('@(Url.Action("NewNote", "Main"))', '@(id)')"><i class="bi bi-journal-text"></i><span>New note</span></button>
                 <!--all user's note-->
