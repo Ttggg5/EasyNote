@@ -90,12 +90,19 @@
         <i class="bi bi-filetype-pdf"></i>
         <span>Download</span>
     </button>
+
+    <dialog id="loading_spinner_dialog">
+        <div>
+            <img src="/assets/loading-spinner-2.gif" width="50" />
+            <div>Converting please wait...</div>
+        </div>
+    </dialog>
 }
 
 <div id="workspace_content">
     @if (Model.SelectedNoteId != null)
     {
-        <input id="title" placeholder="Untitled" />
+        <textarea id="title" placeholder="Untitled"></textarea>
         <div id="note"></div>
 
         <script src="~/js/workspace-note.js"></script>
@@ -127,8 +134,11 @@
                     foreach (Note note in notesSorted)
                     {
                         <a href="/workspace?noteId=@note.NoteId" class="note-block">
-                            <span>@note.NoteName</span>
-                            <img />
+                            <div>
+                                <i class="bi bi-journal-text"></i>
+                                <span>@note.NoteName</span>
+                            </div>
+                            
                             <span>
                                 <i class="bi bi-clock-history"></i>
                                 @{

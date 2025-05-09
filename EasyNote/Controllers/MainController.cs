@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Reflection.Metadata;
 using System.Threading.Tasks.Dataflow;
 using System.IO;
+using DinkToPdf;
+using Microsoft.AspNetCore.Http.Extensions;
+using System.Text.RegularExpressions;
+using DinkToPdf.Contracts;
 
 namespace EasyNote.Controllers
 {
@@ -27,18 +31,22 @@ namespace EasyNote.Controllers
     {
         private readonly EasyNoteContext _easyNoteContext;
         private IWebHostEnvironment _webHostEnvironment;
+        private IConfiguration _config;
+        private readonly IConverter _converter;
 
-        public MainController(EasyNoteContext easyNoteContext, IWebHostEnvironment webHostEnvironment)
+        public MainController(EasyNoteContext easyNoteContext, IWebHostEnvironment webHostEnvironment, IConfiguration config, IConverter converter)
         {
             _easyNoteContext = easyNoteContext;
             _webHostEnvironment = webHostEnvironment;
+            _config = config;
+            _converter = converter;
         }
 
         public IActionResult Index()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
                 return Redirect("/Workspace");
-            return View();
+            return View("index", _config.GetValue<string>("GoogleApiClientId"));
         }
 
         [HttpPost]
@@ -554,6 +562,7 @@ namespace EasyNote.Controllers
 
             HtmlNode content = document.CreateElement("div");
             content.AddClass("content");
+            content.SetAttributeValue("style", "flex-direction: column; align-items: center;");
 
             HtmlNode contentObject = document.CreateElement("div");
             contentObject.AddClass("content-object");
@@ -731,6 +740,190 @@ namespace EasyNote.Controllers
                     IsSuccessed = false,
                     ErrorMsg = "Unknown error!",
                     FilePath = "",
+                });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult MakePdf([FromBody] string noteId)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "You are not login!",
+                    NoteId = noteId,
+                });
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                Note? note = (from n in _easyNoteContext.Notes
+                              where n.UserId == userId && n.NoteId == noteId
+                              select n).FirstOrDefault();
+
+                if (note == null)
+                    throw new Exception("Note not found!");
+
+                string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                HtmlDocument htmlDocument = new HtmlDocument();
+                string notePath = GetNotePath(userId, noteId);
+                htmlDocument.Load(notePath);
+
+                HtmlNode title = htmlDocument.CreateElement("div");
+                title.Id = "title";
+                title.InnerHtml = note.NoteName;
+                htmlDocument.DocumentNode.InsertBefore(title, htmlDocument.DocumentNode.FirstChild);
+
+                HtmlNode link = htmlDocument.CreateElement("link");
+                link.SetAttributeValue("rel", "stylesheet");
+                link.SetAttributeValue("href", baseUrl + "/css/text-style.css");
+                htmlDocument.DocumentNode.AppendChild(link);
+                // bold font
+                htmlDocument.DocumentNode.InnerHtml += 
+                    "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">" +
+                    "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>" +
+                    "<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Special+Gothic+Expanded+One&display=swap\" rel=\"stylesheet\">";
+
+                HtmlNode style = htmlDocument.CreateElement("style");
+                style.InnerHtml = "*{font-family: 'Microsoft JhengHei UI';}" +
+                                  "ul{margin: 0;}" +
+                                  "#title{font-size: 38px;font-family: \"Noto Sans TC\", sans-serif;font-weight: 900;width: 100%;margin-bottom: 40px;padding: 0 20px;}" +
+                                  ".content-block{width: 100%;padding: 10px;}" +
+                                  ".content{width: 95%;max-width: 800px;margin-bottom: 20px;margin-left: auto;margin-right: auto;}" +
+                                  ".content-object{vertical-align: middle;}" +
+                                  ".content-object img{border-radius: 10px;}" +
+                                  ".content-text{vertical-align: middle;padding: 0 10px;white-space: pre-wrap;word-wrap: break-word;word-break: break-all;}";
+                htmlDocument.DocumentNode.AppendChild(style);
+
+                foreach (var childNode in htmlDocument.DocumentNode.ChildNodes)
+                {
+                    if (!childNode.HasClass("content-block"))
+                        continue;
+
+                    HtmlNode? objectNode = GetContentBlockChildNode(htmlDocument, childNode.Id, "content-object");
+                    HtmlNode? textNode = GetContentBlockChildNode(htmlDocument, childNode.Id, "content-text");
+
+                    string textNodeStyle = textNode.GetAttributeValue("style", "");
+
+                    if (objectNode != null)
+                    {
+                        string objectNodeStyle = objectNode.GetAttributeValue("style", "");
+                        string type = objectNode.GetAttributeValue("data-object-type", "");
+                        switch (Enum.Parse<ContentObjectTypes>(type))
+                        {
+                            case ContentObjectTypes.Image:
+                                string src = objectNode.FirstChild.GetAttributeValue("src", "");
+                                src = baseUrl + "/" + src;
+                                objectNode.FirstChild.SetAttributeValue("src", src);
+                                break;
+
+                            case ContentObjectTypes.Youtube: // change iframe into a link
+                                src = objectNode.FirstChild.GetAttributeValue("src", "");
+                                string videoId = src.Split("/").Last();
+                                src = "https://www.youtube.com/watch?v=" + videoId;
+
+                                HtmlNode a = htmlDocument.CreateElement("a");
+                                a.SetAttributeValue("href", src);
+                                a.SetAttributeValue("width", objectNode.FirstChild.GetAttributeValue("width", ""));
+
+                                HtmlNode img = htmlDocument.CreateElement("img");
+                                img.SetAttributeValue("src", "https://img.youtube.com/vi/" + videoId + "/0.jpg");
+                                img.SetAttributeValue("width", objectNode.FirstChild.GetAttributeValue("width", ""));
+                                img.SetAttributeValue("height", objectNode.FirstChild.GetAttributeValue("height", ""));
+                                a.AppendChild(img);
+
+                                objectNode.FirstChild.Remove();
+                                objectNode.AppendChild(a);
+                                break;
+                        }
+
+                        string contentStyle = GetContentBlockChildNode(htmlDocument, childNode.Id, "content").GetAttributeValue("style", "");
+                        contentStyle = Regex.Replace(contentStyle, @"\s+", string.Empty); // remove space
+                        string[] contentStyles = contentStyle.Split(";", StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string str in contentStyles)
+                        {
+                            string[] tmp = str.Split(":");
+                            switch (tmp[0])
+                            {
+                                case "flex-direction":
+                                    if (tmp[1] == "row")
+                                    {
+                                        objectNodeStyle += "display: inline-block;";
+                                        textNodeStyle += "display: inline-block;";
+                                    }
+                                    else if (tmp[1] == "row-reverse")
+                                    {
+                                        objectNodeStyle += "display: inline-block;";
+                                        textNodeStyle += "display: inline-block;";
+                                        textNode.Remove();
+                                        objectNode.ParentNode.InsertBefore(textNode, objectNode);
+                                    }
+                                    break;
+                                case "align-items":
+                                    if (tmp[1] == "center")
+                                    {
+                                        objectNode.ParentNode.SetAttributeValue("style", "text-align: center;");
+                                        textNodeStyle += "width: 100%;";
+                                    }
+                                    else
+                                    {
+                                        int width = 800 - 20 - Convert.ToInt32(objectNode.FirstChild.GetAttributeValue("width", "0"));
+                                        textNodeStyle += $"width: {width}px;";
+                                        if (tmp[1] == "end")
+                                            objectNode.ParentNode.SetAttributeValue("style", "text-align: end;");
+                                    }
+                                    break;
+                            }
+                        }
+
+                        objectNode.SetAttributeValue("style", objectNodeStyle);
+                    }
+                    else
+                    {
+                        textNodeStyle += "width: 100%;";
+                    }
+                    textNode.SetAttributeValue("style", textNodeStyle);
+                }
+
+                string ouputPath = Directory.GetParent(notePath).FullName + "/output/";
+                Directory.CreateDirectory(ouputPath);
+                System.IO.File.WriteAllText(ouputPath + note.NoteId + "_pdf.html", htmlDocument.DocumentNode.InnerHtml); // this file is just for checking
+
+                HtmlToPdfDocument pdfDocument = new HtmlToPdfDocument()
+                {
+                    GlobalSettings = {
+                        PaperSize = PaperKind.A4,
+                        Orientation = Orientation.Portrait,
+                        Margins = new MarginSettings { Top = 10, Bottom = 10, Left = 10, Right = 10 },
+                    },
+                    Objects = {
+                        new ObjectSettings
+                        {
+                            HtmlContent = htmlDocument.DocumentNode.InnerHtml,
+                        }
+                    }
+                };
+                
+                byte[] bytes = _converter.Convert(pdfDocument);
+                System.IO.File.WriteAllBytes(ouputPath + note.NoteId + ".pdf", bytes);
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                    ErrorMsg = "",
+                    NoteId = noteId,
+                    Data = bytes // This will be base64-encoded in JSON
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new NoteStatusDTO()
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                    NoteId = noteId,
                 });
             }
         }

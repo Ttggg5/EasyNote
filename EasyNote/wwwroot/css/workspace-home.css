@@ -27,11 +27,12 @@ h2 {
 .note-block {
     display: flex;
     flex-direction: column;
+    width: 250px;
     background: var(--main-color);
     border-radius: 10px;
     margin-left: 10px;
     margin-right: 10px;
-    padding: 10px;
+    padding: 10px 20px;
     filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
     text-decoration: none;
     transition: 0.5s;
@@ -41,26 +42,34 @@ h2 {
         background: var(--main-color-hover);
     }
 
-    .note-block span:first-child {
-        color: white;
-        font-weight: bold;
-        margin-bottom: 10px;
-        overflow-x: clip;
+    .note-block > div {
+        display: flex;
+        align-items: center;
     }
 
-    .note-block img {
-        width: 200px;
-        height: 200px;
-        border-radius: 10px;
-    }
+        .note-block > div span {
+            color: white;
+            font-weight: bold;
+            margin-left: 10px;
+            overflow: clip;
+            font-size: 20px;
+            height: 25px;
+            width: 150px;
+            text-overflow: ellipsis;
+        }
 
-    .note-block span:last-child {
+        .note-block > div i {
+            color: white;
+            font-size: 40px;
+        }
+
+    .note-block > span {
         font-size: 12px;
-        color: white;
-        margin-top: 10px;
+        color: #d1d1d1;
         align-self: end;
+        margin-top: 5px;
     }
 
-        .note-block span:last-child i {
-            margin-right: 5px;
+        .note-block > span i {
+            margin-right: 2px;
         }

@@ -8,6 +8,7 @@
     overflow-wrap: break-word;
     padding: 20px;
     border: none;
+    resize: none;
 }
 
     #title:focus {
@@ -16,7 +17,7 @@
 
 #workspace_content {
     width: 100%;
-    max-width: 800px;
+    max-width: 882px;
     padding: 10px;
 }
 
@@ -533,4 +534,25 @@
         transform: scaleX(0);
         width: 0;
         transition: all 0.2s;
+    }
+
+#loading_spinner_dialog {
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
+}
+
+    #loading_spinner_dialog div {
+        display: flex;
+        align-items: center;
+    }
+
+        #loading_spinner_dialog div img {
+            margin-right: 10px;
+        }
+
+    #loading_spinner_dialog::backdrop {
+        background: #00000050;
     }

@@ -1,3 +1,5 @@
+using DinkToPdf.Contracts;
+using DinkToPdf;
 using EasyNote.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +16,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = new PathString("/Login");
         options.LogoutPath = new PathString("/Login");
     });
+builder.Services.AddSingleton<IConverter>(new SynchronizedConverter(new PdfTools()));
 
 var app = builder.Build();
 

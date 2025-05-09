@@ -406,7 +406,34 @@ function initNote() {
     });
 
     document.getElementById("to_pdf_button").addEventListener("click", event => {
+        document.getElementById("loading_spinner_dialog").showModal();
         
+        fetch("/MakePdf", {
+            method: "POST",
+            body: JSON.stringify(this.noteId),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                document.getElementById("loading_spinner_dialog").close();
+                if (json["isSuccessed"]) {
+                    const bytes = base64ToByteArray(json["data"]);
+
+                    let blob = new Blob([bytes], {
+                        type: "application/pdf",
+                    });
+                    var href = URL.createObjectURL(blob);
+                    
+                    var link = document.createElement("a");
+                    link.href = href;
+                    link.download = json["noteId"] + ".pdf";
+                    link.click();
+                }
+                else
+                    alert("Convert fail");
+            });
     });
 
     // init Sortable
@@ -462,6 +489,16 @@ function initNote() {
         if (contentObject.dataset.objectType == contentObjectTypes.Image)
             initContentImage(contentObject.children[0]);
     }
+}
+
+function base64ToByteArray(base64) {
+    const binaryString = atob(base64); // decode base64 to binary string
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
 }
 
 function initDragDrop(contentBlockWrapper) {
@@ -661,6 +698,8 @@ async function newContentBlockWrapper(contentObjectType, contentTextType) {
 
     const content = document.createElement("div");
     content.classList.add("content");
+    content.style.flexDirection = "row";
+    content.style.alignItems = "start";
 
     const contentObject = document.createElement("div");
     contentObject.classList.add("content-object");

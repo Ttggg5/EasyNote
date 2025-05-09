@@ -3,6 +3,7 @@
 *@
 @{
     Layout = null;
+    string googleApiClientId = Model;
 }
 
 <link rel="stylesheet" href="~/css/login-register-form.css" />
@@ -50,18 +51,18 @@
             <div style="align-self: center;">
                 <script src="https://accounts.google.com/gsi/client?hl=en-us" async></script>
                 <div id="g_id_onload"
-                    data-client_id="870772531163-m2r4o3gf7744q19f053oevvc83rnusjj.apps.googleusercontent.com"
+                     data-client_id="@Html.Raw(googleApiClientId)"
                      data-login_uri="@(Url.Action("GoogleLogin", "Main"))"
-                    data-auto_prompt="false">
+                     data-auto_prompt="false">
                 </div>
                 <div class="g_id_signin"
-                    data-type="standard"
-                    data-size="large"
-                    data-theme="outline"
-                    data-text="sign_in_with"
-                    data-shape="rectangular"
-                    data-logo_alignment="left"
-                    data-locale="en-us">
+                     data-type="standard"
+                     data-size="large"
+                     data-theme="outline"
+                     data-text="sign_in_with"
+                     data-shape="rectangular"
+                     data-logo_alignment="left"
+                     data-locale="en-us">
                 </div>
             </div>
 
