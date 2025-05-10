@@ -519,7 +519,7 @@ function initDragDrop(contentBlockWrapper) {
         for (const file of event.dataTransfer.files) {
             if (file.type.includes("image/")) {
                 const contentBlockWrapperNew = await insertNewContentBlockWrapper(contentObjectTypes.Image, contentTextTypes.Text, getContentBlockIndex(contentBlockWrapper.id));
-                uploadFile(file, contentBlockWrapperNew.id)
+                uploadImage(file, contentBlockWrapperNew.id)
                     .then(json => {
                         getContentBlockWrapperChild(contentBlockWrapperNew.id, "content-object").children[0].src = json["filePath"];
                     })
@@ -559,13 +559,13 @@ function hideContentImageResizer() {
     contentImageResizer.style.display = "none";
 }
 
-function uploadFile(file, contentBlockId) {
+function uploadImage(file, contentBlockId) {
     return new Promise((resolve, reject) => {
         const formData = new FormData();
         formData.append("NoteId", this.noteId);
         formData.append("ContentBlockId", contentBlockId);
         formData.append("File", file);
-        fetch("/Main/UploadFile", {
+        fetch("/Main/UploadNoteImage", {
             method: "POST",
             body: formData,
         })
@@ -972,7 +972,7 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
                     for (var i = 0; i < files.length; i++) {
                         if (contentBlockWrappersNew[i] != null) {
                             try {
-                                const responJson = await uploadFile(files[i], contentBlockWrappersNew[i].id);
+                                const responJson = await uploadImage(files[i], contentBlockWrappersNew[i].id);
                                 getContentBlockWrapperChild(contentBlockWrappersNew[i].id, "content-object").children[0].src = responJson["filePath"];
                             } catch (exception) {
                                 alert("File upload failed: " + exception["errorMsg"]);

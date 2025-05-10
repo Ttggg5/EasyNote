@@ -1,0 +1,204 @@
+﻿:root {
+    --cancel-button-color: #d8d8d8;
+    --cancel-button-hover-color: #b9b9b9;
+}
+
+dialog {
+    border: none;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+}
+
+.cancel-button {
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    width: 100%;
+    margin-top: 10px;
+    background: var(--cancel-button-color);
+    margin-right: 10px;
+}
+
+    .cancel-button:hover {
+        background: var(--cancel-button-hover-color);
+    }
+
+.confirm-button {
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    width: 100%;
+    margin-top: 10px;
+    background: var(--main-color);
+    color: white;
+    margin-left: 10px;
+}
+
+    .confirm-button:hover {
+        background: var(--main-color-hover);
+    }
+
+#profile_content {
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    height: 100%;
+    max-width: 850px;
+    padding: 20px;
+    justify-content: start;
+    align-items: center;
+}
+
+    #profile_content > div {
+        display: flex;
+        background: var(--main-color-hover);
+        border-radius: 100px;
+        color: white;
+        padding: 10px 10px 10px 20px;
+        align-items: center;
+        width: 100%;
+        height: 60px;
+        filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+        margin-top: 10px;
+        margin-bottom: 10px;
+        justify-content: start;
+        font-weight: bold;
+    }
+
+        #profile_content > div > span:first-child {
+            flex-grow: 1;
+        }
+
+            #profile_content > div > span:nth-child(2) {
+                padding-right: 10px;
+            }
+
+        #profile_content > div:first-child {
+            display: flex;
+            align-items: center;
+            align-self: start;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            background: #ffffff00;
+            filter: none;
+            height: auto;
+        }
+
+            #profile_content > div:first-child > div {
+                display: flex;
+                align-items: end;
+            }
+
+                #profile_content > div:first-child > div > img {
+                    width: 210px;
+                    height: 210px;
+                    border-radius: 200px;
+                }
+
+                #profile_content > div:first-child > div > button {
+                    margin-left: -35px;
+                }
+
+            #profile_content > div:first-child > span {
+                font-size: 40px;
+                padding: 10px;
+                color: black;
+            }
+
+.edit-button {
+    display: flex;
+    width: 35px;
+    height: 35px;
+    border-radius: 50px;
+    color: white;
+    background: var(--main-color);
+    border: none;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    justify-content: center;
+    align-items: center;
+}
+
+    .edit-button:hover {
+        background: var(--main-color-hover);
+    }
+
+#image_upload_dialog {
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    width: 70%;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+}
+
+    #image_upload_dialog form {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        align-items: center;
+    }
+
+        #image_upload_dialog form span {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            align-self: start;
+        }
+
+        #image_upload_dialog form div {
+            display: flex;
+            width: 100%;
+        }
+
+#file_input {
+    margin-bottom: 10px;
+    align-self: start;
+}
+
+#image_preview {
+    width: 100%;
+}
+
+#loading_spinner_dialog {
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.1rem 0.1rem 2px);
+}
+
+    #loading_spinner_dialog div {
+        display: flex;
+        align-items: center;
+    }
+
+        #loading_spinner_dialog div img {
+            margin-right: 10px;
+        }
+
+    #loading_spinner_dialog::backdrop {
+        background: #00000050;
+    }
+
+#name_edit_dialog {
+    width: 500px;
+    padding: 20px;
+}
+
+    #name_edit_dialog > div {
+        display: flex;
+        flex-direction:column;
+    }
+
+        #name_edit_dialog div span {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            align-self: start;
+        }
+
+        #name_edit_dialog div div {
+            display: flex;
+            margin-top: 10px;
+        }

@@ -18,6 +18,10 @@ using DinkToPdf;
 using Microsoft.AspNetCore.Http.Extensions;
 using System.Text.RegularExpressions;
 using DinkToPdf.Contracts;
+using System.ComponentModel.DataAnnotations;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Globalization;
+using Calendar = EasyNote.Models.Calendar;
 
 namespace EasyNote.Controllers
 {
@@ -69,8 +73,6 @@ namespace EasyNote.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Sid, user.Id),
-                new Claim(ClaimTypes.Email, user.Account),
-                new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Role, "User")
             };
 
@@ -131,8 +133,6 @@ namespace EasyNote.Controllers
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Sid, user.Id),
-                        new Claim(ClaimTypes.Email, user.Account),
-                        new Claim(ClaimTypes.Name, user.Name),
                         new Claim(ClaimTypes.Role, "User"),
                     };
 
@@ -677,7 +677,7 @@ namespace EasyNote.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadFile([FromForm] FileDTO fileDTO)
+        public async Task<IActionResult> UploadNoteImage([FromForm] FileDTO fileDTO)
         {
             if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Json(new UploadStatusDTO()
@@ -1106,6 +1106,119 @@ namespace EasyNote.Controllers
             catch(Exception ex)
             {
                 return Json(null);
+            }
+        }
+
+        // ------------------------------------------Profile------------------------------------------
+        public IActionResult Profile()
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            return View("Profile", new AllNotesDTO()
+            {
+                SelectedNoteId = null,
+                Notes = GetAllNotes(),
+            });
+        }
+
+        [HttpPost]
+        public IActionResult GetUser()
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                    Name = user.Name,
+                    Email = user.Account,
+                    CreateDate = user.CreateDate,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = true,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadProfileImage([FromForm] IFormFile file)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                byte[] bytes = new byte[file.Length];
+                int length = await file.OpenReadStream().ReadAsync(bytes, 0, bytes.Length);
+                if (length == 0)
+                    throw new Exception("File not found");
+
+                user.ProfileImage = bytes;
+                _easyNoteContext.Users.Update(user);
+                await _easyNoteContext.SaveChangesAsync();
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SetUserName([FromBody] string name)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                user.Name = name;
+                _easyNoteContext.Users.Update(user);
+                await _easyNoteContext.SaveChangesAsync();
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
             }
         }
 

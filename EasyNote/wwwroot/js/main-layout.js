@@ -5,6 +5,21 @@ const dropdownItems = document.getElementById("profile-block-dropdown-items");
 dropdownItems.style.animation = "dropdown-items-hide 0s forwards";
 dropdownItems.style.display = "unset";
 
+fetch("/GetUser", {
+    method: "POST",
+    headers: {
+        "Content-type": "application/json; charset=UTF-8"
+    }
+})
+    .then((response) => response.json())
+    .then((json) => {
+        //console.log(json);
+        if (json["isSuccessed"]) {
+            document.getElementsByTagName("title")[0].innerHTML = json["name"] + "\'s workspace";
+            document.getElementsByClassName("profile-info-name")[0].innerHTML = json["name"];
+        }
+    })
+
 document.getElementById("nav_button").addEventListener("click", event => {
     var state = "";
     const noteNav = document.getElementById("note_nav");
@@ -72,10 +87,6 @@ function showDropdown() {
 function hideDropdown() {
     dropdownIcon.style.animation = "dropdown-img-rotate-reverse 0.3s forwards";
     dropdownItems.style.animation = "dropdown-items-hide 0.3s forwards";
-}
-
-function logout() {
-    window.location.href = window.location.href.replace("Workspace", "logout");
 }
 
 function newNote(url, id) {

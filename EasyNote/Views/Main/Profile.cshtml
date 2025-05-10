@@ -1,0 +1,77 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    string id = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/profile.css"/>
+
+<dialog id="image_upload_dialog">
+    <form method="dialog">
+        <span>Crop image</span>
+        <div>
+            <img id="image_preview" />
+        </div>
+        <div>
+            <button id="crop_cancel_button" class="cancel-button" type="button">Canael</button>
+            <button id="crop_button" class="confirm-button" type="submit">Upload</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="loading_spinner_dialog">
+    <div>
+        <img src="/assets/loading-spinner-2.gif" width="50" />
+        <div>Uploading please wait...</div>
+    </div>
+</dialog>
+
+<dialog id="name_edit_dialog">
+    <div>
+        <span>Edit name</span>
+        <input id="name_input" type="text" maxlength="50"/>
+        <div>
+            <button id="name_edit_cancel_button" class="cancel-button">Cancel</button>
+            <button id="name_edit_confirm_button" class="confirm-button">Comfirm</button>
+        </div>
+    </div>
+</dialog>
+
+<div id="profile_content">
+    <div>
+        <div>
+            <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id })" />
+            <button id="image_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+        </div>
+        
+        <span id="name_big" class="profile-info-name"></span>
+    </div>
+    
+    <div>
+        <span>Name</span>
+        <span id="name"></span>
+        <button id="name_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+    </div>
+
+    <div>
+        <span>Email</span>
+        <span id="email"></span>
+        <button id="email_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+    </div>
+
+    <div>
+        <span>Password</span>
+        <span id="password">************</span>
+        <button id="password_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+    </div>
+
+    <div>
+        <span>Create date</span>
+        <span id="create_date"></span>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="~/js/profile.js"></script>
