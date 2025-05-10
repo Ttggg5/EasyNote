@@ -3,10 +3,31 @@
     --cancel-button-hover-color: #b9b9b9;
 }
 
-dialog {
+.form-dialog {
     border: none;
     border-radius: 10px;
     filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    padding: 0;
+}
+
+    .form-dialog form {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        width: 100%;
+        height: 100%;
+    }
+
+.dialog-title {
+    font-size: 25px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    align-self: start;
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
 }
 
 .cancel-button {
@@ -17,6 +38,7 @@ dialog {
     margin-top: 10px;
     background: var(--cancel-button-color);
     margin-right: 10px;
+    font-weight: bold;
 }
 
     .cancel-button:hover {
@@ -32,6 +54,7 @@ dialog {
     background: var(--main-color);
     color: white;
     margin-left: 10px;
+    font-weight: bold;
 }
 
     .confirm-button:hover {
@@ -123,28 +146,12 @@ dialog {
     }
 
 #image_upload_dialog {
-    padding: 0;
-    border: none;
-    border-radius: 10px;
     width: 70%;
-    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
 }
 
     #image_upload_dialog form {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        padding: 20px;
         align-items: center;
     }
-
-        #image_upload_dialog form span {
-            font-size: 25px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            align-self: start;
-        }
 
         #image_upload_dialog form div {
             display: flex;
@@ -183,22 +190,60 @@ dialog {
 
 #name_edit_dialog {
     width: 500px;
-    padding: 20px;
 }
 
-    #name_edit_dialog > div {
-        display: flex;
-        flex-direction:column;
+        #name_edit_dialog form > div {
+            margin-top: 20px;
+        }
+
+#password_edit_dialog {
+    width: 400px;
+}
+
+        #password_edit_dialog form input {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        #password_edit_dialog form div {
+            margin-top: 20px;
+        }
+
+#password_error_msg {
+    color: indianred;
+}
+
+#email_edit_dialog {
+    width: 500px;
+}
+
+        #email_edit_dialog form > div {
+            margin-top: 20px;
+        }
+
+#email_input {
+    margin-top: 20px;
+}
+
+#send_verification_code_button {
+    width: auto;
+    margin: 0;
+    margin-left: 20px;
+}
+
+    #send_verification_code_button[disabled] {
+        background: var(--cancel-button-color)
     }
 
-        #name_edit_dialog div span {
-            font-size: 25px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            align-self: start;
+        #send_verification_code_button[disabled]:hover {
+            background: var(--cancel-button-color)
         }
 
-        #name_edit_dialog div div {
-            display: flex;
-            margin-top: 10px;
-        }
+#verify_code_input {
+    flex-grow: 1;
+}
+
+#email_error_msg {
+    margin-top: 10px;
+    color: indianred;
+}

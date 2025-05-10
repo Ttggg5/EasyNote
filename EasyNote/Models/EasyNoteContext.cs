@@ -99,9 +99,9 @@ public partial class EasyNoteContext : DbContext
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .IsRequired()
-                .HasMaxLength(30);
+                .HasMaxLength(50);
             entity.Property(e => e.Password)
-                .HasMaxLength(30)
+                .HasMaxLength(64)
                 .IsUnicode(false);
             entity.Property(e => e.ProfileImage).HasColumnType("image");
             entity.Property(e => e.RegistType)

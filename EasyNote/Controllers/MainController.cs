@@ -22,6 +22,8 @@ using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Globalization;
 using Calendar = EasyNote.Models.Calendar;
+using System.Net.Mail;
+using System.Net;
 
 namespace EasyNote.Controllers
 {
@@ -59,9 +61,10 @@ namespace EasyNote.Controllers
             if (User.Identity.IsAuthenticated)
                 return Redirect("/");
 
+            string hash = PasswordHasher.HashPassword(loginDTO.Password);
             User? user = (from a in _easyNoteContext.Users
                           where a.Account == loginDTO.Account
-                          && a.Password == loginDTO.Password
+                          && a.Password == hash
                           select a).SingleOrDefault();
 
             if (user == null)
@@ -224,7 +227,7 @@ namespace EasyNote.Controllers
             {
                 Id = GetNewUserId(),
                 Account = registerDTO.Account,
-                Password = registerDTO.Password,
+                Password = PasswordHasher.HashPassword(registerDTO.Password),
                 Name = registerDTO.Name,
                 CreateDate = DateTime.Now,
                 ProfileImage = null,
@@ -1141,6 +1144,7 @@ namespace EasyNote.Controllers
                     Name = user.Name,
                     Email = user.Account,
                     CreateDate = user.CreateDate,
+                    RegistType = user.RegistType,
                 });
             }
             catch (Exception ex)
@@ -1220,6 +1224,121 @@ namespace EasyNote.Controllers
                     ErrorMsg = "Unknown error!",
                 });
             }
+        }
+
+        [HttpPost]
+        public IActionResult VerifyPassword([FromBody] string password)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                if (PasswordHasher.VerifyPassword(password, user.Password))
+                {
+                    return Json(new
+                    {
+                        IsVerified = true,
+                    });
+                }
+
+                return Json(new
+                {
+                    IsVerified = false,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsVerified = false,
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword([FromBody] PassswordDTO passswordDTO)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                if (!PasswordHasher.VerifyPassword(passswordDTO.OldPassword, user.Password))
+                    throw new Exception("Password not correct!");
+
+                user.Password = PasswordHasher.HashPassword(passswordDTO.NewPassword);
+                _easyNoteContext.Users.Update(user);
+                await _easyNoteContext.SaveChangesAsync();
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult SendVerificationCode([FromBody] string email)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string verificationCode = new Random().Next(100000, 999999).ToString();
+                SendVerificationEmail(email, verificationCode);
+
+                HttpContext.Session.SetString("VerificationCode", verificationCode);
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
+        }
+
+        private void SendVerificationEmail(string recipientEmail, string verificationCode)
+        {
+            MailMessage mail = new MailMessage();
+            mail.From = new MailAddress(_config.GetValue<string>("Gmail:Account"));
+            mail.To.Add(recipientEmail);
+            mail.Subject = "EasyNote Verification Code";
+            mail.Body = $"Your verification code is: {verificationCode}";
+
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
+            {
+                Credentials = new NetworkCredential(_config.GetValue<string>("Gmail:Account"), _config.GetValue<string>("Gmail:Password")),
+                EnableSsl = true
+            };
+
+            smtpClient.Send(mail);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -83,9 +83,9 @@
 
             <div class="register-form-wrapper-inner">
                 <h1 class="form-title">Register</h1>
-                <form asp-controller="Main" asp-action="Register" method="post" onsubmit="return validateRegisterForm(this);">
+                <form asp-controller="Main" asp-action="Register" method="post">
                     <div class="input-group">
-                        <input class="form-control" placeholder="Email (this will be account)" type="text" name="account" required>
+                        <input class="form-control" placeholder="Email" type="email" name="account" required>
                     </div>
                     <div class="input-group input-group-password">
                         <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>

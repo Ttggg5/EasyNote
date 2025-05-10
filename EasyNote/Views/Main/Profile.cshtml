@@ -8,13 +8,13 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="~/css/profile.css"/>
 
-<dialog id="image_upload_dialog">
+<dialog id="image_upload_dialog" class="form-dialog">
     <form method="dialog">
-        <span>Crop image</span>
+        <span class="dialog-title">Crop image</span>
         <div>
             <img id="image_preview" />
         </div>
-        <div>
+        <div class="horizontal">
             <button id="crop_cancel_button" class="cancel-button" type="button">Canael</button>
             <button id="crop_button" class="confirm-button" type="submit">Upload</button>
         </div>
@@ -28,15 +28,45 @@
     </div>
 </dialog>
 
-<dialog id="name_edit_dialog">
-    <div>
-        <span>Edit name</span>
-        <input id="name_input" type="text" maxlength="50"/>
-        <div>
-            <button id="name_edit_cancel_button" class="cancel-button">Cancel</button>
-            <button id="name_edit_confirm_button" class="confirm-button">Comfirm</button>
+<dialog id="name_edit_dialog" class="form-dialog">
+    <form method="dialog">
+        <span class ="dialog-title">Edit name</span>
+        <input id="name_input" name="name" type="text" maxlength="50" placeholder="Name" required />
+        <div class="horizontal">
+            <button id="name_edit_cancel_button" class="cancel-button" type="button">Cancel</button>
+            <button id="name_edit_confirm_button" class="confirm-button" type="submit">Comfirm</button>
         </div>
-    </div>
+    </form>
+</dialog>
+
+<dialog id="email_edit_dialog" class="form-dialog">
+    <form method="dialog">
+        <span class="dialog-title">Edit email</span>
+        <input id="email_input" name="email" type="email" maxlength="50" placeholder="Email" required />
+        <div class="horizontal">
+            <input id="verify_code_input" name="verifyCode" type="text" maxlength="6" placeholder="Verification code" required />
+            <button id="send_verification_code_button" class="confirm-button" type="button">Send code</button>
+        </div>
+        <span id="email_error_msg"></span>
+        <div class="horizontal">
+            <button id="email_edit_cancel_button" class="cancel-button" type="button">Cancel</button>
+            <button id="email_edit_confirm_button" class="confirm-button" type="submit">Comfirm</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="password_edit_dialog" class="form-dialog">
+    <form method ="dialog">
+        <span class="dialog-title">Edit password</span>
+        <input id="old_password_input" name="oldPassword" type="password" maxlength="30" placeholder="Old password" required />
+        <input id="new_password_input" name="newPassword" type="password" maxlength="30" placeholder="New password" required />
+        <input id="new_password_confirm_input" name="confirmPassword" type="password" maxlength="30" placeholder="Comfirm new password" required />
+        <span id="password_error_msg"></span>
+        <div class="horizontal">
+            <button id="password_edit_cancel_button" class="cancel-button" type="button">Cancel</button>
+            <button id="password_edit_confirm_button" class="confirm-button" type="submit">Comfirm</button>
+        </div>
+    </form>
 </dialog>
 
 <div id="profile_content">
@@ -58,13 +88,11 @@
     <div>
         <span>Email</span>
         <span id="email"></span>
-        <button id="email_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
     </div>
 
     <div>
         <span>Password</span>
         <span id="password">************</span>
-        <button id="password_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
     </div>
 
     <div>

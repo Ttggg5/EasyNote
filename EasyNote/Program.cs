@@ -8,15 +8,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddDbContext<EasyNoteContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MainDatabase"), sqlServerOptions =>
     sqlServerOptions.EnableRetryOnFailure()));
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options => {
         options.LoginPath = new PathString("/Login");
         options.LogoutPath = new PathString("/Login");
     });
+
 builder.Services.AddSingleton<IConverter>(new SynchronizedConverter(new PdfTools()));
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -30,6 +40,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 
