@@ -116,7 +116,7 @@
         outline: none;
     }
 
-    .content-text ul {
+    .content-text ul, .content-text ol {
         margin-bottom: 0;
     }
 

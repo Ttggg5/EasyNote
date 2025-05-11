@@ -11,6 +11,7 @@ const contentTextTypes = {
     Heading2: "Heading2",
     Heading3: "Heading3",
     BulletList: "BulletList",
+    OrderedList: "OrderedList",
 }
 
 const contentObjectTypes = {
@@ -25,6 +26,7 @@ const insertContentButtonTypes = {
     Heading2: "Heading2",
     Heading3: "Heading3",
     BulletList: "BulletList",
+    OrderedList: "OrderedList",
     Image: "Image",
     Youtube: "Youtube",
 }
@@ -171,7 +173,8 @@ async function changeContentTexttType(type) {
     if (contentText.dataset.textType != type) {
         // get pure content html with type
         var contentTextHtml = "";
-        if (contentText.dataset.textType === contentTextTypes.BulletList) {
+        if (contentText.dataset.textType === contentTextTypes.BulletList ||
+            contentText.dataset.textType === contentTextTypes.OrderedList) {
             for (const child of contentText.children[0].children) {
                 contentTextHtml += child.innerHTML;
             }
@@ -204,6 +207,11 @@ async function changeContentTexttType(type) {
             case contentTextTypes.BulletList:
                 contentText.style.fontSize = "16px";
                 contentText.innerHTML = "<ul><li>" + contentTextHtml + "</li></ul>";
+                break;
+
+            case contentTextTypes.OrderedList:
+                contentText.style.fontSize = "16px";
+                contentText.innerHTML = "<ol><li>" + contentTextHtml + "</li></ol>";
                 break;
         }
         contentText.dataset.textType = type;
@@ -664,7 +672,13 @@ async function observerCallback(mutationsList, observer) {
     mutationsList.forEach(value => {
         try {
             const target = getContentBlockWrapper(value.target);
-            contentChangedBlockIds[target.id] = getContentBlockWrapperChild(target.id, "content-text").outerHTML;
+            const contentText = getContentBlockWrapperChild(target.id, "content-text");
+            if (contentText.dataset.textType === contentTextTypes.BulletList ||
+                contentText.dataset.textType === contentTextTypes.OrderedList) {
+                if (contentText.innerText === "\n")
+                    contentText.dataset.textType = contentTextTypes.Text;
+                }
+            contentChangedBlockIds[target.id] = contentText.outerHTML;
             editing = true;
         } catch (error) {
             console.log(error);
@@ -787,9 +801,14 @@ async function newContentBlockWrapper(contentObjectType, contentTextType) {
 
         case contentTextTypes.BulletList:
             const ul = document.createElement("ul");
-            const li = document.createElement("li");
-            ul.appendChild(li);
+            ul.appendChild(document.createElement("li"));
             contentText.appendChild(ul);
+            break;
+
+        case contentTextTypes.OrderedList:
+            const ol = document.createElement("ol");
+            ol.appendChild(document.createElement("li"));
+            contentText.appendChild(ol);
             break;
     }
 
@@ -912,6 +931,10 @@ function createContentBlockInsertDropdown() {
     const newContentBlockBulletListButton = createNewContentBlockButton(insertContentButtonTypes.BulletList, "Bullet list", "bi bi-list-ul")
     contentBlockInsertDropdownItems.appendChild(newContentBlockBulletListButton);
 
+    // create new ordered list contentBlock button
+    const newContentBlockorderedListButton = createNewContentBlockButton(insertContentButtonTypes.OrderedList, "Ordered list", "bi bi-list-ol")
+    contentBlockInsertDropdownItems.appendChild(newContentBlockorderedListButton);
+
     // create new image contentBlock button
     const newContentBlockImageButton = createNewContentBlockButton(insertContentButtonTypes.Image, "Image", "bi bi-image")
     contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
@@ -966,6 +989,14 @@ function createNewContentBlockButton(insertContentButtonType, innerText, iconCla
                 const contentBlockWrapper = getContentBlockWrapper(button);
                 const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
                 insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.BulletList, index);
+            }
+            break;
+
+        case insertContentButtonTypes.OrderedList:
+            callback = event => {
+                const contentBlockWrapper = getContentBlockWrapper(button);
+                const index = contentBlockWrapper ? getContentBlockIndex(contentBlockWrapper.id) : 1; // index 0 is an empty block
+                insertNewContentBlockWrapper(contentObjectTypes.None, contentTextTypes.OrderedList, index);
             }
             break;
 

@@ -19,6 +19,7 @@
         Heading3,
         Text,
         BulletList,
+        OrderedList,
     }
 
     public enum ContentObjectTypes

@@ -631,9 +631,14 @@ namespace EasyNote.Controllers
 
                 case ContentTextTypes.BulletList:
                     HtmlNode ul = document.CreateElement("ul");
-                    HtmlNode li = document.CreateElement("li");
-                    ul.AppendChild(li);
+                    ul.AppendChild(document.CreateElement("li"));
                     contentText.AppendChild(ul);
+                    break;
+
+                case ContentTextTypes.OrderedList:
+                    HtmlNode ol = document.CreateElement("ul");
+                    ol.AppendChild(document.CreateElement("li"));
+                    contentText.AppendChild(ol);
                     break;
             }
 
@@ -1412,6 +1417,19 @@ namespace EasyNote.Controllers
                     ErrorMsg = "Unknown error!",
                 });
             }
+        }
+
+        // ------------------------------------------Setting------------------------------------------
+        public IActionResult Setting()
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            return View("Setting", new AllNotesDTO()
+            {
+                SelectedNoteId = null,
+                Notes = GetAllNotes(),
+            });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
