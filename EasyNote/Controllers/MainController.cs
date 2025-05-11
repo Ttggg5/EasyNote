@@ -568,7 +568,7 @@ namespace EasyNote.Controllers
 
             HtmlNode content = document.CreateElement("div");
             content.AddClass("content");
-            content.SetAttributeValue("style", "flex-direction: column; align-items: center;");
+            content.SetAttributeValue("style", "flex-direction: row; align-items: start;");
 
             HtmlNode contentObject = document.CreateElement("div");
             contentObject.AddClass("content-object");
