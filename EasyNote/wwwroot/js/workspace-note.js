@@ -333,6 +333,15 @@ function getContentBlockIndex(contentBlockId) {
 function initNote() {
     rangy.init();
 
+    // make title auto height
+    const title = document.getElementById("title");
+    const resizeTitle = () => {
+        title.style.height = "auto";
+        title.style.height = title.scrollHeight + "px";
+    }
+    resizeTitle();
+    title.addEventListener("input", resizeTitle);
+
     window.addEventListener("dragenter", event => {
         event.preventDefault();
     });

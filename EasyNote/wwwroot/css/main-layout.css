@@ -177,6 +177,7 @@ header > div:first-child {
             height: 40px;
             align-items: center;
             cursor: default;
+            overflow: hidden;
         }
 
             #profile-block-dropdown-items li a i {

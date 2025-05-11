@@ -777,7 +777,7 @@ namespace EasyNote.Controllers
 
                 HtmlNode title = htmlDocument.CreateElement("div");
                 title.Id = "title";
-                title.InnerHtml = note.NoteName;
+                title.InnerHtml = note.NoteName.Replace("\n", "<br>");
                 htmlDocument.DocumentNode.InsertBefore(title, htmlDocument.DocumentNode.FirstChild);
 
                 HtmlNode link = htmlDocument.CreateElement("link");

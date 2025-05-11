@@ -55,6 +55,12 @@ document.getElementsByClassName("main-body")[0].addEventListener("mousedown", ev
     }
 });
 
+document.getElementsByTagName("header")[0].addEventListener("mousedown", event => {
+    if (event.button == 0 && event.target == document.getElementsByTagName("header")[0]) { // left button
+        hideDropdown();
+    }
+});
+
 if (getCookie("NoteNav") === "show") {
     const noteNav = document.getElementById("note_nav");
     noteNav.style.display = "flex";
@@ -85,6 +91,7 @@ function showDropdown() {
 }
 
 function hideDropdown() {
+    dropdownCb.checked = false;
     dropdownIcon.style.animation = "dropdown-img-rotate-reverse 0.3s forwards";
     dropdownItems.style.animation = "dropdown-items-hide 0.3s forwards";
 }
