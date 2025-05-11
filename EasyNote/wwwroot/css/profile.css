@@ -3,6 +3,16 @@
     --cancel-button-hover-color: #b9b9b9;
 }
 
+input {
+    border: none;
+    border-bottom: 1px solid #929292;
+}
+
+    input:focus {
+        outline: none;
+        border-bottom: 1px solid #000;
+    }
+
 .form-dialog {
     border: none;
     border-radius: 10px;
@@ -239,7 +249,7 @@
             background: var(--cancel-button-color)
         }
 
-#verify_code_input {
+#verification_code_input {
     flex-grow: 1;
 }
 

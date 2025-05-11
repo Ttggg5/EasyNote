@@ -240,7 +240,7 @@ function initEmail() {
         }
 
         document.getElementById("send_verification_code_button").disabled = true;
-        var count = 10;
+        var count = 30;
         const timerId = setInterval(() => {
             count--;
             document.getElementById("send_verification_code_button").innerHTML = "Send code(" + count + ")"
@@ -262,7 +262,7 @@ function initEmail() {
             .then((json) => {
                 //console.log(json);
                 if (json["isSuccessed"]) {
-
+                    emailErrorMsg.innerHTML = "The code has been sent, please check your email."
                 }
                 else
                     alert(json["errorMsg"]);
@@ -276,6 +276,24 @@ function initEmail() {
     emailEditDialog.addEventListener("submit", event => {
         event.preventDefault();
         const formData = new FormData(event.target);
+
+        fetch("/ChangeEmail", {
+            method: "POST",
+            body: JSON.stringify({
+                Email: formData.get("email"),
+                VerificationCode: formData.get("verificationCode"),
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                if (json["isSuccessed"])
+                    location.reload();
+                else
+                    emailErrorMsg.innerHTML = json["errorMsg"];
+            });
     });
 }
 

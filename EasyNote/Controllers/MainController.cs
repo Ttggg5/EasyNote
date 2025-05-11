@@ -24,6 +24,7 @@ using System.Globalization;
 using Calendar = EasyNote.Models.Calendar;
 using System.Net.Mail;
 using System.Net;
+using System.Text;
 
 namespace EasyNote.Controllers
 {
@@ -1262,7 +1263,7 @@ namespace EasyNote.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePassword([FromBody] PassswordDTO passswordDTO)
+        public async Task<IActionResult> ChangePassword([FromBody] PassswordEditDTO passswordDTO)
         {
             if (User.Identity != null && !User.Identity.IsAuthenticated)
                 return Redirect("/");
@@ -1307,6 +1308,7 @@ namespace EasyNote.Controllers
                 string verificationCode = new Random().Next(100000, 999999).ToString();
                 SendVerificationEmail(email, verificationCode);
 
+                HttpContext.Session.SetString("SentEmail", email);
                 HttpContext.Session.SetString("VerificationCode", verificationCode);
 
                 return Json(new
@@ -1339,6 +1341,75 @@ namespace EasyNote.Controllers
             };
 
             smtpClient.Send(mail);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeEmail([FromBody] EmailEditDTO emailEditDTO)
+        {
+            if (User.Identity != null && !User.Identity.IsAuthenticated)
+                return Redirect("/");
+
+            try
+            {
+                string userId = User.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
+                User? user = (from u in _easyNoteContext.Users
+                              where u.Id == userId
+                              select u).FirstOrDefault();
+
+                byte[]? value = null;
+                if (!HttpContext.Session.TryGetValue("VerificationCode", out value) || value == null)
+                    throw new Exception("Verification code not found!");
+
+                if (Encoding.ASCII.GetString(HttpContext.Session.Get("SentEmail")) != emailEditDTO.Email)
+                {
+                    return Json(new
+                    {
+                        IsSuccessed = false,
+                        ErrorMsg = "Email is not correct!",
+                    });
+                }
+
+                if (Encoding.ASCII.GetString(value) != emailEditDTO.VerificationCode)
+                {
+                    return Json(new
+                    {
+                        IsSuccessed = false,
+                        ErrorMsg = "Verification code not correct!",
+                    });
+                }
+
+                User? tmp = (from u in _easyNoteContext.Users
+                             where u.Account == emailEditDTO.Email && u.RegistType == Enum.GetName(RegistType.EasyNote)
+                             select u).FirstOrDefault();
+                if (tmp != null)
+                {
+                    return Json(new
+                    {
+                        IsSuccessed = false,
+                        ErrorMsg = "Email has been used!",
+                    });
+                }
+
+                user.Account = emailEditDTO.Email;
+                _easyNoteContext.Users.Update(user);
+                await _easyNoteContext.SaveChangesAsync();
+
+                HttpContext.Session.Remove("SentEmail");
+                HttpContext.Session.Remove("VerificationCode");
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
