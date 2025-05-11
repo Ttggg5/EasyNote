@@ -136,6 +136,10 @@
         background: var(--calendar-hover-color);
     }
 
+    .day-block.today {
+        background: var(--calendar-hover-color);
+    }
+
 @keyframes day-block-show {
     0% {
         opacity: 0;

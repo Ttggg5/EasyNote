@@ -401,14 +401,16 @@ namespace EasyNote.Controllers
                           where n.UserId == userId && n.NoteId == noteId 
                           select n).FirstOrDefault();
             if (note == null)
-                return Redirect("/");
+                return Json(new
+                {
+                    IsSuccessed = false,
+                });
 
             HtmlDocument htmlDocument = new HtmlDocument();
             htmlDocument.Load(GetNotePath(userId, noteId));
-            return Json(new NoteContentDTO()
+            return Json(new
             {
-                UserId = userId,
-                NoteId = noteId,
+                IsSuccessed = true,
                 NoteName = note.NoteName,
                 Content = htmlDocument.DocumentNode.InnerHtml,
             });

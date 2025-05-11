@@ -278,6 +278,11 @@ function showNote(resolve, reject) {
     })
         .then((response) => response.json())
         .then((json) => {
+            if (!json["isSuccessed"]) {
+                reject("note not found");
+                return;
+            }
+
             document.getElementById("title").value = json["noteName"];
 
             // append an empty block in note(only for drop file use)
@@ -313,10 +318,11 @@ function showNote(resolve, reject) {
                 note.appendChild(contentBlockWrapper);
             }
 
-            document.getElementById(json["noteId"]).parentElement.style.background = "#656565ff"; // show as selected
+            document.getElementById(this.noteId).parentElement.style.background = "#656565ff"; // show as selected
 
             resolve("ok");
-        })
+        });
+        
 }
 
 function getContentBlockIndex(contentBlockId) {

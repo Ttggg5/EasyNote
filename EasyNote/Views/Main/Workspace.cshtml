@@ -110,20 +110,26 @@
             document.getElementById("title").style.display = "block";
             setInfo('@userId', '@selectedNoteId');
             const promise = new Promise(showNote);
-            promise.then(value => {
-                initNote();
-                startAutoSave();
-            });
+            promise
+                .then(value => {
+                    initNote();
+                    startAutoSave();
+                })
+                .catch(value =>{
+                    location.href = "/";
+                });
         </script>
     }
     else
     {
         <link rel="stylesheet" href="~/css/workspace-home.css" />
-        <script src="~/js/workspace-home.js"></script>
+        <link rel="stylesheet" href="~/css/calendar.css" />
 
-        <h1>Welcome </h1>
+        <h3>Today's event</h3>
+        <div id="event_today">
+        </div>
 
-        <h2>Recent edit</h2>
+        <h3>Recent edit</h3>
         <div id="recent_edit">
             @{
                 if (Model.Notes != null)
@@ -167,9 +173,12 @@
                 }
                 else
                 {
-                    <a>No note found</a>
+                    <span>No note found</span>
                 }
             }
         </div>
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+        <script src="~/js/workspace-home.js"></script>
     }
 </div>

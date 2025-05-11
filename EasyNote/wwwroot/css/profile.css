@@ -257,3 +257,23 @@ input {
     margin-top: 10px;
     color: indianred;
 }
+
+#logout_button {
+    color: white;
+    border: none;
+    background: indianred;
+    padding: 8px 20px;
+    border-radius: 100px;
+    filter: drop-shadow(var(--drop-shdow-color) 0.2rem 0.2rem 2px);
+    align-self: end;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+    #logout_button:hover {
+        background: #ff7979;
+    }
+
+    #logout_button i {
+        margin-right: 5px;
+    }

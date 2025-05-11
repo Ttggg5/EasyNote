@@ -1,5 +1,6 @@
 ﻿const scrollSelector = new ScrollSelector();
-const today = new Date();
+var today = new Date();
+today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 const allmonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const allYears = [];
 for (let i = today.getFullYear() - 80; i <= today.getFullYear() + 20; i++) {
@@ -180,6 +181,8 @@ function refreshCalendar() {
                     document.getElementById(id).children[0].classList.add("show");
                 }
             }
+
+            document.getElementById(today.getTime().toString()).classList.add("today");
         });
 }
 
