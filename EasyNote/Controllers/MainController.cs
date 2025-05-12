@@ -207,6 +207,28 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDTO registerDTO)
         {
+            byte[]? value = null;
+            if (!HttpContext.Session.TryGetValue("VerificationCode", out value) || value == null)
+                throw new Exception("Verification code not found!");
+
+            if (Encoding.ASCII.GetString(HttpContext.Session.Get("SentEmail")) != registerDTO.Account)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Email is not correct!",
+                });
+            }
+
+            if (Encoding.ASCII.GetString(value) != registerDTO.VerificationCode)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Verification code not correct!",
+                });
+            }
+
             if (!registerDTO.Password.Equals(registerDTO.ConfirmPassword))
             {
                 TempData["error"] = "Confirm Password not correct!";
@@ -240,6 +262,49 @@ namespace EasyNote.Controllers
 
             TempData["register_state"] = "complete";
             return Redirect("/");
+        }
+
+        [HttpPost]
+        public IActionResult SendVerificationCode([FromBody] string email)
+        {
+            try
+            {
+                string verificationCode = new Random().Next(100000, 999999).ToString();
+                SendVerificationEmail(email, verificationCode);
+
+                HttpContext.Session.SetString("SentEmail", email);
+                HttpContext.Session.SetString("VerificationCode", verificationCode);
+
+                return Json(new
+                {
+                    IsSuccessed = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    IsSuccessed = false,
+                    ErrorMsg = "Unknown error!",
+                });
+            }
+        }
+
+        private void SendVerificationEmail(string recipientEmail, string verificationCode)
+        {
+            MailMessage mail = new MailMessage();
+            mail.From = new MailAddress(_config.GetValue<string>("Gmail:Account"));
+            mail.To.Add(recipientEmail);
+            mail.Subject = "EasyNote Verification Code";
+            mail.Body = $"Your verification code is: {verificationCode}";
+
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
+            {
+                Credentials = new NetworkCredential(_config.GetValue<string>("Gmail:Account"), _config.GetValue<string>("Gmail:Password")),
+                EnableSsl = true
+            };
+
+            smtpClient.Send(mail);
         }
 
         private string GetNewUserId()
@@ -1302,52 +1367,6 @@ namespace EasyNote.Controllers
                     ErrorMsg = "Unknown error!",
                 });
             }
-        }
-
-        [HttpPost]
-        public IActionResult SendVerificationCode([FromBody] string email)
-        {
-            if (User.Identity != null && !User.Identity.IsAuthenticated)
-                return Redirect("/");
-
-            try
-            {
-                string verificationCode = new Random().Next(100000, 999999).ToString();
-                SendVerificationEmail(email, verificationCode);
-
-                HttpContext.Session.SetString("SentEmail", email);
-                HttpContext.Session.SetString("VerificationCode", verificationCode);
-
-                return Json(new
-                {
-                    IsSuccessed = true,
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    IsSuccessed = false,
-                    ErrorMsg = "Unknown error!",
-                });
-            }
-        }
-
-        private void SendVerificationEmail(string recipientEmail, string verificationCode)
-        {
-            MailMessage mail = new MailMessage();
-            mail.From = new MailAddress(_config.GetValue<string>("Gmail:Account"));
-            mail.To.Add(recipientEmail);
-            mail.Subject = "EasyNote Verification Code";
-            mail.Body = $"Your verification code is: {verificationCode}";
-
-            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
-            {
-                Credentials = new NetworkCredential(_config.GetValue<string>("Gmail:Account"), _config.GetValue<string>("Gmail:Password")),
-                EnableSsl = true
-            };
-
-            smtpClient.Send(mail);
         }
 
         [HttpPost]

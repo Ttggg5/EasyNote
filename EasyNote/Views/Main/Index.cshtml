@@ -74,18 +74,17 @@
 
         <!--Register form-->
         <div id="register-form" class="register-form-wrapper-outer">
-            <div class="back-btn">
-                <button type="button" onclick="showLoginForm()"></button>
-                <svg width="15" viewBox="0 0 256 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                    <path d="M192 448c-8.188 0-16.38-3.125-22.62-9.375l-160-160c-12.5-12.5-12.5-32.75 0-45.25l160-160c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l137.4 137.4c12.5 12.5 12.5 32.75 0 45.25C208.4 444.9 200.2 448 192 448z"/>
-                </svg>
-            </div>
+            <button type="button" class="back-btn" onclick="showLoginForm()"><i class="bi bi-chevron-left"></i></button>
 
             <div class="register-form-wrapper-inner">
                 <h1 class="form-title">Register</h1>
                 <form asp-controller="Main" asp-action="Register" method="post">
                     <div class="input-group">
-                        <input class="form-control" placeholder="Email" type="email" name="account" required>
+                        <input id="email-register" class="form-control" placeholder="Email" type="email" name="account" required>
+                    </div>
+                    <div class="input-group horizontal">
+                        <input id="verification_code_input" class="form-control" name="verificationCode" type="text" maxlength="6" placeholder="Verification code" required />
+                        <button id="send_verification_code_button" type="button">Send code</button>
                     </div>
                     <div class="input-group input-group-password">
                         <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>
