@@ -20,9 +20,6 @@
 
 .background-block {
     display: flex;
-    grid-column-start: 1;
-    grid-column-end: 2;
-    grid-row-start: 1;
     margin: auto;
     width: 65%;
     height: 65%;
@@ -62,4 +59,42 @@
         font-weight: bold;
         padding: 5px;
         filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+        margin: 0;
     }
+
+@media screen and (max-width: 500px) {
+    .background-block {
+        background: #ffffff00;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .icon-block {
+        display: flex;
+        top: 0;
+        position: absolute;
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        background: #4f4f4f;
+        border-radius: 0;
+        justify-content: start;
+        align-items: center;
+        filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+        margin: 0;
+    }
+
+        .icon-block img {
+            display: block;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            padding: 5px;
+            filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
+        }
+
+        .icon-block h1 {
+            font-size: 20px;
+        }
+}
