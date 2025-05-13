@@ -2,15 +2,11 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    Layout = null;
+    Layout = "StartPageLayout";
     string googleApiClientId = Model;
 }
 
 <link rel="stylesheet" href="~/css/login-register-form.css" />
-<link rel="stylesheet" href="~/css/start-page.css" />
-
-
-<img class="background-img" src="~/assets/background.jpg" />
 
 @if (TempData["register_state"] != null)
 {
@@ -20,94 +16,87 @@
     }
 }
 
-<div class="background-block">
-    <div class="icon-block">
-        <img src="~/assets/easy-note-icon.jpg"/>
+<!--Login form-->
+<div id="login-form" class="login-form-wrapper">
+    <h1 class="form-title">Login</h1>
+    <form asp-controller="Main" asp-action="Login" method="post">
+        <div class="input-group">
+            <input class="form-control" placeholder="Account" type="text" name="account" required>
+        </div>
+        <div class="input-group input-group-password">
+            <input id="password-login" class="form-control" placeholder="Password" type="password" name="password" required>
+            <button type="button" onclick="togglePassword(this, 'password-login')">
+                <i class="bi bi-eye-fill"></i>
+            </button>
+        </div>
 
-        <h1>EasyNote</h1>
+        <div class="error-text">@TempData["error"]</div>
+
+        <button type="submit" class="login-btn">Confirm</button>
+    </form>
+
+    <!--google login button-->
+    <div style="align-self: center;">
+        <script src="https://accounts.google.com/gsi/client?hl=en-us" async></script>
+        <div id="g_id_onload"
+                data-client_id="@Html.Raw(googleApiClientId)"
+                data-login_uri="@(Url.Action("GoogleLogin", "Main"))"
+                data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+                data-type="standard"
+                data-size="large"
+                data-theme="outline"
+                data-text="sign_in_with"
+                data-shape="rectangular"
+                data-logo_alignment="left"
+                data-locale="en-us">
+        </div>
     </div>
 
-    <div class="form-block">
-        <!--Login form-->
-        <div id="login-form" class="login-form-wrapper">
-            <h1 class="form-title">Login</h1>
-            <form asp-controller="Main" asp-action="Login" method="post">
-                <div class="input-group">
-                    <input class="form-control" placeholder="Account" type="text" name="account" required>
-                </div>
-                <div class="input-group input-group-password">
-                    <input id="password-login" class="form-control" placeholder="Password" type="password" name="password" required>
-                    <button type="button" onclick="togglePassword(this, 'password-login')">
-                        <i class="bi bi-eye-fill"></i>
-                    </button>
-                </div>
+    <div class="register-text">
+        <a>Don't have an account?</a>
+        <a href="#" onclick="showRegisterForm()">Register</a>
+        <br>
+        <a>Forgot password?</a>
+        <a href="/ForgotPassword">Click here</a>
+    </div>
+</div>
 
-                <div class="error-text">@TempData["error"]</div>
+<!--Register form-->
+<div id="register-form" class="register-form-wrapper-outer">
+    <button type="button" class="back-btn" onclick="showLoginForm()"><i class="bi bi-chevron-left"></i></button>
 
-                <button type="submit" class="login-btn">Confirm</button>
-            </form>
-
-            <!--google login button-->
-            <div style="align-self: center;">
-                <script src="https://accounts.google.com/gsi/client?hl=en-us" async></script>
-                <div id="g_id_onload"
-                     data-client_id="@Html.Raw(googleApiClientId)"
-                     data-login_uri="@(Url.Action("GoogleLogin", "Main"))"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-size="large"
-                     data-theme="outline"
-                     data-text="sign_in_with"
-                     data-shape="rectangular"
-                     data-logo_alignment="left"
-                     data-locale="en-us">
-                </div>
+    <div class="register-form-wrapper-inner">
+        <h1 class="form-title">Register</h1>
+        <form asp-controller="Main" asp-action="Register" method="post">
+            <div class="input-group">
+                <input id="email-register" class="form-control" placeholder="Email" type="email" name="account" required>
+            </div>
+            <div class="input-group horizontal">
+                <input id="verification_code_input" class="form-control" name="verificationCode" type="text" maxlength="6" placeholder="Verification code" required />
+                <button id="send_verification_code_button" type="button">Send code</button>
+            </div>
+            <div class="input-group input-group-password">
+                <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>
+                <button type="button" onclick="togglePassword(this, 'password-register')">
+                    <i class="bi bi-eye-fill"></i>
+                </button>
+            </div>
+            <div class="input-group input-group-password">
+                <input id="confirm-password-register" class="form-control" placeholder="Confirm Password" type="password" name="confirmPassword" required>
+                <button type="button" onclick="togglePassword(this, 'confirm-password-register')">
+                    <i class="bi bi-eye-fill"></i>
+                </button>
+            </div>
+            <div class="input-group">
+                <input class="form-control" placeholder="Name" type="text" name="name" required>
             </div>
 
-            <div class="register-text">
-                <a>Don't have an account?</a>
-                <a href="#" onclick="showRegisterForm()">Register</a>
-            </div>
-        </div>
+            <div class="error-text">@TempData["error"]</div>
 
-        <!--Register form-->
-        <div id="register-form" class="register-form-wrapper-outer">
-            <button type="button" class="back-btn" onclick="showLoginForm()"><i class="bi bi-chevron-left"></i></button>
-
-            <div class="register-form-wrapper-inner">
-                <h1 class="form-title">Register</h1>
-                <form asp-controller="Main" asp-action="Register" method="post">
-                    <div class="input-group">
-                        <input id="email-register" class="form-control" placeholder="Email" type="email" name="account" required>
-                    </div>
-                    <div class="input-group horizontal">
-                        <input id="verification_code_input" class="form-control" name="verificationCode" type="text" maxlength="6" placeholder="Verification code" required />
-                        <button id="send_verification_code_button" type="button">Send code</button>
-                    </div>
-                    <div class="input-group input-group-password">
-                        <input id="password-register" class="form-control" placeholder="Password" type="password" name="password" required>
-                        <button type="button" onclick="togglePassword(this, 'password-register')">
-                            <i class="bi bi-eye-fill"></i>
-                        </button>
-                    </div>
-                    <div class="input-group input-group-password">
-                        <input id="confirm-password-register" class="form-control" placeholder="Confirm Password" type="password" name="confirmPassword" required>
-                        <button type="button" onclick="togglePassword(this, 'confirm-password-register')">
-                            <i class="bi bi-eye-fill"></i>
-                        </button>
-                    </div>
-                    <div class="input-group">
-                        <input class="form-control" placeholder="Name" type="text" name="name" required>
-                    </div>
-
-                    <div class="error-text">@TempData["error"]</div>
-
-                    <button type="submit" class="register-btn">Confirm</button>
-                </form>
-            </div>
-        </div>
+            <button type="submit" class="register-btn">Confirm</button>
+        </form>
     </div>
 </div>
 

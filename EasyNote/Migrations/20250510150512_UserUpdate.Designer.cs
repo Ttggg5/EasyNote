@@ -154,7 +154,7 @@ namespace EasyNote.Migrations
                     b.Property<byte[]>("ProfileImage")
                         .HasColumnType("image");
 
-                    b.Property<string>("RegistType")
+                    b.Property<string>("RegistTypes")
                         .HasMaxLength(10)
                         .IsUnicode(false)
                         .HasColumnType("varchar(10)");

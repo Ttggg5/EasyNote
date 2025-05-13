@@ -4,6 +4,9 @@
     flex-direction: row-reverse;
     width: 64%;
     align-items: center;
+    margin-left: 10%;
+    margin-right: -20%;
+    max-width: 300px;
 }
 
 .login-form-wrapper {
@@ -11,7 +14,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 50%;
+    width: 100%;
 }
 
 .form-title {
@@ -90,7 +93,7 @@
 .register-form-wrapper-outer {
     display: flex;
     flex-direction: row;
-    width: 50%;
+    width: 100%;
 }
 
 .register-form-wrapper-inner {
@@ -148,7 +151,6 @@
 
     80% {
         display: flex;
-        width: 50%;
     }
 
     100% {
@@ -169,7 +171,6 @@
 
     80% {
         display: none;
-        width: 0;
     }
 
     100% {
@@ -199,6 +200,18 @@
     filter: drop-shadow(#00000082 0.2rem 0.2rem 2px);
     color: white;
 }
+
+    #send_verification_code_button:hover {
+        background: #6e6e6e;
+    }
+
+    #send_verification_code_button[disabled] {
+        background: #d8d8d8;
+    }
+
+        #send_verification_code_button[disabled]:hover {
+            background: #d8d8d8;
+        }
 
 @media screen and (max-width: 500px){
     .login-form-wrapper {
