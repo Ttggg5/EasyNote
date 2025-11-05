@@ -1037,6 +1037,8 @@ namespace EasyNote.Controllers
                 List<DateTime> dateTimes = new List<DateTime>();
                 calendars.ForEach((calendar) =>
                 {
+                    if (calendar == null) return;
+
                     DateTime startTime = new DateTime(calendar.EventStartTime.Year, calendar.EventStartTime.Month, calendar.EventStartTime.Day);
                     if (startTime < dateTimeMonthStart)
                         startTime = startTime.AddDays((dateTimeMonthStart - startTime).Days);

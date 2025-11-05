@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyNote.Migrations
 {
     [DbContext(typeof(EasyNoteContext))]
-    [Migration("20250510150512_UserUpdate")]
-    partial class UserUpdate
+    [Migration("20250621105924_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
