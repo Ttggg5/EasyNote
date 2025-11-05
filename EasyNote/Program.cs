@@ -23,7 +23,7 @@ builder.Services.AddSingleton<IConverter>(new SynchronizedConverter(new PdfTools
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.IdleTimeout = TimeSpan.FromMinutes(10);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });

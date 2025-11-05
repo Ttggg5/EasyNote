@@ -28,7 +28,7 @@ using System.Text;
 
 namespace EasyNote.Controllers
 {
-    public enum RegistType
+    public enum RegistTypes
     {
         EasyNote,
         Google,
@@ -49,6 +49,7 @@ namespace EasyNote.Controllers
             _converter = converter;
         }
 
+        // ------------------------------------------StartPage------------------------------------------
         public IActionResult Index()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -109,7 +110,7 @@ namespace EasyNote.Controllers
                     //驗證成功，取使用者資訊內容
                     User? user = (from a in _easyNoteContext.Users
                                   where a.Account == payload.Email
-                                  && a.RegistType == Enum.GetName(RegistType.Google)
+                                  && a.RegistType == Enum.GetName(RegistTypes.Google)
                                   select a).SingleOrDefault();
 
                     if (user == null)
@@ -122,7 +123,7 @@ namespace EasyNote.Controllers
                             Name = payload.Name,
                             CreateDate = DateTime.Now,
                             ProfileImage = await new HttpClient().GetByteArrayAsync(payload.Picture),
-                            RegistType = Enum.GetName(RegistType.Google),
+                            RegistType = Enum.GetName(RegistTypes.Google),
                         };
 
                         _easyNoteContext.Users.Add(newUser);
@@ -131,7 +132,7 @@ namespace EasyNote.Controllers
 
                     user = (from a in _easyNoteContext.Users
                             where a.Account == payload.Email
-                            && a.RegistType == Enum.GetName(RegistType.Google)
+                            && a.RegistType == Enum.GetName(RegistTypes.Google)
                             select a).SingleOrDefault();
 
                     var claims = new List<Claim>
@@ -207,61 +208,63 @@ namespace EasyNote.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDTO registerDTO)
         {
-            byte[]? value = null;
-            if (!HttpContext.Session.TryGetValue("VerificationCode", out value) || value == null)
-                throw new Exception("Verification code not found!");
-
-            if (Encoding.ASCII.GetString(HttpContext.Session.Get("SentEmail")) != registerDTO.Account)
+            try
             {
-                return Json(new
+                byte[]? value = null;
+                if (!HttpContext.Session.TryGetValue("VerificationCode", out value) || value == null)
+                    throw new Exception("Verification code not found!");
+
+                if (Encoding.ASCII.GetString(HttpContext.Session.Get("SentEmail")) != registerDTO.Account)
                 {
-                    IsSuccessed = false,
-                    ErrorMsg = "Email is not correct!",
-                });
-            }
+                    TempData["error"] = "Email is not correct!";
+                    return Redirect("/?reg=true");
+                }
 
-            if (Encoding.ASCII.GetString(value) != registerDTO.VerificationCode)
-            {
-                return Json(new
+                if (Encoding.ASCII.GetString(value) != registerDTO.VerificationCode)
                 {
-                    IsSuccessed = false,
-                    ErrorMsg = "Verification code not correct!",
-                });
-            }
+                    TempData["error"] = "Verification code not correct!";
+                
+                }
 
-            if (!registerDTO.Password.Equals(registerDTO.ConfirmPassword))
+                if (!registerDTO.Password.Equals(registerDTO.ConfirmPassword))
+                {
+                    TempData["error"] = "Confirm Password not correct!";
+                    return Redirect("/?reg=true");
+                }
+
+                User? user = (from a in _easyNoteContext.Users
+                              where a.Account == registerDTO.Account
+                              && a.RegistType == Enum.GetName(RegistTypes.EasyNote)
+                              select a).SingleOrDefault();
+
+                if (user != null)
+                {
+                    TempData["error"] = "Account already exist!";
+                    return Redirect("/?reg=true");
+                }
+
+                User newUser = new User()
+                {
+                    Id = GetNewUserId(),
+                    Account = registerDTO.Account,
+                    Password = PasswordHasher.HashPassword(registerDTO.Password),
+                    Name = registerDTO.Name,
+                    CreateDate = DateTime.Now,
+                    ProfileImage = null,
+                    RegistType = Enum.GetName(RegistTypes.EasyNote),
+                };
+
+                _easyNoteContext.Users.Add(newUser);
+                await _easyNoteContext.SaveChangesAsync();
+
+                TempData["register_state"] = "complete";
+                return Redirect("/");
+            }
+            catch (Exception ex)
             {
-                TempData["error"] = "Confirm Password not correct!";
+                TempData["error"] = "Unknown error!";
                 return Redirect("/?reg=true");
             }
-
-            User? user = (from a in _easyNoteContext.Users
-                          where a.Account == registerDTO.Account
-                          && a.RegistType == Enum.GetName(RegistType.EasyNote)
-                          select a).SingleOrDefault();
-
-            if (user != null)
-            {
-                TempData["error"] = "Account already exist!";
-                return Redirect("/?reg=true");
-            }
-
-            User newUser = new User()
-            {
-                Id = GetNewUserId(),
-                Account = registerDTO.Account,
-                Password = PasswordHasher.HashPassword(registerDTO.Password),
-                Name = registerDTO.Name,
-                CreateDate = DateTime.Now,
-                ProfileImage = null,
-                RegistType = Enum.GetName(RegistType.EasyNote),
-            };
-
-            _easyNoteContext.Users.Add(newUser);
-            await _easyNoteContext.SaveChangesAsync();
-
-            TempData["register_state"] = "complete";
-            return Redirect("/");
         }
 
         [HttpPost]
@@ -296,7 +299,9 @@ namespace EasyNote.Controllers
             mail.From = new MailAddress(_config.GetValue<string>("Gmail:Account"));
             mail.To.Add(recipientEmail);
             mail.Subject = "EasyNote Verification Code";
-            mail.Body = $"Your verification code is: {verificationCode}";
+            mail.Body = 
+                $"Your verification code is: {verificationCode}.\n" +
+                $"This code will only works in 10 minute.";
 
             SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587)
             {
@@ -320,6 +325,64 @@ namespace EasyNote.Controllers
             return id;
         }
 
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDTO forgotPasswordDTO)
+        {
+            try
+            {
+                byte[]? value = null;
+                if (!HttpContext.Session.TryGetValue("VerificationCode", out value) || value == null)
+                    throw new Exception("Verification code not found!");
+
+                if (Encoding.ASCII.GetString(HttpContext.Session.Get("SentEmail")) != forgotPasswordDTO.Account)
+                {
+                    TempData["error"] = "Email is not correct!";
+                    return Redirect("/ForgotPassword");
+                }
+
+                if (Encoding.ASCII.GetString(value) != forgotPasswordDTO.VerificationCode)
+                {
+                    TempData["error"] = "Verification code not correct!";
+                    return Redirect("/ForgotPassword");
+                }
+
+                if (!forgotPasswordDTO.Password.Equals(forgotPasswordDTO.ConfirmPassword))
+                {
+                    TempData["error"] = "Confirm Password not correct!";
+                    return Redirect("/ForgotPassword");
+                }
+
+                User? user = (from a in _easyNoteContext.Users
+                              where a.Account == forgotPasswordDTO.Account
+                              && a.RegistType == Enum.GetName(RegistTypes.EasyNote)
+                              select a).SingleOrDefault();
+
+                if (user == null)
+                {
+                    TempData["error"] = "Account not found!";
+                    return Redirect("/ForgotPassword");
+                }
+
+                user.Password = PasswordHasher.HashPassword(forgotPasswordDTO.Password);
+
+                _easyNoteContext.Users.Update(user);
+                await _easyNoteContext.SaveChangesAsync();
+
+                TempData["state"] = "complete";
+                return Redirect("/ForgotPassword");
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = "Unknown error!";
+                return Redirect("/ForgotPassword");
+            }
+        }
+
         public IActionResult Logout()
         {
             if (User.Identity != null && !User.Identity.IsAuthenticated)
@@ -329,6 +392,7 @@ namespace EasyNote.Controllers
             return Redirect("/");
         }
 
+        // ------------------------------------------MainLayout------------------------------------------
         [HttpPost]
         public IActionResult SetNavState([FromBody]string state)
         {
@@ -1407,7 +1471,7 @@ namespace EasyNote.Controllers
                 }
 
                 User? tmp = (from u in _easyNoteContext.Users
-                             where u.Account == emailEditDTO.Email && u.RegistType == Enum.GetName(RegistType.EasyNote)
+                             where u.Account == emailEditDTO.Email && u.RegistType == Enum.GetName(RegistTypes.EasyNote)
                              select u).FirstOrDefault();
                 if (tmp != null)
                 {

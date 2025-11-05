@@ -20,6 +20,8 @@
     width: 100%;
     max-width: 882px;
     padding: 10px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .empty-block {

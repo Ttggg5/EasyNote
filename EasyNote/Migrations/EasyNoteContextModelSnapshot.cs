@@ -140,18 +140,18 @@ namespace EasyNote.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Password")
-                        .HasMaxLength(64)
+                        .HasMaxLength(30)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(64)");
+                        .HasColumnType("varchar(30)");
 
                     b.Property<byte[]>("ProfileImage")
                         .HasColumnType("image");
 
-                    b.Property<string>("RegistType")
+                    b.Property<string>("RegistTypes")
                         .HasMaxLength(10)
                         .IsUnicode(false)
                         .HasColumnType("varchar(10)");
