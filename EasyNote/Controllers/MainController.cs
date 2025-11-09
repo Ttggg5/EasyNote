@@ -1290,7 +1290,7 @@ namespace EasyNote.Controllers
             {
                 return Json(new
                 {
-                    IsSuccessed = true,
+                    IsSuccessed = false,
                     ErrorMsg = "Unknown error!",
                 });
             }

@@ -58,6 +58,7 @@ function initImageEdit() {
     document.getElementById("image_edit_button").addEventListener("click", event => {
         const input = document.createElement("input");
         input.type = "file";
+        input.accept = "image/png, image/jpeg";
         input.addEventListener('change', (event) => {
             const files = event.target.files;
             if (files && files.length > 0) {
