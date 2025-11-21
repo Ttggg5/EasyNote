@@ -940,8 +940,10 @@ function createContentBlockInsertDropdown() {
     contentBlockInsertDropdownItems.appendChild(newContentBlockImageButton);
 
     // create new youtube contentBlock button
+    /*
     const newContentBlockYoutubeButton = createNewContentBlockButton(insertContentButtonTypes.Youtube, "Youtube", "bi bi-youtube")
     contentBlockInsertDropdownItems.appendChild(newContentBlockYoutubeButton);
+    */
 
     contentBlockInsertDropdown.appendChild(contentBlockInsertDropdownItems);
 
@@ -1072,7 +1074,11 @@ function showContentBlockOptions(sender) {
         contentBlockOptions.style.top = (optionBlockOffsets.top - contentBlockOptions.offsetHeight) + "px";
     else
         contentBlockOptions.style.top = (optionBlockOffsets.top + optionBlockOffsets.height) + "px";
-    contentBlockOptions.style.left = (window.innerWidth - contentBlockOptions.offsetWidth - 20) + "px";
+
+    if (optionBlockOffsets.left + optionBlockOffsets.width + contentBlockOptions.offsetWidth > window.innerWidth)
+        contentBlockOptions.style.left = (window.innerWidth - contentBlockOptions.offsetWidth - 20) + "px";
+    else
+        contentBlockOptions.style.left = (optionBlockOffsets.left + optionBlockOffsets.width) + "px";
 
     sender.parentElement.classList.add("content-block-hover");
 
