@@ -38,7 +38,7 @@
             <input id="dropdown_cb" type="checkbox" onclick="dropdownClicked()"/>
             <label class="profile-block" for="dropdown_cb">
                 <div class="profile-info">
-                    <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id })" />
+                    <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id, r = Random.Shared.Next() })" />
                     <div class="profile-info-name"></div>
                 </div>
 

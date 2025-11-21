@@ -372,7 +372,7 @@ namespace EasyNote.Controllers
 
                 _easyNoteContext.Users.Update(user);
                 await _easyNoteContext.SaveChangesAsync();
-
+                
                 TempData["state"] = "complete";
                 return Redirect("/ForgotPassword");
             }

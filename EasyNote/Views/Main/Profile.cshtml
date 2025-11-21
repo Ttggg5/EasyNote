@@ -72,7 +72,7 @@
 <div id="profile_content">
     <div>
         <div>
-            <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id })" />
+            <img class="profile-info-img" src="@Url.Action("ShowProfileImage", "Main", new { userId = id, r = Random.Shared.Next() })" />
             <button id="image_edit_button" class="edit-button" title="Edit"><i class="bi bi-pencil-fill"></i></button>
         </div>
         
