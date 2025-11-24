@@ -105,6 +105,7 @@ newEventButton.addEventListener("click", event => {
     document.getElementById("event_title_input").value = "";
     setDateTimeInput("event_start_date_input", new Date(Number(targetDayBlock.dataset.year), Number(targetDayBlock.dataset.month) - 1, Number(targetDayBlock.dataset.day), 8));
     setDateTimeInput("event_end_date_input", new Date(Number(targetDayBlock.dataset.year), Number(targetDayBlock.dataset.month) - 1, Number(targetDayBlock.dataset.day), 9));
+    document.getElementById("event_end_date_input").setAttribute("min", 8);
     document.getElementById("event_content_textarea").value = "";
 
     newEditEventDialog.showModal();

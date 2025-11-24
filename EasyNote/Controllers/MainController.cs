@@ -1042,6 +1042,8 @@ namespace EasyNote.Controllers
                         new ObjectSettings
                         {
                             HtmlContent = htmlDocument.DocumentNode.InnerHtml,
+                            WebSettings = { DefaultEncoding = "utf-8" },
+                            HeaderSettings = { FontName = "Microsoft JhengHei UI" }
                         }
                     }
                 };
