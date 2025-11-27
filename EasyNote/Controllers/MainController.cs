@@ -1100,7 +1100,7 @@ namespace EasyNote.Controllers
                                              (c.EventStartTime >= dateTimeMonthStart && c.EventStartTime < dateTimeMonthEnd))
                                              select c).DefaultIfEmpty().ToList();
 
-                List<DateTime> dateTimes = new List<DateTime>();
+                Dictionary<DateTime, int> eventCounts = new Dictionary<DateTime, int>();
                 calendars.ForEach((calendar) =>
                 {
                     if (calendar == null) return;
@@ -1112,11 +1112,11 @@ namespace EasyNote.Controllers
                     DateTime endTime = calendar.EventEndTime > dateTimeMonthEnd ? dateTimeMonthEnd : calendar.EventEndTime;
                     for (; startTime < endTime; startTime = startTime.AddDays(1))
                     {
-                        if(dateTimes.FindIndex(d => d.Day == startTime.Day) == -1)
-                            dateTimes.Add(startTime);
+                        if (!eventCounts.TryAdd(startTime, 1))
+                            eventCounts[startTime] += 1;
                     }
                 });
-                return Json(dateTimes);
+                return Json(eventCounts);
             }
             catch(Exception ex)
             {
@@ -1148,6 +1148,7 @@ namespace EasyNote.Controllers
                                                               EventEndTime = c.EventEndTime,
                                                           }).DefaultIfEmpty().ToList();
 
+                calendarEvents.Sort((a, b) => a.EventStartTime.CompareTo(b.EventStartTime));
                 return Json(calendarEvents);
             }
             catch (Exception ex)

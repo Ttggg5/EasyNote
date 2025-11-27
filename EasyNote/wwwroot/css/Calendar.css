@@ -153,16 +153,26 @@
 }
 
 .event-tag {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 50px;
-    width: 7px;
-    height: 7px;
     margin-top: 5px;
-    transition: 0.3s
+    transition: 0.3s;
+    font-size: 12px;
+    width: 50%;
+    height: 17px;
+    color: white;
+    font-weight: bold;
 }
 
     .event-tag.show {
-        background: var(--event-tag-color);
+        background: indianred;
     }
+
+.holiday {
+    color: indianred;
+}
 
 #day_block_dialog {
     padding: 0;

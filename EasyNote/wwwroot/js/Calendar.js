@@ -166,7 +166,7 @@ function refreshCalendar() {
         }
     })
         .then((response) => response.json())
-        .then((jsonList) => {
+        .then((resJson) => {
             calendarDays.innerHTML = "";
             let curSelectedMonthDays = getDaysInMonth(curSelectedMonth, curSelectedYear);
             for (let i = 0; i < curSelectedMonthDays[0].getDay(); i++) {
@@ -176,11 +176,16 @@ function refreshCalendar() {
                 calendarDays.appendChild(createDayBlock(date));
             }
 
-            if (jsonList != null) {
-                for (const dateString of jsonList) {
-                    const id = Date.parse(dateString).toString();
-                    document.getElementById(id).children[0].classList.add("show");
-                }
+            if (resJson != null) {
+                Object.keys(resJson).forEach(function (key) {
+                    const id = Date.parse(key).toString();
+                    const eventTag = document.getElementById(id).children[0];
+                    eventTag.classList.add("show");
+                    if (resJson[key] > 99)
+                        eventTag.innerText = "99+";
+                    else
+                        eventTag.innerText = resJson[key];
+                });
             }
 
             document.getElementById(today.getTime().toString()).classList.add("today");
@@ -211,6 +216,8 @@ function createDayBlock(date) {
     dayBlock.dataset.week = date.getDay();
     dayBlock.innerText = date.getDate();
     dayBlock.classList.add("day-block");
+    if (date.getDay() == 0 || date.getDay() == 6)
+        dayBlock.classList.add("holiday");
     dayBlock.addEventListener("click", event => {
         dayBlockDialog.dataset.targetId = dayBlock.id;
 
